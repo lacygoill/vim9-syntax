@@ -824,7 +824,7 @@ syn match vim9OperError /)/
 
 # Dictionaries {{{1
 
-# Order: This rule must come before `vim9Block`.
+# Order: Must come before `vim9Block`.
 # Warning: Don't include `vim9DictMayBeLiteralKey` in `@vim9OperGroup`:{{{
 #
 # It could break the highlighting of a dictionary containing a lambda:
@@ -1360,6 +1360,67 @@ syn keyword vim9IsAbbrevCmd
     \ contained
     \ skipwhite
 
+# Angle-Bracket Notation {{{1
+
+syn case ignore
+exe 'syn match vim9Notation'
+    .. ' /'
+    .. '\%#=1\%(\\\|<lt>\)\='
+    .. '<' .. '\%([scamd]-\)\{0,4}x\='
+    .. '\%('
+    .. 'f\d\{1,2}\|[^ \t:]\|cr\|lf\|linefeed\|return\|k\=del\%[ete]'
+    .. '\|' .. 'bs\|backspace\|tab\|esc\|right\|left\|help\|undo\|insert\|ins'
+    .. '\|' .. 'mouse\|k\=home\|k\=end\|kplus\|kminus\|kdivide\|kmultiply'
+    .. '\|' .. 'focus\%(gained\|lost\)'
+    .. '\|' .. 'kenter\|kpoint\|space\|k\=\%(page\)\=\%(\|down\|up\|k\d\>\)'
+    .. '\|' .. 'paste\%(end\|start\)'
+    .. '\|' .. 'sgrmouse\%(release\)\='
+    .. '\)' .. '>'
+    .. '/'
+    .. ' contains=vim9Bracket'
+
+syn match vim9Notation /<cmd>/
+    \ contains=vim9Bracket
+    \ nextgroup=@vim9CmdAllowedHere,@vim9RangeContains
+
+exe 'syn match vim9Notation '
+    .. '/'
+    .. '\%#=1\%(\\\|<lt>\)\='
+    .. '<'
+    .. '\%([scam2-4]-\)\{0,4}'
+    .. '\%(right\|left\|middle\)'
+    .. '\%(mouse\)\='
+    .. '\%(drag\|release\)\='
+    .. '>'
+    .. '/'
+    .. ' contains=vim9Bracket'
+
+syn match vim9Notation
+    \ /\%#=1\%(\\\|<lt>\)\=<\%(bslash\|plug\|sid\|space\|nop\|nul\|lt\)>/
+    \ contains=vim9Bracket
+
+syn match vim9Notation /<bar>/ contains=vim9Bracket skipwhite
+
+syn match vim9Notation /\%(\\\|<lt>\)\=<C-R>[0-9a-z"%#:.\-=]/he=e-1
+    \ contains=vim9Bracket
+
+exe 'syn match vim9Notation '
+    .. '/'
+    .. '\%#=1\%(\\\|<lt>\)\='
+    .. '<'
+    .. '\%(q-\)\='
+    .. '\%(line[12]\|count\|bang\|reg\|args\|mods\|f-args\|f-mods\|lt\)'
+    .. '>'
+    .. '/'
+    .. ' contains=vim9Bracket'
+
+syn match vim9Notation
+    \ /\%#=1\%(\\\|<lt>\)\=<\%([cas]file\|abuf\|amatch\|cword\|cWORD\|client\)>/
+    \ contains=vim9Bracket
+
+syn match vim9Bracket /[\\<>]/ contained
+syn case match
+
 # Maps {{{1
 
 syn cluster vim9MapMod contains=vim9MapMod,vim9MapModExpr
@@ -1398,7 +1459,7 @@ syn keyword vim9Unmap
 
 syn match vim9MapLhs /\S\+/
     \ contained
-    \ contains=vim9CtrlChar,vim9Notation
+    \ contains=vim9CtrlChar,vim9Notation,vim9MapLhsBar
     \ nextgroup=vim9MapRhs
     \ skipwhite
 
@@ -1464,7 +1525,7 @@ syn region vim9MapCmd
     \ start=/\s*\c<cmd>/
     \ end=/\c<cr>/
     \ contained
-    \ contains=@vim9ExprContains,vim9Notation
+    \ contains=@vim9ExprContains,vim9Notation,vim9MapCmdBar
     \ keepend
     \ oneline
 syn region vim9MapInsertExpr
@@ -1482,74 +1543,25 @@ syn region vim9MapCommandLineExpr
     \ keepend
     \ oneline
 
+# Highlight what comes after `<bar>` as a command:{{{
+#
+#     nno xxx <cmd>call FuncA() <bar> call FuncB()<cr>
+#                                     ^--^
+#
+# But only if it's between `<cmd>` and `<cr>`.
+# Anywhere else, we have no guarantee that we're on the command-line.
+#}}}
+# Order: Must come after the `vim9Notation` rule handling a `<bar>` in any location.
+syn match vim9MapCmdBar /<bar>/
+    \ contained
+    \ contains=vim9Notation
+    \ nextgroup=@vim9CmdAllowedHere
+    \ skipwhite
+
 syn match vim9MapRhsExtend /^\s*\\.*$/ contained contains=vim9Continue
 syn match vim9MapRhsExtendExpr /^\s*\\.*$/
     \ contained
     \ contains=@vim9ExprContains,vim9Continue
-
-# Angle-Bracket Notation {{{1
-
-syn case ignore
-exe 'syn match vim9Notation'
-    .. ' /'
-    .. '\%#=1\%(\\\|<lt>\)\='
-    .. '<' .. '\%([scamd]-\)\{0,4}x\='
-    .. '\%('
-    .. 'f\d\{1,2}\|[^ \t:]\|cr\|lf\|linefeed\|return\|k\=del\%[ete]'
-    .. '\|' .. 'bs\|backspace\|tab\|esc\|right\|left\|help\|undo\|insert\|ins'
-    .. '\|' .. 'mouse\|k\=home\|k\=end\|kplus\|kminus\|kdivide\|kmultiply'
-    .. '\|' .. 'focus\%(gained\|lost\)'
-    .. '\|' .. 'kenter\|kpoint\|space\|k\=\%(page\)\=\%(\|down\|up\|k\d\>\)'
-    .. '\|' .. 'paste\%(end\|start\)'
-    .. '\|' .. 'sgrmouse\%(release\)\='
-    .. '\)' .. '>'
-    .. '/'
-    .. ' contains=vim9Bracket'
-
-syn match vim9Notation /<cmd>/
-    \ contains=vim9Bracket
-    \ nextgroup=@vim9CmdAllowedHere,@vim9RangeContains
-
-exe 'syn match vim9Notation '
-    .. '/'
-    .. '\%#=1\%(\\\|<lt>\)\='
-    .. '<'
-    .. '\%([scam2-4]-\)\{0,4}'
-    .. '\%(right\|left\|middle\)'
-    .. '\%(mouse\)\='
-    .. '\%(drag\|release\)\='
-    .. '>'
-    .. '/'
-    .. ' contains=vim9Bracket'
-
-syn match vim9Notation
-    \ /\%#=1\%(\\\|<lt>\)\=<\%(bslash\|plug\|sid\|space\|nop\|nul\|lt\)>/
-    \ contains=vim9Bracket
-
-syn match vim9Notation /<bar>/
-    \ contains=vim9Bracket
-    \ nextgroup=@vim9CmdAllowedHere
-    \ skipwhite
-
-syn match vim9Notation /\%(\\\|<lt>\)\=<C-R>[0-9a-z"%#:.\-=]/he=e-1
-    \ contains=vim9Bracket
-
-exe 'syn match vim9Notation '
-    .. '/'
-    .. '\%#=1\%(\\\|<lt>\)\='
-    .. '<'
-    .. '\%(q-\)\='
-    .. '\%(line[12]\|count\|bang\|reg\|args\|mods\|f-args\|f-mods\|lt\)'
-    .. '>'
-    .. '/'
-    .. ' contains=vim9Bracket'
-
-syn match vim9Notation
-    \ /\%#=1\%(\\\|<lt>\)\=<\%([cas]file\|abuf\|amatch\|cword\|cWORD\|client\)>/
-    \ contains=vim9Bracket
-
-syn match vim9Bracket /[\\<>]/ contained
-syn case match
 
 # User Function Highlighting {{{1
 
@@ -1835,7 +1847,7 @@ syn region vim9NormCmds start=/./ end=/$\|\ze<cr>/ contained oneline
 
 # Syntax {{{1
 
-# Order: This rule must come *before* the one setting `vim9HiGroup`.{{{
+# Order: Must come *before* the rule setting `vim9HiGroup`.{{{
 #
 # Otherwise, the name of a highlight group would not be highlighted here:
 #
