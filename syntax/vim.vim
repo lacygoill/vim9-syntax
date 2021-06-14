@@ -345,12 +345,16 @@ syn match vim9RangeOffset /[-+]\+\d*/
 syn match vim9RangePattern +/[^/]*/+
     \ nextgroup=@vim9RangeAfterSpecifier
     \ contained
+    \ contains=vim9RangePatternFwdDelim
     \ skipwhite
+syn match vim9RangePatternFwdDelim +/+ contained
 
 syn match vim9RangePattern +?[^?]*?+
     \ nextgroup=@vim9RangeAfterSpecifier
     \ contained
+    \ contains=vim9RangePatternBwdDelim
     \ skipwhite
+syn match vim9RangePatternBwdDelim /?/ contained
 
 syn match vim9RangeSpecialChar /[.$%*]/
     \ nextgroup=@vim9RangeAfterSpecifier
@@ -2520,6 +2524,8 @@ hi def link vim9RangeMissingSpecifier2 vim9Error
 hi def link vim9RangeNumber Number
 hi def link vim9RangeOffset Number
 hi def link vim9RangePattern String
+hi def link vim9RangePatternBwdDelim Delimiter
+hi def link vim9RangePatternFwdDelim Delimiter
 hi def link vim9RangeSpecialChar Special
 hi def link vim9Repeat Repeat
 hi def link vim9Return vim9IsCommand
