@@ -232,6 +232,7 @@ exe 'syn match vim9CmdModifier /\<\%('
 syn match vim9CmdBang /!/ contained nextgroup=@vim9CmdAllowedHere skipwhite
 
 # Commands taking expression as argument {{{3
+
 exe 'syn region vim9CmdTakesExpr'
     .. ' excludenl'
     .. ' matchgroup=vim9IsCommand'
@@ -481,9 +482,9 @@ syn cluster vim9AugroupList contains=
     \,vim9CmdModifier,vim9CmdSep,vim9Comment,vim9ComplexRepeat,vim9Conditional
     \,vim9Continue,vim9CtrlChar,vim9Declare,vim9Dict,vim9EnvVar,vim9FuncHeader
     \,vim9HereDoc,vim9LegacyFunction,vim9Map,vim9MayBeOptionScoped,vim9Notation
-    \,vim9Number,vim9Oper,vim9OperAssign,vim9OperParen,vim9Region,vim9Register
-    \,vim9Repeat,vim9Return,vim9Set,vim9SpecFile,vim9StartOfLine,vim9String
-    \,vim9Subst,vim9SynLine,vim9UserCmdDef
+    \,vim9Number,vim9Oper,vim9OperAssign,vim9OperParen,vim9Region,vim9Repeat
+    \,vim9Return,vim9Set,vim9SpecFile,vim9StartOfLine,vim9String,vim9Subst
+    \,vim9SynLine,vim9UserCmdDef
 
 # Actually, the case of `END` does not matter.{{{
 #
@@ -695,7 +696,7 @@ syn cluster vim9ExprContains contains=
 syn cluster vim9OperGroup contains=
     \@vim9ExprContains,vim9Comment,vim9Continue,vim9DataType,vim9DataTypeCast
     \,vim9DataTypeCastComposite,vim9DataTypeCompositeLeadingColon
-    \,vim9LineComment,vim9Oper,vim9OperAssign,vim9OperParen,vim9Register
+    \,vim9LineComment,vim9Oper,vim9OperAssign,vim9OperParen
 
 syn match vim9Oper "\s\@1<=\%([-+*/%!]\|\.\.\|==\|!=\|>=\|<=\|=\~\|!\~\|>\|<\)[?#]\{0,2}\_s\@="
     \ display
@@ -901,8 +902,8 @@ syn cluster vim9FuncBodyContains contains=
     \,vim9LambdaArrow,vim9LegacyFunction,vim9LineComment,vim9LuaRegion
     \,vim9MayBeOptionScoped,vim9Notation,vim9Null,vim9Number,vim9Oper
     \,vim9OperAssign,vim9OperParen,vim9PythonRegion,vim9RangeIntroducer
-    \,vim9Region,vim9Register,vim9SpecFile,vim9StartOfLine,vim9String
-    \,vim9SynLine,vim9SynMtchGroup
+    \,vim9Region,vim9SpecFile,vim9StartOfLine,vim9String,vim9SynLine
+    \,vim9SynMtchGroup
 # TODO: Make sure no special command/keyword is wrongly highlighted when used as
 # a variable name.  If necessary, remove some syntax groups from this cluster.
 
@@ -999,8 +1000,8 @@ syn cluster vim9UserCmdList contains=
     \vim9Address,vim9Autocmd,vim9BuiltinFuncName,vim9CallFuncName,vim9Comment
     \,vim9ComplexRepeat,vim9CtrlChar,vim9Declare,vim9EscapeBrace,vim9FuncHeader
     \,vim9Highlight,vim9LegacyFunction,vim9Notation,vim9Number,vim9Oper
-    \,vim9Region,vim9Register,vim9Set,vim9SpecFile,vim9String,vim9Subst
-    \,vim9SubstRange,vim9SubstRep,vim9SynLine,vim9Syntax
+    \,vim9Region,vim9Set,vim9SpecFile,vim9String,vim9Subst,vim9SubstRange
+    \,vim9SubstRep,vim9SynLine,vim9Syntax
 
 syn match vim9UserCmdDef /\<com\%[mand]\>.*$/
     \ contains=@vim9UserCmdList,vim9ComFilter,vim9UserAttrb,vim9UserAttrbError
@@ -1261,7 +1262,6 @@ syn match vim9Subst /\%(^\|[^\\"'(]\)\@1<=\<\%(s\%[ubstitut]\|substitute(\@!\)\>
 
 syn match vim9Subst +/\zs\<s\%[ubstitute]\>\ze/+ nextgroup=vim9SubstPat
 syn match vim9Subst /\%(:\+\s*\|^\s*\)s\ze#.\{-}#.\{-}#/ nextgroup=vim9SubstPat
-syn match vim9Subst1 /\<s\%[ubstitute]\>/ contained nextgroup=vim9SubstPat
 
 syn region vim9SubstPat
     \ matchgroup=vim9SubstDelim
@@ -1314,16 +1314,7 @@ syn match vim9SubstFlags /[&cegiIlnpr#]\+/ contained
 
 syn match vim9String /[^(,]'[^']\{-}\zs'/
 
-# Registers, Addresses, Filters {{{1
-
-syn match vim9Register +[^,;[{: \t]\zs"[a-zA-Z0-9.%#:_\-/]\ze[^a-zA-Z_":0-9]+
-syn match vim9Register /\<norm\s\+\zs"[a-zA-Z0-9]/
-syn match vim9Register /\<normal\s\+\zs"[a-zA-Z0-9]/
-syn match vim9Register /@"/
-syn match vim9PlainRegister /"[a-zA-Z0-9\-:.%#*+=]/ contained
-
-syn match vim9Address /,\zs[.$]/ nextgroup=vim9Subst1 skipwhite
-syn match vim9Address /%\ze\a/ nextgroup=vim9String,vim9Subst1 skipwhite
+# Filters {{{1
 
 syn region vim9Filter
     \ matchgroup=vim9IsCommand
@@ -2502,7 +2493,6 @@ hi def link vim9PatSepR vim9PatSep
 hi def link vim9PatSepZ vim9PatSep
 hi def link vim9PatSepZone vim9String
 hi def link vim9Pattern Type
-hi def link vim9PlainRegister vim9Register
 hi def link vim9RangeMark Special
 hi def link vim9RangeMissingSpace vim9Error
 hi def link vim9RangeMissingSpecifier1 vim9Error
@@ -2511,7 +2501,6 @@ hi def link vim9RangeNumber Number
 hi def link vim9RangeOffset Number
 hi def link vim9RangePattern String
 hi def link vim9RangeSpecialChar Special
-hi def link vim9Register SpecialChar
 hi def link vim9Repeat Repeat
 hi def link vim9Return vim9IsCommand
 hi def link vim9ScriptDelim Comment
@@ -2529,7 +2518,6 @@ hi def link vim9String String
 hi def link vim9StringCont vim9String
 hi def link vim9StringEnd vim9String
 hi def link vim9Subst vim9IsCommand
-hi def link vim9Subst1 vim9Subst
 hi def link vim9SubstDelim Delimiter
 hi def link vim9SubstFlags Special
 hi def link vim9SubstSubstr SpecialChar
