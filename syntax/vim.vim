@@ -1832,6 +1832,7 @@ syn match vim9Repeat /\<\%(endfor\=\|endw\%[hile]\)\>/ contained skipwhite
 syn match vim9TryCatch /\<\%(try\|endtry\|finally\)\>/ contained
 syn match vim9TryCatch /\<throw\>/ contained nextgroup=@vim9ExprContains skipwhite
 syn match vim9TryCatch -\<catch\>\%(\s\+/[^/]*/\)\=- contained contains=vim9TryCatchPattern
+
 # Problem: A pattern can contain any text; in particular, an unbalanced paren is
 # possible.  But this breaks all the subsequent syntax highlighting.
 #
@@ -1840,7 +1841,8 @@ syn match vim9TryCatch -\<catch\>\%(\s\+/[^/]*/\)\=- contained contains=vim9TryC
 #
 # NOTE: We  could  achieve  the  desired  result  with  a  single  rule,  and  a
 # lookbehind.  But it would be more costly.
-syn match vim9TryCatchPattern +/.*/+ contained
+syn match vim9TryCatchPattern +/.*/+ contained contains=vim9TryCatchPatternDelim
+syn match vim9TryCatchPatternDelim +/+ contained
 
 # Norm {{{1
 
@@ -2576,6 +2578,7 @@ hi def link vim9Syntax vim9IsCommand
 hi def link vim9Todo Todo
 hi def link vim9TryCatch Exception
 hi def link vim9TryCatchPattern String
+hi def link vim9TryCatchPatternDelim Delimiter
 hi def link vim9Unmap vim9Map
 hi def link vim9UserAttrb vim9Special
 hi def link vim9UserAttrbCmplt vim9Special
