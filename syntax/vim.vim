@@ -1465,7 +1465,7 @@ syn keyword vim9Unmap
 
 syn match vim9MapLhs /\S\+/
     \ contained
-    \ contains=vim9CtrlChar,vim9Notation,vim9MapLhsBar
+    \ contains=vim9CtrlChar,vim9Notation
     \ nextgroup=vim9MapRhs
     \ skipwhite
 
