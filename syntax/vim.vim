@@ -598,9 +598,13 @@ syn keyword vim9Todo FIXME TODO contained
 syn cluster vim9CommentGroup contains=
     \@Spell,vim9CommentString,vim9CommentTitle,vim9DictLiteralLegacyError,vim9Todo
 
-# Variables {{{1
+# Declarations {{{1
 
-syn keyword vim9Declare cons[t] final unl[et] var contained skipwhite nextgroup=vim9DeclareReserved
+syn keyword vim9Declare cons[t] final unl[et] var
+    \ contained
+    \ skipwhite
+    \ nextgroup=vim9DeclareReserved
+
 syn keyword vim9DeclareReserved true false null this contained
 
 # NOTE: In the default syntax plugin, `vimLetHereDoc` contains `vimComment` and `vim9Comment`.{{{
@@ -620,6 +624,8 @@ syn region vim9HereDoc
     \ end=/^\s*\z1$/
 
 syn match vim9EnvVar /\$[A-Z_][A-Z0-9_]*/
+
+# Booleans / Null {{{1
 
 # Even though `v:` is useless in Vim9, we  still need it in a mapping; because a
 # mapping is run in the legacy context, even when installed from a Vim9 script.
@@ -2218,16 +2224,9 @@ syn match vim9CommentTitle /#\s*\u\%(\w\|[()]\)*\%(\s\+\u\w*\)*:/hs=s+1
     \ contained
     \ contains=@vim9CommentGroup
 
-# `@vim9CmdAllowedHere` is useful for autocmds broken down on multiple lines:{{{
-#
-#     au BufEnter *
-#         \ execute 'ls'
-#           ^-----^
-#           we want this to be highlighted as a command
-#}}}
 syn match vim9Continue /^\s*\\/
     \ skipwhite
-    \ nextgroup=@vim9CmdAllowedHere,vim9SynContains,vim9SynMtchGrp,vim9SynNextgroup,vim9SynReg
+    \ nextgroup=vim9SynContains,vim9SynMtchGrp,vim9SynNextgroup,vim9SynReg
     \,vim9SynContinuePattern,vim9SynRegOpt
 
 syn match vim9SynContinuePattern =\s\+/[^/]*/= contained
