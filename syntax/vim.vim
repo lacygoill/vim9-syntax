@@ -325,7 +325,7 @@ syn match vim9RangeIntroducer /\%(^\|\s\):\S\@=/
     \ contained
 
 syn cluster vim9RangeAfterSpecifier
-    \ contains=@vim9CmdAllowedHere,@vim9RangeContains,vim9RangeMissingSpace
+    \ contains=@vim9CmdAllowedHere,@vim9RangeContains,vim9Filter,vim9RangeMissingSpace
 
 syn match vim9RangeMark /'[a-zA-Z0-9<>()[\]{}]/
     \ contained
@@ -1322,14 +1322,7 @@ syn region vim9Filter
     \ end=/$/
     \ contained
     \ contains=vim9SpecFile
-
-#     syn match vim9Filter /!!\=[^"]\{-}\%(|\|\ze"\|$\)/
-#         \ contained
-#         \ contains=vim9SpecFile
-#
-#     syn match vim9ComFilter /|!!\=[^"]\{-}\%(|\|\ze"\|$\)/
-#         \ contained
-#         \ contains=vim9SpecFile
+    \ oneline
 
 # Abbreviations {{{1
 
@@ -1823,7 +1816,8 @@ syn match vim9TryCatchPattern +/.*/+ contained
 
 syn match vim9Norm /\<norm\%[al]\>/ nextgroup=vim9NormCmds skipwhite
 syn match vim9Norm /\<norm\%[al]\>!/he=e-1 nextgroup=vim9NormCmds skipwhite
-syn match vim9NormCmds /.*$/ contained
+# in a mapping, stop before the `<cr>` which executes `:norm`
+syn region vim9NormCmds start=/./ end=/$\|\ze<cr>/ contained oneline
 
 # Syntax {{{1
 
@@ -2247,7 +2241,7 @@ syn region vim9BacktickExpansionVimExpr
     \ matchgroup=Special
     \ start=/`=/
     \ end=/`/
-    \ contains=@vim9FuncBodyContains
+    \ contains=@vim9ExprContains
 
 # Embedded Scripts  {{{1
 
