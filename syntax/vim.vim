@@ -174,7 +174,7 @@ lookahead =
     # after a command, we know there must be a bang, a whitespace or a newline
        '[! \t\n]\@='
     # but there must *not* be a binary operator
-    .. '\%(\s*\%([-+*/%]\==\|\.\.=\)\)\@!'
+    .. '\%(\s*\%([-+*/%]\==\|\.\.=\)\|\_s*->\)\@!'
 
 # Order: `vim9MayBeCommand` must come before `vim9Augroup`, `vim9Import`, `vim9Set`.
 exe 'syn match vim9MayBeCommand /\<\h\w*\>' .. lookahead .. '/'
