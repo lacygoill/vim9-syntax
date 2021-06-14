@@ -618,7 +618,7 @@ syn match vim9EnvVar /\$[A-Z_][A-Z0-9_]*/
 # Even though `v:` is useless in Vim9, we  still need it in a mapping; because a
 # mapping is run in the legacy context, even when installed from a Vim9 script.
 syn match vim9Bool /\%(v:\)\=\<\%(false\|true\)\>:\@!/
-syn match vim9Null /\<null\>:\@!/
+syn match vim9Null /\%(v:\)\=\<null\>:\@!/
 
 # Highlight commonly used Groupnames {{{1
 
