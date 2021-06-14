@@ -151,9 +151,10 @@ var lookbehind: string
 # appear in many places, including in the middle of an expression.
 syn cluster vim9CmdAllowedHere contains=
     \@vim9ControlFlow,vim9Autocmd,vim9CallFuncName,vim9CmdModifier
-    \,vim9CmdTakesExpr,vim9Declare,vim9Doautocmd,vim9EchoHL,vim9Global
-    \,vim9Highlight,vim9Map,vim9MayBeAbbrevCmd,vim9MayBeCommand,vim9Norm,vim9Set
-    \,vim9Subst,vim9Syntax,vim9Unmap,vim9UserCmdCall,vim9UserCmdDef
+    \,vim9CmdTakesExpr,vim9Declare,vim9Doautocmd,vim9EchoHL,vim9Filetype
+    \,vim9Global,vim9Highlight,vim9Map,vim9MayBeAbbrevCmd,vim9MayBeCommand
+    \,vim9Norm,vim9Set,vim9Subst,vim9Syntax,vim9Unmap,vim9UserCmdCall
+    \,vim9UserCmdDef
 
 syn match vim9CmdSep /|/
     \ skipwhite
@@ -688,6 +689,7 @@ exe 'syn match vim9BuiltinFuncName '
 # Filetypes {{{1
 
 syn match vim9Filetype /\<filet\%[ype]\%(\s\+\I\i*\)*/
+    \ contained
     \ contains=vim9FTCmd,vim9FTError,vim9FTOption
     \ skipwhite
 
