@@ -82,10 +82,24 @@ var lookbehind: string
 #     ~/.vim/pack/mine/opt/doc/autoload/doc/mapping.vim
 #}}}
 
-# TODO: We  should  highlight obvious  errors  (e.g.  missing whitespace  around
-# binary operators; look for "error" at `:h vim9`).
+# TODO: We should highlight obvious errors.
 #
-#     var name = value# error!
+#     var name=234	# Error!
+#     var name= 234	# Error!
+#     var name =234	# Error!
+#     var name = 234# Error!
+#     Func (arg)	   # Error!
+#
+#     Numbers starting with zero are not considered to be octal, only numbers
+#     starting with "0o" are octal: "0o744". |scriptversion-4|
+#
+#     Unfortunately this means using "() => {  command  }" does not work, line
+#     breaks are always required.
+#
+#     White space is required around most operators.
+#
+#     White space is required in a sublist (list slice) around the ":", except at
+#     the start and end
 
 # TODO: Find the commands which expect a pattern as argument.
 # Highlight it as a string.
@@ -596,16 +610,15 @@ syn match vim9AutocmdMod /<nomodeline>/
 
 syn keyword vim9Todo FIXME TODO contained
 syn cluster vim9CommentGroup contains=
-    \@Spell,vim9CommentString,vim9CommentTitle,vim9DictLiteralLegacyError,vim9Todo
+    \@Spell,vim9CommentString,vim9CommentTitle,vim9DictLiteralLegacyDeprecated
+    \,vim9Todo
 
 # Declarations {{{1
 
 syn keyword vim9Declare cons[t] final unl[et] var
     \ contained
     \ skipwhite
-    \ nextgroup=vim9DeclareReserved
-
-syn keyword vim9DeclareReserved true false null this contained
+    \ nextgroup=vim9ReservedNames,vim9ListUnpackDeclaration
 
 # NOTE: In the default syntax plugin, `vimLetHereDoc` contains `vimComment` and `vim9Comment`.{{{
 #
@@ -2320,9 +2333,27 @@ syn region vim9LuaRegion
 # `:let` is deprecated.
 syn keyword vim9LetDeprecated let contained
 
+# Some names cannot be used for variables, because they're reserved:{{{
+#
+#     var true = 0
+#     var null = ''
+#     var this = []
+#     ...
+#}}}
+syn keyword vim9ReservedNames true false null this contained
+
 # In legacy Vim script, a literal dictionary starts with `#{`.
 # This syntax is no longer valid in Vim9.
-syn match vim9DictLiteralLegacyError /#{{\@!/
+syn match vim9DictLiteralLegacyDeprecated /#{{\@!/
+
+# Declaring more than one variable at a  time, using the unpack notation, is not
+# supported.  See `:h E1092`.
+syn region vim9ListUnpackDeclaration
+    \ contained
+    \ contains=vim9ListUnpackDeclaration
+    \ end=/\]/
+    \ oneline
+    \ start=/\[/
 
 # Discourage usage  of an  implicit line  specifier, because  it makes  the code
 # harder to read.
@@ -2456,12 +2487,11 @@ hi def link vim9CtrlChar SpecialChar
 hi def link vim9DataType Type
 hi def link vim9DataTypeCast vim9DataType
 hi def link vim9Declare Identifier
-hi def link vim9DeclareReserved Error
 hi def link vim9DefKey Keyword
 hi def link vim9DictIsLiteralKey String
 hi def link vim9DictKey String
-hi def link vim9DictLiteralLegacyError Error
-hi def link vim9DictMayBeLiteralKey Error
+hi def link vim9DictLiteralLegacyDeprecated vim9Error
+hi def link vim9DictMayBeLiteralKey vim9Error
 hi def link vim9Doautocmd vim9IsCommand
 hi def link vim9EchoHL vim9IsCommand
 hi def link vim9EchoHLNone vim9Group
@@ -2501,6 +2531,7 @@ hi def link vim9LetDeprecated vim9Error
 # NOTE: I think it's important to highlight the declaration commands differently
 # than other regular Ex commands.  They are more important/special in Vim9.
 hi def link vim9LineComment vim9Comment
+hi def link vim9ListUnpackDeclaration vim9Error
 hi def link vim9Map vim9IsCommand
 hi def link vim9MapBang vim9IsCommand
 hi def link vim9MapMod vim9Bracket
@@ -2515,7 +2546,7 @@ hi def link vim9Null Constant
 hi def link vim9Number Number
 hi def link vim9Oper Operator
 hi def link vim9OperAssign Identifier
-hi def link vim9OperError Error
+hi def link vim9OperError vim9Error
 hi def link vim9OptionSigil vim9IsOption
 hi def link vim9ParenSep Delimiter
 hi def link vim9PatSep SpecialChar
@@ -2535,6 +2566,7 @@ hi def link vim9RangePatternBwdDelim Delimiter
 hi def link vim9RangePatternFwdDelim Delimiter
 hi def link vim9RangeSpecialChar Special
 hi def link vim9Repeat Repeat
+hi def link vim9ReservedNames vim9Error
 hi def link vim9Return vim9IsCommand
 hi def link vim9ScriptDelim Comment
 hi def link vim9Sep Delimiter
@@ -2557,10 +2589,10 @@ hi def link vim9SubstFlags Special
 hi def link vim9SubstSubstr SpecialChar
 hi def link vim9SubstTwoBS vim9String
 hi def link vim9SynCase Type
-hi def link vim9SynCaseError Error
+hi def link vim9SynCaseError vim9Error
 hi def link vim9SynContains vim9SynOption
 hi def link vim9SynContinuePattern String
-hi def link vim9SynError Error
+hi def link vim9SynError vim9Error
 hi def link vim9SynKeyContainedin vim9SynContains
 hi def link vim9SynKeyOpt vim9SynOption
 hi def link vim9SynMtchGrp vim9SynOption
@@ -2574,7 +2606,7 @@ hi def link vim9SynRegOpt vim9SynOption
 hi def link vim9SynRegPat vim9String
 hi def link vim9SynType vim9Special
 hi def link vim9SyncC Type
-hi def link vim9SyncError Error
+hi def link vim9SyncError vim9Error
 hi def link vim9SyncGroup vim9GroupName
 hi def link vim9SyncGroupName vim9GroupName
 hi def link vim9SyncKey Type
@@ -2588,10 +2620,10 @@ hi def link vim9Unmap vim9Map
 hi def link vim9UserAttrb vim9Special
 hi def link vim9UserAttrbCmplt vim9Special
 hi def link vim9UserAttrbCmpltFunc Special
-hi def link vim9UserAttrbError Error
+hi def link vim9UserAttrbError vim9Error
 hi def link vim9UserAttrbKey vim9IsOption
 hi def link vim9UserCmdDef vim9IsCommand
-hi def link vim9UserCmdError Error
+hi def link vim9UserCmdError vim9Error
 hi def link vim9ValidSubType vim9DataType
 hi def link vim9Warn WarningMsg
 #}}}1
