@@ -157,7 +157,7 @@ syn cluster vim9CmdAllowedHere contains=
 
 syn match vim9CmdSep /|/
     \ skipwhite
-    \ nextgroup=@vim9CmdAllowedHere,vim9Address,vim9Filter,vim9Mark
+    \ nextgroup=@vim9CmdAllowedHere,vim9Address
 
 # This lookahead is necessary to prevent spurious highlightings.{{{
 #
@@ -313,9 +313,8 @@ syn case match
 # Range {{{1
 
 syn cluster vim9RangeContains contains=
-    \vim9RangeDelimiter,vim9RangeMark,vim9RangeMissingSpace
-    \,vim9RangeMissingSpecifier2,vim9RangeNumber,vim9RangeOffset
-    \,vim9RangePattern,vim9RangeSpecialChar
+    \vim9RangeDelimiter,vim9RangeMark,vim9RangeMissingSpecifier2,vim9RangeNumber
+    \,vim9RangeOffset,vim9RangePattern,vim9RangeSpecialChar
 
 # Make sure there is nothing before, to avoid a wrong match in sth like:
 #     g:name = 'value'
@@ -324,38 +323,41 @@ syn match vim9RangeIntroducer /\%(^\|\s\):\S\@=/
     \ nextgroup=@vim9RangeContains,vim9RangeMissingSpecifier1
     \ contained
 
-syn match vim9RangeMark /'[a-z{}<>[\]]/
+syn cluster vim9RangeAfterSpecifier
+    \ contains=@vim9CmdAllowedHere,@vim9RangeContains,vim9RangeMissingSpace
+
+syn match vim9RangeMark /'[a-zA-Z0-9<>()[\]{}]/
     \ contained
-    \ nextgroup=@vim9CmdAllowedHere,@vim9RangeContains
+    \ nextgroup=@vim9RangeAfterSpecifier
     \ skipwhite
 
 syn match vim9RangeNumber /\d\+/
-    \ nextgroup=@vim9CmdAllowedHere,@vim9RangeContains
+    \ nextgroup=@vim9RangeAfterSpecifier
     \ contained
     \ skipwhite
 
 syn match vim9RangeOffset /[-+]\+\d*/
-    \ nextgroup=@vim9CmdAllowedHere,@vim9RangeContains
+    \ nextgroup=@vim9RangeAfterSpecifier
     \ contained
     \ skipwhite
 
 syn match vim9RangePattern +/[^/]*/+
-    \ nextgroup=@vim9CmdAllowedHere,@vim9RangeContains
+    \ nextgroup=@vim9RangeAfterSpecifier
     \ contained
     \ skipwhite
 
 syn match vim9RangePattern +?[^?]*?+
-    \ nextgroup=@vim9CmdAllowedHere,@vim9RangeContains
+    \ nextgroup=@vim9RangeAfterSpecifier
     \ contained
     \ skipwhite
 
 syn match vim9RangeSpecialChar /[.$%*]/
-    \ nextgroup=@vim9CmdAllowedHere,@vim9RangeContains
+    \ nextgroup=@vim9RangeAfterSpecifier
     \ contained
     \ skipwhite
 
 syn match vim9RangeDelimiter /[,;]/
-    \ nextgroup=@vim9RangeContains
+    \ nextgroup=@vim9RangeAfterSpecifier
     \ contained
 
 # Options {{{1
@@ -477,12 +479,11 @@ syn cluster vim9AugroupList contains=
     \@vim9DataTypeCluster,vim9Address,vim9Augroup,vim9BacktickExpansion
     \,vim9BacktickExpansionVimExpr,vim9Block,vim9Bool,vim9CallFuncName
     \,vim9CmdModifier,vim9CmdSep,vim9Comment,vim9ComplexRepeat,vim9Conditional
-    \,vim9Continue,vim9CtrlChar,vim9Declare,vim9Dict,vim9EnvVar,vim9Filter
-    \,vim9FuncHeader,vim9HereDoc,vim9LegacyFunction,vim9Map,vim9Mark
-    \,vim9MayBeOptionScoped,vim9Notation,vim9Number,vim9Oper,vim9OperAssign
-    \,vim9OperParen,vim9Region,vim9Register,vim9Repeat,vim9Return,vim9Set
-    \,vim9SpecFile,vim9StartOfLine,vim9String,vim9Subst,vim9SynLine
-    \,vim9UserCmdDef
+    \,vim9Continue,vim9CtrlChar,vim9Declare,vim9Dict,vim9EnvVar,vim9FuncHeader
+    \,vim9HereDoc,vim9LegacyFunction,vim9Map,vim9MayBeOptionScoped,vim9Notation
+    \,vim9Number,vim9Oper,vim9OperAssign,vim9OperParen,vim9Region,vim9Register
+    \,vim9Repeat,vim9Return,vim9Set,vim9SpecFile,vim9StartOfLine,vim9String
+    \,vim9Subst,vim9SynLine,vim9UserCmdDef
 
 # Actually, the case of `END` does not matter.{{{
 #
@@ -897,7 +898,7 @@ syn cluster vim9FuncBodyContains contains=
     \,vim9ComplexRepeat,vim9Continue,vim9CtrlChar,vim9DataType,vim9DataTypeCast
     \,vim9DataTypeCastComposite,vim9DataTypeCompositeLeadingColon,vim9Dict
     \,vim9EnvVar,vim9FuncHeader,vim9GroupAdd,vim9GroupRem,vim9HereDoc,vim9HiLink
-    \,vim9LambdaArrow,vim9LegacyFunction,vim9LineComment,vim9LuaRegion,vim9Mark
+    \,vim9LambdaArrow,vim9LegacyFunction,vim9LineComment,vim9LuaRegion
     \,vim9MayBeOptionScoped,vim9Notation,vim9Null,vim9Number,vim9Oper
     \,vim9OperAssign,vim9OperParen,vim9PythonRegion,vim9RangeIntroducer
     \,vim9Region,vim9Register,vim9SpecFile,vim9StartOfLine,vim9String
@@ -997,7 +998,7 @@ syn match vim9SpecFileMod /\%(:[phtreS]\)\+/ contained
 syn cluster vim9UserCmdList contains=
     \vim9Address,vim9Autocmd,vim9BuiltinFuncName,vim9CallFuncName,vim9Comment
     \,vim9ComplexRepeat,vim9CtrlChar,vim9Declare,vim9EscapeBrace,vim9FuncHeader
-    \,vim9Highlight,vim9LegacyFunction,vim9Mark,vim9Notation,vim9Number,vim9Oper
+    \,vim9Highlight,vim9LegacyFunction,vim9Notation,vim9Number,vim9Oper
     \,vim9Region,vim9Register,vim9Set,vim9SpecFile,vim9String,vim9Subst
     \,vim9SubstRange,vim9SubstRep,vim9SynLine,vim9Syntax
 
@@ -1261,7 +1262,6 @@ syn match vim9Subst /\%(^\|[^\\"'(]\)\@1<=\<\%(s\%[ubstitut]\|substitute(\@!\)\>
 syn match vim9Subst +/\zs\<s\%[ubstitute]\>\ze/+ nextgroup=vim9SubstPat
 syn match vim9Subst /\%(:\+\s*\|^\s*\)s\ze#.\{-}#.\{-}#/ nextgroup=vim9SubstPat
 syn match vim9Subst1 /\<s\%[ubstitute]\>/ contained nextgroup=vim9SubstPat
-syn match vim9Subst2 /s\%[ubstitute]\>/ contained nextgroup=vim9SubstPat
 
 syn region vim9SubstPat
     \ matchgroup=vim9SubstDelim
@@ -1314,31 +1314,7 @@ syn match vim9SubstFlags /[&cegiIlnpr#]\+/ contained
 
 syn match vim9String /[^(,]'[^']\{-}\zs'/
 
-# Marks, Registers, Addresses, Filters {{{1
-
-syn match vim9Mark /'[a-zA-Z0-9]\ze[-+,!]/
-    \ nextgroup=vim9Filter,vim9MarkNumber,vim9Subst
-
-syn match vim9Mark /'[<>]\ze[-+,!]/ nextgroup=vim9Filter,vim9MarkNumber,vim9Subst
-syn match vim9Mark /,\zs'[<>]\ze/ nextgroup=vim9Filter,vim9MarkNumber,vim9Subst
-
-syn match vim9Mark /[!,:]\zs'[a-zA-Z0-9]/
-    \ nextgroup=vim9Filter,vim9MarkNumber,vim9Subst
-
-syn match vim9Mark /\<norm\%[al]\s\zs'[a-zA-Z0-9]/
-    \ nextgroup=vim9Filter,vim9MarkNumber,vim9Subst
-
-syn match vim9MarkNumber /[-+]\d\+/
-    \ contained
-    \ contains=vim9Oper
-    \ nextgroup=vim9Subst2
-
-syn match vim9PlainMark /'[a-zA-Z0-9]/ contained
-
-syn match vim9Range /[`'][a-zA-Z0-9],[`'][a-zA-Z0-9]/
-    \ contains=vim9Mark
-    \ nextgroup=vim9Filter
-    \ skipwhite
+# Registers, Addresses, Filters {{{1
 
 syn match vim9Register +[^,;[{: \t]\zs"[a-zA-Z0-9.%#:_\-/]\ze[^a-zA-Z_":0-9]+
 syn match vim9Register /\<norm\s\+\zs"[a-zA-Z0-9]/
@@ -1349,15 +1325,20 @@ syn match vim9PlainRegister /"[a-zA-Z0-9\-:.%#*+=]/ contained
 syn match vim9Address /,\zs[.$]/ nextgroup=vim9Subst1 skipwhite
 syn match vim9Address /%\ze\a/ nextgroup=vim9String,vim9Subst1 skipwhite
 
-syn match vim9Filter /^!!\=[^"]\{-}\%(|\|\ze"\|$\)/ contains=vim9Oper,vim9SpecFile
-
-syn match vim9Filter /!!\=[^"]\{-}\%(|\|\ze"\|$\)/
+syn region vim9Filter
+    \ matchgroup=vim9IsCommand
+    \ start=/!/
+    \ end=/$/
     \ contained
-    \ contains=vim9Oper,vim9SpecFile
+    \ contains=vim9SpecFile
 
-syn match vim9ComFilter /|!!\=[^"]\{-}\%(|\|\ze"\|$\)/
-    \ contained
-    \ contains=vim9Oper,vim9SpecFile
+#     syn match vim9Filter /!!\=[^"]\{-}\%(|\|\ze"\|$\)/
+#         \ contained
+#         \ contains=vim9SpecFile
+#
+#     syn match vim9ComFilter /|!!\=[^"]\{-}\%(|\|\ze"\|$\)/
+#         \ contained
+#         \ contains=vim9SpecFile
 
 # Abbreviations {{{1
 
@@ -2432,7 +2413,6 @@ hi def link vim9MapModErr vim9Error
 hi def link vim9SubstFlagErr vim9Error
 hi def link vim9SynCaseError vim9Error
 
-hi def link vim9Address vim9Mark
 hi def link vim9Args Identifier
 hi def link vim9AugroupEnd Special
 hi def link vim9AugroupError vim9Error
@@ -2504,8 +2484,6 @@ hi def link vim9MapBang vim9IsCommand
 hi def link vim9MapMod vim9Bracket
 hi def link vim9MapModExpr vim9MapMod
 hi def link vim9MapModKey vim9FuncScope
-hi def link vim9Mark Number
-hi def link vim9MarkNumber vim9Number
 hi def link vim9MtchComment vim9Comment
 hi def link vim9Norm vim9IsCommand
 hi def link vim9NormCmds String
@@ -2524,7 +2502,6 @@ hi def link vim9PatSepR vim9PatSep
 hi def link vim9PatSepZ vim9PatSep
 hi def link vim9PatSepZone vim9String
 hi def link vim9Pattern Type
-hi def link vim9PlainMark vim9Mark
 hi def link vim9PlainRegister vim9Register
 hi def link vim9RangeMark Special
 hi def link vim9RangeMissingSpace vim9Error
