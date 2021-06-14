@@ -1318,12 +1318,24 @@ syn match vim9String /[^(,]'[^']\{-}\zs'/
 
 # Filters {{{1
 
+# We only support `:!` when used to filter some lines in the buffer.{{{
+#
+# IOW, we only recognize it when it comes right after a range, which itself must
+# be introduced with a colon.
+#}}}
+# We do not support `:!` to run an external command which needs a controlling terminal.{{{
+#
+# First, it would be  too tricky to distinguish this bang  command from the bang
+# logical NOT operator.
+#
+# Second, `:term` is a better mechanism anyway; in your code, use it instead.
+#}}}
 syn region vim9Filter
     \ matchgroup=vim9IsCommand
     \ start=/!/
-    \ end=/$/
+    \ matchgroup=vim9ShellCmd
+    \ end=/.*/
     \ contained
-    \ contains=vim9SpecFile
     \ oneline
 
 # Abbreviations {{{1
@@ -2409,7 +2421,7 @@ hi def link vim9AutocmdEventGoodCase Type
 hi def link vim9AutocmdGroup Title
 hi def link vim9AutocmdMod Special
 hi def link vim9AutocmdPat vim9String
-hi def link vim9BacktickExpansion PreProc
+hi def link vim9BacktickExpansion vim9ShellCmd
 hi def link vim9Bool Boolean
 hi def link vim9Bracket Delimiter
 hi def link vim9BuiltinFuncName Function
@@ -2507,6 +2519,7 @@ hi def link vim9SetMod vim9IsOption
 hi def link vim9SetNumberValue Number
 hi def link vim9SetSep Delimiter
 hi def link vim9SetStringValue String
+hi def link vim9ShellCmd PreProc
 hi def link vim9SpecFile Identifier
 hi def link vim9SpecFileMod vim9SpecFile
 hi def link vim9Special Type
