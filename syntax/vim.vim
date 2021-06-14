@@ -128,7 +128,7 @@ var lookbehind: string
 # TODO: Whenever we've used `syn case ignore`, should we have enforced a specific case?
 # Similar to what we did for the names of autocmds events.
 
-# All `vim9IsCommand*` are contained by `vim9MayBeCommand`. {{{1
+# All `vim9IsCommand` are contained by `vim9MayBeCommand`. {{{1
 
 # TODO: Whenever you  use this cluster, make  sure it does not  contain too many
 # syntax  groups in  the  current  context.  If  necessary,  create (a)  smaller
@@ -317,7 +317,10 @@ syn cluster vim9RangeContains contains=
     \,vim9RangeMissingSpecifier2,vim9RangeNumber,vim9RangeOffset
     \,vim9RangePattern,vim9RangeSpecialChar
 
-syn match vim9RangeIntroducer /:\S\@=/
+# Make sure there is nothing before, to avoid a wrong match in sth like:
+#     g:name = 'value'
+#      ^
+syn match vim9RangeIntroducer /\%(^\|\s\):\S\@=/
     \ nextgroup=@vim9RangeContains,vim9RangeMissingSpecifier1
     \ contained
 
@@ -546,6 +549,7 @@ syn match vim9AutocmdMod /++\%(nested\|once\)/
 
 # Events {{{2
 
+# TODO: Hide the bad case error behind an option.
 var events: string = vim9syntax#getEventNames()
 syn case ignore
 exe 'syn keyword vim9AutocmdEventBadCase ' .. events
@@ -1830,7 +1834,7 @@ syn match vim9Repeat
 
 syn match vim9Repeat /\<\%(endfor\=\|endw\%[hile]\)\>/ contained skipwhite
 
-syn match vim9TryCatch /\<\%(try\|endtry\)\>/ contained
+syn match vim9TryCatch /\<\%(try\|endtry\|finally\)\>/ contained
 syn match vim9TryCatch /\<throw\>/ contained nextgroup=@vim9ExprContains skipwhite
 syn match vim9TryCatch -\<catch\>\%(\s\+/[^/]*/\)\=- contained contains=vim9TryCatchPattern
 # Problem: A pattern can contain any text; in particular, an unbalanced paren is
@@ -2319,21 +2323,45 @@ syn region vim9LuaRegion
 
 # Errors {{{1
 
+# Discourage usage  of an  implicit line  specifier, because  it makes  the code
+# harder to read.
 if get(g:, 'vim9_syntax', {})->get('range-missing-specifier')
-    # Discourage usage  of an  implicit line  specifier, because  it makes  the code
-    # harder to read.
     syn match vim9RangeMissingSpecifier1 /[,;]/
         \ contained
         \ nextgroup=@vim9RangeContains
+
     syn match vim9RangeMissingSpecifier2 /[,;][a-zA-Z \t]\@=/
         \ contained
         \ nextgroup=@vim9CmdAllowedHere
         \ skipwhite
 endif
 
+# Warn about omitting whitespace between line specifier and command.{{{
+#
+# In addition to making the code less readable, it might confuse the syntax plugin:
+#
+#     :123delete
+#         ^----^
+#           ✘
+#         not recognized as an Ex command
+#
+#     :123 delete
+#          ^----^
+#            ✔
+#          recognized as an Ex command
+#
+# Note that this issue also affects the legacy script.
+# We could try to fix it by removing all digits from the *syntax* option 'iskeyword':
+#
+#     :syntax iskeyword @,_
+#
+# But that would cause  other issues which would require too  much extra code to
+# handle.   Indeed,  it would  break  all  the  `syn  keyword` rules  for  words
+# containing digits.   It would also change  the semantics of the  `\<` and `\>`
+# atoms in all regexes used for `syn match` and `syn region` rules.
+#}}}
 if get(g:, 'vim9_syntax', {})->get('range-missing-space')
     syn match vim9RangeMissingSpace /\S\@1<=\a/ contained
-    hi def link vim9RangeMissingSpace vim9Error
 endif
 
 # Synchronize (speed) {{{1
@@ -2499,6 +2527,7 @@ hi def link vim9Pattern Type
 hi def link vim9PlainMark vim9Mark
 hi def link vim9PlainRegister vim9Register
 hi def link vim9RangeMark Special
+hi def link vim9RangeMissingSpace vim9Error
 hi def link vim9RangeMissingSpecifier1 vim9Error
 hi def link vim9RangeMissingSpecifier2 vim9Error
 hi def link vim9RangeNumber Number
