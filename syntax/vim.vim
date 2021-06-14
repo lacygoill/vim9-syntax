@@ -189,7 +189,7 @@ syn match vim9MayBeCommand /\<\h\w*\ze\%(<bar>\|<cr>\)/
 # An Ex command might be at the start of a line.
 syn match vim9StartOfLine /^/
     \ skipwhite
-    \ nextgroup=@vim9CmdAllowedHere,vim9FuncHeader,vim9Import,vim9RangeIntroducer
+    \ nextgroup=@vim9CmdAllowedHere,vim9FuncHeader,vim9Import,vim9Export,vim9RangeIntroducer
 
 # Builtin Ex commands {{{1
 # Generic ones {{{2
@@ -281,7 +281,9 @@ exe 'syn region vim9CmdTakesExpr'
 
 # Import/Export {{{3
 
-syn match vim9Import /\<\%(import\|from\|as\|export\)\>/
+syn match vim9Export /\<export\>/ contained
+
+syn match vim9Import /\<\%(import\|from\|as\)\>/
     \ contained
     \ nextgroup=vim9ImportedItems
     \ skipwhite
@@ -2463,6 +2465,7 @@ hi def link vim9Doautocmd vim9IsCommand
 hi def link vim9EchoHL vim9IsCommand
 hi def link vim9EchoHLNone vim9Group
 hi def link vim9Error Error
+hi def link vim9Export vim9Import
 hi def link vim9FTCmd vim9IsCommand
 hi def link vim9FTOption vim9SynType
 hi def link vim9FgBgAttrib vim9HiAttrib
