@@ -83,10 +83,9 @@ var lookbehind: string
 #}}}
 
 # TODO: We  should  highlight obvious  errors  (e.g.  missing whitespace  around
-# binary operators; look for "error" at  `:h vim9`).  Usage of `:let` instead of
-# `:var` to declare a variable.
-# Also, highlight ` = ` as an error inside an expression.
-# And, highlight ` == ` as an error when used in an assignment.
+# binary operators; look for "error" at `:h vim9`).
+#
+#     var name = value# error!
 
 # TODO: Find the commands which expect a pattern as argument.
 # Highlight it as a string.
@@ -154,7 +153,7 @@ syn cluster vim9CmdAllowedHere contains=
     \,vim9CmdTakesExpr,vim9Declare,vim9Doautocmd,vim9EchoHL,vim9Filetype
     \,vim9Global,vim9Highlight,vim9Map,vim9MayBeAbbrevCmd,vim9MayBeCommand
     \,vim9Norm,vim9Set,vim9Subst,vim9Syntax,vim9Unmap,vim9UserCmdCall
-    \,vim9UserCmdDef
+    \,vim9UserCmdDef,vim9LetDeprecated
 
 syn match vim9CmdSep /|/
     \ skipwhite
@@ -1090,12 +1089,9 @@ syn match vim9Comment /\s\@1<=#.*$/ contains=@vim9CommentGroup excludenl
 
 syn match vim9Comment /^\s*#.*$/ contains=@vim9CommentGroup
 
-# In legacy Vim script, a literal dictionary starts with `#{`.
-# This syntax is no longer valid in Vim9.
-# Highlight it as an error.
-syn match vim9DictLiteralLegacyError /#{{\@!/
+# Strings {{{1
 
-# In-String Specials {{{1
+syn match vim9String /[^(,]'[^']\{-}\zs'/
 
 # Try to catch strings, if nothing else matches (therefore it must precede the others!)
 # vim9EscapeBrace handles ["]  []"] (ie. "s don't terminate string inside [])
@@ -1325,10 +1321,6 @@ syn match vim9SubstSubstr /\\z\=\d/ contained
 syn match vim9SubstTwoBS /\\\\/ contained
 syn match vim9SubstFlagErr /[^< \t\r|]\+/ contained contains=vim9SubstFlags
 syn match vim9SubstFlags /[&cegiIlnpr#]\+/ contained
-
-# 'String' {{{1
-
-syn match vim9String /[^(,]'[^']\{-}\zs'/
 
 # Filters {{{1
 
@@ -1577,7 +1569,7 @@ syn match vim9MapRhsExtendExpr /^\s*\\.*$/
     \ contained
     \ contains=@vim9ExprContains,vim9Continue
 
-# User Function Highlighting {{{1
+# User Function Call {{{1
 
 # call to any kind of function (builtin + custom)
 exe 'syn match vim9CallFuncName '
@@ -1624,7 +1616,7 @@ exe 'syn match vim9UserCallFuncName '
     .. ' contained'
     .. ' contains=vim9Notation'
 
-# User Command Highlighting {{{1
+# User Command Call {{{1
 
 exe 'syn match vim9UserCmdCall '
     .. '"\u\%(\w*\)\@>'
@@ -1856,8 +1848,9 @@ syn match vim9TryCatchPatternDelim +/+ contained
 
 # Norm {{{1
 
-syn match vim9Norm /\<norm\%[al]\>/ nextgroup=vim9NormCmds skipwhite
-syn match vim9Norm /\<norm\%[al]\>!/he=e-1 nextgroup=vim9NormCmds skipwhite
+syn match vim9Norm /\<norm\%[al]\>/ nextgroup=vim9NormCmds contained skipwhite
+syn match vim9Norm /\<norm\%[al]\>!/he=e-1 nextgroup=vim9NormCmds contained skipwhite
+
 # in a mapping, stop before the `<cr>` which executes `:norm`
 syn region vim9NormCmds start=/./ end=/$\|\ze<cr>/ contained oneline
 
@@ -2324,6 +2317,13 @@ syn region vim9LuaRegion
 
 # Errors {{{1
 
+# `:let` is deprecated.
+syn keyword vim9LetDeprecated let contained
+
+# In legacy Vim script, a literal dictionary starts with `#{`.
+# This syntax is no longer valid in Vim9.
+syn match vim9DictLiteralLegacyError /#{{\@!/
+
 # Discourage usage  of an  implicit line  specifier, because  it makes  the code
 # harder to read.
 if get(g:, 'vim9_syntax', {})->get('range-missing-specifier')
@@ -2497,6 +2497,7 @@ hi def link vim9IsAbbrevCmd vim9IsCommand
 hi def link vim9IsOption PreProc
 hi def link vim9IskSep Delimiter
 hi def link vim9LambdaArrow Type
+hi def link vim9LetDeprecated vim9Error
 # NOTE: I think it's important to highlight the declaration commands differently
 # than other regular Ex commands.  They are more important/special in Vim9.
 hi def link vim9LineComment vim9Comment

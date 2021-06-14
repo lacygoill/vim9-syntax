@@ -36,6 +36,7 @@ const DEPRECATED_CMDS: list<string> =<< trim END
     change
     insert
     k
+    let
     open
     t
 END
