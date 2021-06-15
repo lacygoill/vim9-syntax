@@ -84,9 +84,6 @@ var lookbehind: string
 
 # TODO: We should highlight obvious errors.
 #
-#     Numbers starting with zero are not considered to be octal, only numbers
-#     starting with "0o" are octal: "0o744". |scriptversion-4|
-#
 #     Unfortunately this means using "() => {  command  }" does not work, line
 #     breaks are always required.
 #
@@ -1186,35 +1183,19 @@ syn match vim9StringCont /\%(\\\\\|.\)\{-}[^\\]"/ contained
 
 # Numbers {{{1
 
-syn match vim9Number /\<\d\+\%(\.\d\+\%([eE][+-]\=\d\+\)\=\)\=/
+syn match vim9Number /\<\d\+\%(\.\d\+\%([eE][+-]\=\d\+\)\=\)\=\>/
     \ nextgroup=vim9Comment
     \ skipwhite
 
-syn match vim9Number /-\d\+\%(\.\d\+\%([eE][+-]\=\d\+\)\=\)\=/
+syn match vim9Number /-\d\+\%(\.\d\+\%([eE][+-]\=\d\+\)\=\)\=\>/
     \ nextgroup=vim9Comment
     \ skipwhite
 
-syn match vim9Number /\<0[xX]\x\+/
-    \ nextgroup=vim9Comment
-    \ skipwhite
-
-syn match vim9Number /\%(^\|\A\)\zs#\x\{6}/
-    \ nextgroup=vim9Comment
-    \ skipwhite
-
-syn match vim9Number /\<0[zZ][a-zA-Z0-9.]\+/
-    \ nextgroup=vim9Comment
-    \ skipwhite
-
-# TODO: Why no `\<`?
-syn match vim9Number /0o[0-7]\+/
-    \ nextgroup=vim9Comment
-    \ skipwhite
-
-# TODO: Why no `\<`?
-syn match vim9Number /0b[01]\+/
-    \ nextgroup=vim9Comment
-    \ skipwhite
+syn match vim9Number /\<0[xX]\x\+\>/ nextgroup=vim9Comment skipwhite
+syn match vim9Number /\%(^\|\A\)\zs#\x\{6}\>/ nextgroup=vim9Comment skipwhite
+syn match vim9Number /\<0[zZ][a-zA-Z0-9.]\+\>/ nextgroup=vim9Comment skipwhite
+syn match vim9Number /\<0o[0-7]\+\>/ nextgroup=vim9Comment skipwhite
+syn match vim9Number /\<0b[01]\+\>/ nextgroup=vim9Comment skipwhite
 
 # It is possible to use single quotes inside numbers to make them easier to read:{{{
 #
@@ -1222,9 +1203,7 @@ syn match vim9Number /0b[01]\+/
 #
 # Highlight them as part of a number.
 #}}}
-syn match vim9Number /\d\@1<='\d\@=/
-    \ nextgroup=vim9Comment
-    \ skipwhite
+syn match vim9Number /\d\@1<='\d\@=/ nextgroup=vim9Comment skipwhite
 
 # Substitutions {{{1
 
@@ -2434,6 +2413,27 @@ endif
 #}}}
 if get(g:, 'vim9_syntax', {})->get('range_missing_space')
     syn match vim9RangeMissingSpace /\S\@1<=\a/ contained
+endif
+
+# Warn about missing `o` in `0o` prefix in octal number.{{{
+#
+#    > Numbers starting with zero are not considered to be octal, only numbers
+#    > starting with "0o" are octal: "0o744". |scriptversion-4|
+#
+# We don't  could install a  rule to  highlight the number  as an error,  but it
+# would not  work everywhere  (e.g. in  an `:echo`).  We  would need  to include
+# this  new group  in  other regions/matches.   It's simpler  to  just stop  the
+# highlighting at the `0`.
+#
+#           not highlighted
+#           vvv
+#     echo 0765
+#     var name = 0765
+#                 ^^^
+#                 not highlighted
+#}}}
+if get(g:, 'vim9_syntax', {})->get('octal_missing_o')
+    syn match vim9Number /\<0[0-7]\+\>/he=s+1 nextgroup=vim9Comment skipwhite
 endif
 
 # Synchronize (speed) {{{1
