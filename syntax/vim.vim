@@ -82,14 +82,6 @@ var lookbehind: string
 #     ~/.vim/pack/mine/opt/doc/autoload/doc/mapping.vim
 #}}}
 
-# TODO: We should highlight obvious errors.
-#
-#     Unfortunately this means using "() => {  command  }" does not work, line
-#     breaks are always required.
-#
-#     White space is required in a sublist (list slice) around the ":", except at
-#     the start and end
-
 # TODO: Find the commands which expect a pattern as argument.
 # Highlight it as a string.
 #
@@ -977,6 +969,8 @@ syn match vim9FuncBlank /\s\+/ contained
 syn keyword vim9Pattern start skip end contained
 
 syn match vim9LambdaArrow /\s\@1<==>\_s\@=/
+    \ nextgroup=vim9DictMissingParen
+    \ skipwhite
 
 # block at script-level, function-level, or inside lambda
 syn region vim9Block
@@ -2344,6 +2338,36 @@ syn keyword vim9ReservedNames true false null this contained
 # This syntax is no longer valid in Vim9.
 syn match vim9DictLiteralLegacyDeprecated /#{{\@!/
 
+# In a lambda, a dictionary must be surrounded by parens.{{{
+#
+#                     ✘
+#                     v
+#     var Ref = () => {}
+#     var Ref = () => ({})
+#                     ^
+#                     ✔
+#
+# ---
+#
+# This can also warn us about of block which is not correctly broken after `{`:
+#
+#                     ✘
+#                     v
+#     var Ref = () => { command  }
+#
+#                     ✔
+#                     v
+#     var Ref = () => {
+#         command
+#     }
+#
+# From `:h inline-function`:
+#
+#    > Unfortunately this means using "() => {  command  }" does not work, line
+#    > breaks are always required.
+#}}}
+syn match vim9DictMissingParen /{/ contained
+
 # Declaring more than one variable at a  time, using the unpack notation, is not
 # supported.  See `:h E1092`.
 syn region vim9ListUnpackDeclaration
@@ -2426,12 +2450,12 @@ endif
 # this  new group  in  other regions/matches.   It's simpler  to  just stop  the
 # highlighting at the `0`.
 #
-#           not highlighted
+#           do not highlight
 #           vvv
 #     echo 0765
-#     var name = 0765
-#                 ^^^
-#                 not highlighted
+#     echo 0o765
+#          ^---^
+#          *do* highlight
 #}}}
 if get(g:, 'vim9_syntax', {})->get('octal_missing_o')
     syn match vim9Number /\<0[0-7]\+\>/he=s+1 nextgroup=vim9Comment skipwhite
@@ -2533,6 +2557,7 @@ hi def link vim9DictIsLiteralKey String
 hi def link vim9DictKey String
 hi def link vim9DictLiteralLegacyDeprecated vim9Error
 hi def link vim9DictMayBeLiteralKey vim9Error
+hi def link vim9DictMissingParen vim9Error
 hi def link vim9Doautocmd vim9IsCommand
 hi def link vim9EchoHL vim9IsCommand
 hi def link vim9EchoHLNone vim9Group
@@ -2567,7 +2592,7 @@ hi def link vim9Import Include
 hi def link vim9IsAbbrevCmd vim9IsCommand
 hi def link vim9IsOption PreProc
 hi def link vim9IskSep Delimiter
-hi def link vim9LambdaArrow Type
+hi def link vim9LambdaArrow vim9Sep
 hi def link vim9LetDeprecated vim9Error
 # NOTE: I think it's important to highlight the declaration commands differently
 # than other regular Ex commands.  They are more important/special in Vim9.
