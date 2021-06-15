@@ -84,10 +84,6 @@ var lookbehind: string
 
 # TODO: We should highlight obvious errors.
 #
-#     var name=234	# Error!
-#     var name= 234	# Error!
-#     var name =234	# Error!
-#     var name = 234# Error!
 #     Func (arg)	   # Error!
 #
 #     Numbers starting with zero are not considered to be octal, only numbers
@@ -95,8 +91,6 @@ var lookbehind: string
 #
 #     Unfortunately this means using "() => {  command  }" does not work, line
 #     breaks are always required.
-#
-#     White space is required around most operators.
 #
 #     White space is required in a sublist (list slice) around the ":", except at
 #     the start and end
@@ -324,7 +318,7 @@ syn match vim9EchoHL /\<echohl\>/
     \ skipwhite
 
 syn case ignore
-syn keyword vim9EchoHLNone none
+syn keyword vim9EchoHLNone none contained
 syn case match
 #}}}1
 # Range {{{1
@@ -423,7 +417,8 @@ exe 'syn match vim9MayBeOptionScoped '
     ..     option_name
     .. '/'
     .. ' contains=vim9IsOption,vim9OptionSigil'
-    .. ' nextgroup=vim9SetEqual'
+    # `vim9SetEqual` would be wrong here; we need spaces around `=`
+    .. ' nextgroup=vim9OperAssign'
 
 exe 'syn match vim9MayBeOptionSet '
     .. '/'
@@ -618,7 +613,7 @@ syn cluster vim9CommentGroup contains=
 syn keyword vim9Declare cons[t] final unl[et] var
     \ contained
     \ skipwhite
-    \ nextgroup=vim9ReservedNames,vim9ListUnpackDeclaration
+    \ nextgroup=vim9ListUnpackDeclaration,vim9ReservedNames
 
 # NOTE: In the default syntax plugin, `vimLetHereDoc` contains `vimComment` and `vim9Comment`.{{{
 #
@@ -633,17 +628,19 @@ syn keyword vim9Declare cons[t] final unl[et] var
 #}}}
 syn region vim9HereDoc
     \ matchgroup=vim9Declare
-    \ start=/=<<\s\+\%(trim\>\)\=\s*\z(\L\S*\)/
+    \ start=/\s\@1<==<<\s\+\%(trim\>\)\=\s*\z(\L\S*\)/
     \ end=/^\s*\z1$/
 
 syn match vim9EnvVar /\$[A-Z_][A-Z0-9_]*/
 
-# Booleans / Null {{{1
+# Booleans / null / v:none {{{1
 
 # Even though `v:` is useless in Vim9, we  still need it in a mapping; because a
 # mapping is run in the legacy context, even when installed from a Vim9 script.
 syn match vim9Bool /\%(v:\)\=\<\%(false\|true\)\>:\@!/
 syn match vim9Null /\%(v:\)\=\<null\>:\@!/
+
+syn match vim9None /v:\<none\>:\@!/
 
 # Highlight commonly used Groupnames {{{1
 
@@ -713,7 +710,7 @@ syn keyword vim9FTOption detect indent off on plugin contained
 
 syn cluster vim9ExprContains contains=
     \vim9Bool,vim9CallFuncName,vim9DataTypeCast,vim9Dict,vim9EnvVar,vim9List
-    \,vim9MayBeOptionScoped,vim9Null,vim9Number,vim9Oper,vim9OperParen
+    \,vim9MayBeOptionScoped,vim9None,vim9Null,vim9Number,vim9Oper,vim9OperParen
     \,vim9String
 
 # `vim9LineComment` needs to be in `@vim9OperGroup`.{{{
@@ -726,7 +723,7 @@ syn cluster vim9OperGroup contains=
     \,vim9DataTypeCastComposite,vim9DataTypeCompositeLeadingColon
     \,vim9LineComment,vim9Oper,vim9OperAssign,vim9OperParen
 
-syn match vim9Oper "\s\@1<=\%([-+*/%!]\|\.\.\|==\|!=\|>=\|<=\|=\~\|!\~\|>\|<\)[?#]\{0,2}\_s\@="
+syn match vim9Oper "\s\@1<=\%([-+*/%!]\|\.\.\|==\|!=\|>=\|<=\|=\~\|!\~\|>\|<\)[?#]\=\_s\@="
     \ display
     \ nextgroup=vim9Bool,vim9SpecFile,vim9String
     \ skipwhite
@@ -945,13 +942,18 @@ exe 'syn match vim9FuncHeader'
     .. ' contains=@vim9FuncList'
     .. ' nextgroup=vim9FuncBody'
 
+# Do not use `keepend`.{{{
+#
+# If there is a  heredoc in your function, and it contains  an `enddef` line, it
+# would wrongly end there.  If you need  `keepend`, then, try to use `extend` in
+# the rule handling the heredocs.
+#}}}
 syn region vim9FuncBody
     \ start=/(/
     \ matchgroup=vim9DefKey
     \ end=/^\s*enddef$/
     \ contains=@vim9FuncBodyContains
     \ contained
-    \ keepend
 
 syn match vim9Args /\<\h[a-zA-Z0-9#_]*\%(:\s\|\s\+=\s\)\@=/ contained
 # special case: variable arguments
@@ -2330,6 +2332,18 @@ syn region vim9LuaRegion
 
 # Errors {{{1
 
+# We don't highlight a missing whitespace around an assignment operator:{{{
+#
+#     var name=123     # Error!
+#     var name= 123    # Error!
+#     var name =123    # Error!
+#
+# Because it's not syntax highlighted in those cases.
+#
+# Besides, handling  all the cases  (after a variable name,  after a type,  in a
+# heredoc, ...) would probably require many more rules.
+#}}}
+
 # `:let` is deprecated.
 syn keyword vim9LetDeprecated let contained
 
@@ -2355,9 +2369,20 @@ syn region vim9ListUnpackDeclaration
     \ oneline
     \ start=/\[/
 
+#                   need a space before
+#                   v
+#     var name = 123# Error!
+syn region vim9Comment
+    \ matchgroup=vim9Error
+    \ start=/\S\@1<=#/
+    \ end=/$/
+    \ contains=@vim9CommentGroup
+    \ excludenl
+    \ oneline
+
 # Discourage usage  of an  implicit line  specifier, because  it makes  the code
 # harder to read.
-if get(g:, 'vim9_syntax', {})->get('range-missing-specifier')
+if get(g:, 'vim9_syntax', {})->get('range_missing_specifier')
     syn match vim9RangeMissingSpecifier1 /[,;]/
         \ contained
         \ nextgroup=@vim9RangeContains
@@ -2392,7 +2417,7 @@ endif
 # containing digits.   It would also change  the semantics of the  `\<` and `\>`
 # atoms in all regexes used for `syn match` and `syn region` rules.
 #}}}
-if get(g:, 'vim9_syntax', {})->get('range-missing-space')
+if get(g:, 'vim9_syntax', {})->get('range_missing_space')
     syn match vim9RangeMissingSpace /\S\@1<=\a/ contained
 endif
 
@@ -2538,6 +2563,7 @@ hi def link vim9MapMod vim9Bracket
 hi def link vim9MapModExpr vim9MapMod
 hi def link vim9MapModKey vim9FuncScope
 hi def link vim9MtchComment vim9Comment
+hi def link vim9None Constant
 hi def link vim9Norm vim9IsCommand
 hi def link vim9NormCmds String
 hi def link vim9NotPatSep vim9String
