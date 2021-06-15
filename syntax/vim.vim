@@ -2339,9 +2339,15 @@ syn region vim9LuaRegion
 #     var name =123    # Error!
 #
 # Because it's not syntax highlighted in those cases.
+# The  absence of  highlighting should  serve as  a good  enough warning  to the
+# user  (provided their  color scheme  highlights assignment  operators with  an
+# easy-to-notice color).
 #
 # Besides, handling  all the cases  (after a variable name,  after a type,  in a
 # heredoc, ...) would probably require many more rules.
+# And, to  be consistent, we would  need to also handle  other binary operators,
+# like the arithmetic ones.  But this  would require we first parse expressions,
+# which would open a can of worms.
 #}}}
 
 # `:let` is deprecated.
