@@ -84,8 +84,6 @@ var lookbehind: string
 
 # TODO: We should highlight obvious errors.
 #
-#     Func (arg)	   # Error!
-#
 #     Numbers starting with zero are not considered to be octal, only numbers
 #     starting with "0o" are octal: "0o744". |scriptversion-4|
 #
@@ -1703,6 +1701,7 @@ exe 'syn match vim9UserCmdCall '
     .. '\|' .. '\%(\s*->\|:\)'
     .. '\)\@!"'
     .. ' contained'
+    .. ' nextgroup=vim9ExtraSpaceAfterFuncname'
 
 # Data Types {{{1
 
@@ -2385,6 +2384,16 @@ syn region vim9Comment
     \ contains=@vim9CommentGroup
     \ excludenl
     \ oneline
+
+#         ✘
+#         v
+#     Func (arg)
+syn region vim9ExtraSpaceAfterFuncname
+    \ matchgroup=vim9Error
+    \ start=/\s\+(/
+    \ matchgroup=vim9ParenSep
+    \ end=/)/
+    \ contains=@vim9OperGroup
 
 # Discourage usage  of an  implicit line  specifier, because  it makes  the code
 # harder to read.
