@@ -87,6 +87,19 @@ var lookbehind: string
 # That's wrong.
 # Fix this.
 
+# TODO: Consider this highlighting:
+#
+#             v-------v
+#     augroup MyAugroup
+#     ...
+#     augroup END
+#             ^^^
+#
+# Highlight both of these tokens with `vim9AutocmdGroup`.
+# Rationale: More consistent (we  already highlight the name of  an augroup with
+# this rule in an `:au` command), and symmetrical (the arguments in the starting
+# and ending commands would be highlighted in the same way).
+
 # TODO: Find the commands which expect a pattern as argument.
 # Highlight it as a string.
 #
