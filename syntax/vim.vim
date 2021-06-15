@@ -2458,7 +2458,16 @@ endif
 #          *do* highlight
 #}}}
 if get(g:, 'vim9_syntax', {})->get('octal_missing_o')
-    syn match vim9Number /\<0[0-7]\+\>/he=s+1 nextgroup=vim9Comment skipwhite
+    # The  negative lookbehind  is necessary  to  ignore big  numbers which  are{{{
+    # written with quotes to be more readable:
+    #
+    #     1'076
+    #       ^^^
+    #
+    # Here, `076` is not a badly written octal number.
+    # There is no reason to stop the highlighting at `0`.
+    #}}}
+    syn match vim9Number /\%(\d'\)\@2<!\<0[0-7]\+\>/he=s+1 nextgroup=vim9Comment skipwhite
 endif
 
 # Synchronize (speed) {{{1
