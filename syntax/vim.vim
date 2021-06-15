@@ -82,6 +82,11 @@ var lookbehind: string
 #     ~/.vim/pack/mine/opt/doc/autoload/doc/mapping.vim
 #}}}
 
+# TODO: We've messed up `:com`.
+# Everything is highlighted as a statement.
+# That's wrong.
+# Fix this.
+
 # TODO: Find the commands which expect a pattern as argument.
 # Highlight it as a string.
 #
