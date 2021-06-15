@@ -640,7 +640,7 @@ syn match vim9EnvVar /\$[A-Z_][A-Z0-9_]*/
 syn match vim9Bool /\%(v:\)\=\<\%(false\|true\)\>:\@!/
 syn match vim9Null /\%(v:\)\=\<null\>:\@!/
 
-syn match vim9None /v:\<none\>:\@!/
+syn match vim9None /\<v:none\>:\@!/
 
 # Highlight commonly used Groupnames {{{1
 
