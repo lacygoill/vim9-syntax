@@ -2373,6 +2373,7 @@ syn region vim9ExtraSpaceAfterFuncname
     \ matchgroup=vim9ParenSep
     \ end=/)/
     \ contains=@vim9OperGroup
+    \ contained
 
 # Discourage usage  of an  implicit line  specifier, because  it makes  the code
 # harder to read.
