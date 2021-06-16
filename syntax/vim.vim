@@ -175,11 +175,28 @@ var lookbehind: string
 # removed `vim9CallFuncName`.   We shouldn't have,  because a function  call can
 # appear in many places, including in the middle of an expression.
 syn cluster vim9CmdAllowedHere contains=
-    \@vim9ControlFlow,vim9Autocmd,vim9CallFuncName,vim9CmdModifier
-    \,vim9CmdTakesExpr,vim9Declare,vim9Doautocmd,vim9EchoHL,vim9Filetype
-    \,vim9Global,vim9Highlight,vim9Map,vim9MayBeAbbrevCmd,vim9MayBeCommand
-    \,vim9Norm,vim9Set,vim9Subst,vim9Syntax,vim9Unmap,vim9UserCmdCall
-    \,vim9UserCmdDef,vim9LetDeprecated
+    \ @vim9ControlFlow,
+    \ vim9Autocmd,
+    \ vim9CallFuncName,
+    \ vim9CmdModifier,
+    \ vim9CmdTakesExpr,
+    \ vim9Declare,
+    \ vim9Doautocmd,
+    \ vim9EchoHL,
+    \ vim9Filetype,
+    \ vim9Global,
+    \ vim9Highlight,
+    \ vim9LetDeprecated,
+    \ vim9Map,
+    \ vim9MayBeAbbrevCmd,
+    \ vim9MayBeCommand,
+    \ vim9Norm,
+    \ vim9Set,
+    \ vim9Subst,
+    \ vim9Syntax,
+    \ vim9Unmap,
+    \ vim9UserCmdCall,
+    \ vim9UserCmdDef
 
 syn match vim9CmdSep /|/
     \ skipwhite
@@ -354,8 +371,13 @@ syn case match
 # Range {{{1
 
 syn cluster vim9RangeContains contains=
-    \vim9RangeDelimiter,vim9RangeMark,vim9RangeMissingSpecifier2,vim9RangeNumber
-    \,vim9RangeOffset,vim9RangePattern,vim9RangeSpecialChar
+    \ vim9RangeDelimiter,
+    \ vim9RangeMark,
+    \ vim9RangeMissingSpecifier2,
+    \ vim9RangeNumber,
+    \ vim9RangeOffset,
+    \ vim9RangePattern,
+    \ vim9RangeSpecialChar
 
 # Make sure there is nothing before, to avoid a wrong match in sth like:
 #     g:name = 'value'
@@ -522,14 +544,44 @@ syn match vim9SetNumberValue /\d\+\_s\@=/
 # `:augroup` {{{2
 
 syn cluster vim9AugroupList contains=
-    \@vim9DataTypeCluster,vim9Address,vim9Augroup,vim9BacktickExpansion
-    \,vim9BacktickExpansionVimExpr,vim9Block,vim9Bool,vim9CallFuncName
-    \,vim9CmdModifier,vim9CmdSep,vim9Comment,vim9ComplexRepeat,vim9Conditional
-    \,vim9Continue,vim9CtrlChar,vim9Declare,vim9Dict,vim9EnvVar,vim9FuncHeader
-    \,vim9HereDoc,vim9LegacyFunction,vim9Map,vim9MayBeOptionScoped,vim9Notation
-    \,vim9Number,vim9Oper,vim9OperAssign,vim9OperParen,vim9Region,vim9Repeat
-    \,vim9Return,vim9Set,vim9SpecFile,vim9StartOfLine,vim9String,vim9Subst
-    \,vim9SynLine,vim9UserCmdDef
+    \ @vim9DataTypeCluster,
+    \ vim9Address,
+    \ vim9Augroup,
+    \ vim9BacktickExpansion,
+    \ vim9BacktickExpansionVimExpr,
+    \ vim9Block,
+    \ vim9Bool,
+    \ vim9CallFuncName,
+    \ vim9CmdModifier,
+    \ vim9CmdSep,
+    \ vim9Comment,
+    \ vim9ComplexRepeat,
+    \ vim9Conditional,
+    \ vim9Continue,
+    \ vim9CtrlChar,
+    \ vim9Declare,
+    \ vim9Dict,
+    \ vim9EnvVar,
+    \ vim9FuncHeader,
+    \ vim9HereDoc,
+    \ vim9LegacyFunction,
+    \ vim9Map,
+    \ vim9MayBeOptionScoped,
+    \ vim9Notation,
+    \ vim9Number,
+    \ vim9Oper,
+    \ vim9OperAssign,
+    \ vim9OperParen,
+    \ vim9Region,
+    \ vim9Repeat,
+    \ vim9Return,
+    \ vim9Set,
+    \ vim9SpecFile,
+    \ vim9StartOfLine,
+    \ vim9String,
+    \ vim9Subst,
+    \ vim9SynLine,
+    \ vim9UserCmdDef
 
 # Actually, the case of `END` does not matter.{{{
 #
@@ -555,9 +607,13 @@ syn region vim9Augroup
 # :au[tocmd] [group] {event} {pat} [++once] [++nested] {cmd}
 syn match vim9Autocmd /\<au\%[tocmd]\>\%(\s*\w\)\@=/
     \ contained
-    \ nextgroup=vim9AutocmdAllEvents,vim9AutocmdEventBadCase
-    \,vim9AutocmdEventGoodCase,vim9AutocmdGroup,vim9AutocmdMod
     \ skipwhite
+    \ nextgroup=
+    \     vim9AutocmdAllEvents,
+    \     vim9AutocmdEventBadCase,
+    \     vim9AutocmdEventGoodCase,
+    \     vim9AutocmdGroup,
+    \     vim9AutocmdMod
 # The positive  lookahead prevents  a variable named  `auto` from  being wrongly
 # highlighted as a command in an assignment or a computation.
 
@@ -565,9 +621,12 @@ syn match vim9Autocmd /\<au\%[tocmd]\>\%(\s*\w\)\@=/
 # :au[tocmd]! ...
 syn match vim9Autocmd /\<au\%[tocmd]\>!/he=e-1
     \ contained
-    \ nextgroup=vim9AutocmdAllEvents,vim9AutocmdEventBadCase
-    \,vim9AutocmdEventGoodCase,vim9AutocmdGroup
     \ skipwhite
+    \ nextgroup=
+    \     vim9AutocmdAllEvents,
+    \     vim9AutocmdEventBadCase,
+    \     vim9AutocmdEventGoodCase,
+    \     vim9AutocmdGroup
 
 # The trailing whitespace is useful to prevent a correct but still noisy/useless
 # match when we simply clear an augroup.
@@ -623,20 +682,29 @@ syn match vim9AutocmdEndOfEventList /,\%(\a\+,\)*\a\+/
 syn match vim9Doautocmd /\<\%(do\%[autocmd]\|doautoa\%[ll]\)\>/
     \ contained
     \ skipwhite
-    \ nextgroup=vim9AutocmdEventBadCase,vim9AutocmdEventGoodCase
-    \,vim9AutocmdGroup,vim9AutocmdMod
+    \ nextgroup=
+    \     vim9AutocmdEventBadCase,
+    \     vim9AutocmdEventGoodCase,
+    \     vim9AutocmdGroup,
+    \     vim9AutocmdMod
 
 syn match vim9AutocmdMod /<nomodeline>/
-    \ nextgroup=vim9AutocmdEventBadCase,vim9AutocmdEventGoodCase,vim9AutocmdGroup
     \ skipwhite
+    \ nextgroup=
+    \     vim9AutocmdEventBadCase,
+    \     vim9AutocmdEventGoodCase,
+    \     vim9AutocmdGroup
 #}}}1
 # vim9Todo: contains common special-notices for comments {{{1
 # Use the `vim9CommentGroup` cluster to add your own.
 
 syn keyword vim9Todo FIXME TODO contained
 syn cluster vim9CommentGroup contains=
-    \@Spell,vim9CommentString,vim9CommentTitle,vim9DictLiteralLegacyDeprecated
-    \,vim9Todo
+    \ @Spell,
+    \ vim9CommentString,
+    \ vim9CommentTitle,
+    \ vim9DictLiteralLegacyDeprecated,
+    \ vim9Todo
 
 # Declarations {{{1
 
@@ -739,9 +807,20 @@ syn keyword vim9FTOption detect indent off on plugin contained
 # Operators {{{1
 
 syn cluster vim9ExprContains contains=
-    \vim9Bool,vim9CallFuncName,vim9DataTypeCast,vim9Dict,vim9EnvVar,vim9List
-    \,vim9MayBeOptionScoped,vim9None,vim9Null,vim9Number,vim9Oper,vim9OperParen
-    \,vim9String
+    \ vim9Bool,
+    \ vim9CallFuncName,
+    \ vim9DataTypeCast,
+    \ vim9Dict,
+    \ vim9EnvVar,
+    \ vim9LambdaArrow,
+    \ vim9List,
+    \ vim9MayBeOptionScoped,
+    \ vim9None,
+    \ vim9Null,
+    \ vim9Number,
+    \ vim9Oper,
+    \ vim9OperParen,
+    \ vim9String
 
 # `vim9LineComment` needs to be in `@vim9OperGroup`.{{{
 #
@@ -749,9 +828,17 @@ syn cluster vim9ExprContains contains=
 # dictionary inside a function.
 #}}}
 syn cluster vim9OperGroup contains=
-    \@vim9ExprContains,vim9Comment,vim9Continue,vim9DataType,vim9DataTypeCast
-    \,vim9DataTypeCastComposite,vim9DataTypeCompositeLeadingColon
-    \,vim9LineComment,vim9Oper,vim9OperAssign,vim9OperParen
+    \ @vim9ExprContains,
+    \ vim9Comment,
+    \ vim9Continue,
+    \ vim9DataType,
+    \ vim9DataTypeCast,
+    \ vim9DataTypeCastComposite,
+    \ vim9DataTypeCompositeLeadingColon,
+    \ vim9LineComment,
+    \ vim9Oper,
+    \ vim9OperAssign,
+    \ vim9OperParen
 
 syn match vim9Oper "\s\@1<=\%([-+*/%!]\|\.\.\|==\|!=\|>=\|<=\|=\~\|!\~\|>\|<\)[?#]\=\_s\@="
     \ display
@@ -870,9 +957,14 @@ syn region vim9OperParen
     \ matchgroup=vim9ParenSep
     \ start=/(/
     \ end=/)/
-    \ contains=@vim9OperGroup,vim9Args,vim9Block,vim9LambdaArrow
-    \,vim9ExtraSpaceBetweenArgs,vim9MayBeOptionScoped
-    \,vim9MissingSpaceBetweenArgs
+    \ contains=
+    \     @vim9OperGroup,
+    \     vim9Args,
+    \     vim9Block,
+    \     vim9LambdaArrow,
+    \     vim9MayBeOptionScoped,
+    \     vim9SpaceExtraBetweenArgs,
+    \     vim9SpaceMissingBetweenArgs
 
 syn match vim9OperError /)/
 
@@ -895,9 +987,7 @@ syn region vim9Dict
     \ matchgroup=vim9Sep
     \ start=/{/
     \ end=/}/
-    \ contains=
-    \@vim9OperGroup,vim9DictExprKey,vim9DictMayBeLiteralKey,vim9LambdaArrow
-    \,vim9MayBeOptionScoped
+    \ contains=@vim9OperGroup,vim9DictExprKey,vim9DictMayBeLiteralKey
 
 # in literal dictionary, highlight keys as strings
 syn match vim9DictMayBeLiteralKey /\%(^\|[ \t{]\)\@1<=[^ {(]\+\ze\%(:\s\)\@=/
@@ -950,16 +1040,48 @@ syn cluster vim9FuncList contains=vim9DefKey,vim9FuncScope
 # which can appear after `:syntax` (e.g. `match`, `cluster`, `include`, ...).
 #}}}
 syn cluster vim9FuncBodyContains contains=
-    \vim9Address,vim9Augroup,vim9BacktickExpansion,vim9BacktickExpansionVimExpr
-    \,vim9Block,vim9Bool,vim9CallFuncName,vim9CmdSep,vim9Comment
-    \,vim9ComplexRepeat,vim9Continue,vim9CtrlChar,vim9DataType,vim9DataTypeCast
-    \,vim9DataTypeCastComposite,vim9DataTypeCompositeLeadingColon,vim9Dict
-    \,vim9EnvVar,vim9FuncHeader,vim9GroupAdd,vim9GroupRem,vim9HereDoc,vim9HiLink
-    \,vim9LambdaArrow,vim9LegacyFunction,vim9LineComment,vim9LuaRegion
-    \,vim9MayBeOptionScoped,vim9Notation,vim9Null,vim9Number,vim9Oper
-    \,vim9OperAssign,vim9OperParen,vim9PythonRegion,vim9RangeIntroducer
-    \,vim9Region,vim9SpecFile,vim9StartOfLine,vim9String,vim9SynLine
-    \,vim9SynMtchGroup
+    \ vim9Address,
+    \ vim9Augroup,
+    \ vim9BacktickExpansion,
+    \ vim9BacktickExpansionVimExpr,
+    \ vim9Block,
+    \ vim9Bool,
+    \ vim9CallFuncName,
+    \ vim9CmdSep,
+    \ vim9Comment,
+    \ vim9ComplexRepeat,
+    \ vim9Continue,
+    \ vim9CtrlChar,
+    \ vim9DataType,
+    \ vim9DataTypeCast,
+    \ vim9DataTypeCastComposite,
+    \ vim9DataTypeCompositeLeadingColon,
+    \ vim9Dict,
+    \ vim9EnvVar,
+    \ vim9FuncHeader,
+    \ vim9GroupAdd,
+    \ vim9GroupRem,
+    \ vim9HereDoc,
+    \ vim9HiLink,
+    \ vim9LambdaArrow,
+    \ vim9LegacyFunction,
+    \ vim9LineComment,
+    \ vim9LuaRegion,
+    \ vim9MayBeOptionScoped,
+    \ vim9Notation,
+    \ vim9Null,
+    \ vim9Number,
+    \ vim9Oper,
+    \ vim9OperAssign,
+    \ vim9OperParen,
+    \ vim9PythonRegion,
+    \ vim9RangeIntroducer,
+    \ vim9Region,
+    \ vim9SpecFile,
+    \ vim9StartOfLine,
+    \ vim9String,
+    \ vim9SynLine,
+    \ vim9SynMtchGroup
 # TODO: Make sure no special command/keyword is wrongly highlighted when used as
 # a variable name.  If necessary, remove some syntax groups from this cluster.
 
@@ -1013,7 +1135,7 @@ syn match vim9FuncBlank /\s\+/ contained
 syn keyword vim9Pattern start skip end contained
 
 syn match vim9LambdaArrow /\s\@1<==>\_s\@=/
-    \ nextgroup=vim9DictMissingParen
+    \ nextgroup=vim9LambdaDictMissingParen
     \ skipwhite
 
 # block at script-level, function-level, or inside lambda
@@ -1060,11 +1182,30 @@ syn match vim9SpecFileMod /\%(:[phtreS]\)\+/ contained
 # User-Specified Commands {{{1
 
 syn cluster vim9UserCmdList contains=
-    \vim9Address,vim9Autocmd,vim9BuiltinFuncName,vim9CallFuncName,vim9Comment
-    \,vim9ComplexRepeat,vim9CtrlChar,vim9Declare,vim9EscapeBrace,vim9FuncHeader
-    \,vim9Highlight,vim9LegacyFunction,vim9Notation,vim9Number,vim9Oper
-    \,vim9Region,vim9Set,vim9SpecFile,vim9String,vim9Subst,vim9SubstRange
-    \,vim9SubstRep,vim9SynLine,vim9Syntax
+    \ vim9Address,
+    \ vim9Autocmd,
+    \ vim9BuiltinFuncName,
+    \ vim9CallFuncName,
+    \ vim9Comment,
+    \ vim9ComplexRepeat,
+    \ vim9CtrlChar,
+    \ vim9Declare,
+    \ vim9EscapeBrace,
+    \ vim9FuncHeader,
+    \ vim9Highlight,
+    \ vim9LegacyFunction,
+    \ vim9Notation,
+    \ vim9Number,
+    \ vim9Oper,
+    \ vim9Region,
+    \ vim9Set,
+    \ vim9SpecFile,
+    \ vim9String,
+    \ vim9Subst,
+    \ vim9SubstRange,
+    \ vim9SubstRep,
+    \ vim9SynLine,
+    \ vim9Syntax
 
 syn match vim9UserCmdDef /\<com\%[mand]\>.*$/
     \ contains=@vim9UserCmdList,vim9ComFilter,vim9UserAttrb,vim9UserAttrbError
@@ -1246,8 +1387,13 @@ syn match vim9Number /\d\@1<='\d\@=/ nextgroup=vim9Comment skipwhite
 # Substitutions {{{1
 
 syn cluster vim9SubstList contains=
-    \vim9Collection,vim9Notation,vim9PatRegion,vim9PatSep,vim9PatSepErr
-    \,vim9SubstRange,vim9SubstTwoBS
+    \ vim9Collection,
+    \ vim9Notation,
+    \ vim9PatRegion,
+    \ vim9PatSep,
+    \ vim9PatSepErr,
+    \ vim9SubstRange,
+    \ vim9SubstTwoBS
 
 syn cluster vim9SubstRepList contains=
     \vim9Notation,vim9SubstSubstr,vim9SubstTwoBS
@@ -1552,10 +1698,14 @@ syn case match
 
 syn match vim9MapRhs /.*/
     \ contained
-    \ contains=vim9CtrlChar,vim9MapCmd,vim9MapCommandLineExpr,vim9MapInsertExpr
-    \,vim9Notation
     \ nextgroup=vim9MapRhsExtend
     \ skipnl
+    \ contains=
+    \     vim9CtrlChar,
+    \     vim9MapCmd,
+    \     vim9MapCommandLineExpr,
+    \     vim9MapInsertExpr,
+    \     vim9Notation
 
 syn match vim9MapRhsExpr /.*/
     \ contained
@@ -1725,7 +1875,7 @@ exe 'syn match vim9UserCmdCall '
     .. '\|' .. '\%(\s*->\|:\)'
     .. '\)\@!"'
     .. ' contained'
-    .. ' nextgroup=vim9ExtraSpaceAfterFuncname'
+    .. ' nextgroup=vim9SpaceExtraAfterFuncname'
 
 # Data Types {{{1
 
@@ -1740,8 +1890,12 @@ exe 'syn match vim9UserCmdCall '
 #     enddef
 #}}}
 syn cluster vim9DataTypeCluster contains=
-    \vim9DataType,vim9DataTypeCast,vim9DataTypeCastComposite
-    \,vim9DataTypeCompositeLeadingColon,vim9DataTypeFuncref,vim9DataTypeListDict
+    \ vim9DataType,
+    \ vim9DataTypeCast,
+    \ vim9DataTypeCastComposite,
+    \ vim9DataTypeCompositeLeadingColon,
+    \ vim9DataTypeFuncref,
+    \ vim9DataTypeListDict
 
 # Need to support *at least* these cases:{{{
 #
@@ -1996,8 +2150,14 @@ syn match vim9SynKeyOpt
 # Syntax: match {{{1
 
 syn cluster vim9SynMtchGroup contains=
-    \vim9Comment,vim9MtchComment,vim9Notation,vim9SynContains,vim9SynError
-    \,vim9SynMtchOpt,vim9SynNextgroup,vim9SynRegPat
+    \ vim9Comment,
+    \ vim9MtchComment,
+    \ vim9Notation,
+    \ vim9SynContains,
+    \ vim9SynError,
+    \ vim9SynMtchOpt,
+    \ vim9SynNextgroup,
+    \ vim9SynRegPat
 
 syn keyword vim9SynType match contained nextgroup=vim9SynMatchRegion skipwhite
 
@@ -2030,8 +2190,14 @@ syn keyword vim9SynType enable list manual off on reset contained
 # Syntax: region {{{1
 
 syn cluster vim9SynRegPatGroup contains=
-    \vim9NotPatSep,vim9Notation,vim9PatRegion,vim9PatSep,vim9PatSepErr
-    \,vim9SubstSubstr,vim9SynNotPatRange,vim9SynPatRange
+    \ vim9NotPatSep,
+    \ vim9Notation,
+    \ vim9PatRegion,
+    \ vim9PatSep,
+    \ vim9PatSepErr,
+    \ vim9SubstSubstr,
+    \ vim9SynNotPatRange,
+    \ vim9SynPatRange
 
 syn cluster vim9SynRegGroup contains=
     \vim9SynContains,vim9SynMtchGrp,vim9SynNextgroup,vim9SynReg,vim9SynRegOpt
@@ -2092,8 +2258,14 @@ syn match vim9MtchComment /#[^#]\+$/ contained
 syn keyword vim9SynType sync
     \ contained
     \ skipwhite
-    \ nextgroup=vim9SyncC,vim9SyncError,vim9SyncLinebreak,vim9SyncLinecont
-    \,vim9SyncLines,vim9SyncMatch,vim9SyncRegion
+    \ nextgroup=
+    \     vim9SyncC,
+    \     vim9SyncError,
+    \     vim9SyncLinebreak,
+    \     vim9SyncLinecont,
+    \     vim9SyncLines,
+    \     vim9SyncMatch,
+    \     vim9SyncRegion
 
 syn match vim9SyncError /\i\+/ contained
 syn keyword vim9SyncC ccomment clear fromstart contained
@@ -2167,9 +2339,18 @@ syn match vim9HiGuiRgb /#\x\{6}/ contained
 # Highlighting: hi group key=arg ... {{{1
 
 syn cluster vim9HiCluster contains=
-    \vim9Group,vim9HiCTerm,vim9HiCtermFgBg,vim9HiCtermul,vim9HiGroup,vim9HiGui
-    \,vim9HiGuiFgBg,vim9HiGuiFont,vim9HiKeyError,vim9HiStartStop,vim9HiTerm
-    \,vim9Notation
+    \ vim9Group,
+    \ vim9HiCTerm,
+    \ vim9HiCtermFgBg,
+    \ vim9HiCtermul,
+    \ vim9HiGroup,
+    \ vim9HiGui,
+    \ vim9HiGuiFgBg,
+    \ vim9HiGuiFont,
+    \ vim9HiKeyError,
+    \ vim9HiStartStop,
+    \ vim9HiTerm,
+    \ vim9Notation
 
 syn region vim9HiKeyList
     \ start=/\i\+/
@@ -2259,8 +2440,13 @@ syn match vim9CommentTitle /#\s*\u\%(\w\|[()]\)*\%(\s\+\u\w*\)*:/hs=s+1
 
 syn match vim9Continue /^\s*\\/
     \ skipwhite
-    \ nextgroup=vim9SynContains,vim9SynMtchGrp,vim9SynNextgroup,vim9SynReg
-    \,vim9SynContinuePattern,vim9SynRegOpt
+    \ nextgroup=
+    \     vim9SynContains,
+    \     vim9SynContinuePattern,
+    \     vim9SynMtchGrp,
+    \     vim9SynNextgroup,
+    \     vim9SynReg,
+    \     vim9SynRegOpt
 
 syn match vim9SynContinuePattern =\s\+/[^/]*/= contained
 
@@ -2354,202 +2540,7 @@ syn region vim9LuaRegion
     \ contains=@vim9LuaScript
 
 # Errors {{{1
-
-# We don't highlight a missing whitespace around an assignment operator:{{{
-#
-#     var name=123     # Error!
-#     var name= 123    # Error!
-#     var name =123    # Error!
-#
-# Because it's not syntax highlighted in those cases.
-# The  absence of  highlighting should  serve as  a good  enough warning  to the
-# user  (provided their  color scheme  highlights assignment  operators with  an
-# easy-to-notice color).
-#
-# Besides, handling  all the cases  (after a variable name,  after a type,  in a
-# heredoc, ...) would probably require many more rules.
-# And, to  be consistent, we would  need to also handle  other binary operators,
-# like the arithmetic ones.  But this  would require we first parse expressions,
-# which would open a can of worms.
-#}}}
-
-# Some names cannot be used for variables, because they're reserved:{{{
-#
-#     var true = 0
-#     var null = ''
-#     var this = []
-#     ...
-#}}}
-syn keyword vim9ReservedNames true false null this contained
-
-# In a lambda, a dictionary must be surrounded by parens.{{{
-#
-#                     ✘
-#                     v
-#     var Ref = () => {}
-#     var Ref = () => ({})
-#                     ^
-#                     ✔
-#
-# ---
-#
-# This can also warn us about of block which is not correctly broken after `{`:
-#
-#                     ✘
-#                     v
-#     var Ref = () => { command  }
-#
-#                     ✔
-#                     v
-#     var Ref = () => {
-#         command
-#     }
-#
-# From `:h inline-function`:
-#
-#    > Unfortunately this means using "() => {  command  }" does not work, line
-#    > breaks are always required.
-#}}}
-syn match vim9DictMissingParen /{/ contained
-
-#           ✘
-#           v
-#     Func(1,2)
-#     Func(1, 2)
-#            ^
-#            ✔
-syn match vim9MissingSpaceBetweenArgs /,\S\@=/ contained
-
-#           ✘
-#           v
-#     Func(1 , 2)
-#     Func(1, 2)
-#           ^
-#           ✔
-syn match vim9ExtraSpaceBetweenArgs /\s\@1<=,/ contained
-
-# Declaring more than one variable at a  time, using the unpack notation, is not
-# supported.  See `:h E1092`.
-syn region vim9ListUnpackDeclaration
-    \ contained
-    \ contains=vim9ListUnpackDeclaration
-    \ end=/\]/
-    \ oneline
-    \ start=/\[/
-
-#                   need a space before
-#                   v
-#     var name = 123# Error!
-syn region vim9Comment
-    \ matchgroup=vim9Error
-    \ start=/\S\@1<=#/
-    \ end=/$/
-    \ contains=@vim9CommentGroup
-    \ excludenl
-    \ oneline
-
-#         ✘
-#         v
-#     Func (arg)
-syn region vim9ExtraSpaceAfterFuncname
-    \ matchgroup=vim9Error
-    \ start=/\s\+(/
-    \ matchgroup=vim9ParenSep
-    \ end=/)/
-    \ contains=@vim9OperGroup
-    \ contained
-
-# We could also highlight missing or extra spaces in dictionaries:{{{
-#
-#         ✘
-#         v
-#     {key:'value'}
-#     {key : 'value'}
-#         ^
-#         ✘
-#
-#     {key: 'value'}
-#         ^^
-#         ✔
-#}}}
-#   But we don't.{{{
-#
-# It's not necessary.  If you omit a space  after the colon, or add an extra one
-# before, the key  won't be highlighted as  a string, which gives  a visual clue
-# that something is wrong.
-#
-# There might still be an issue if  you use special characters in your keys, and
-# you need to put quotes around them:
-#
-#           ✘
-#           v
-#     {'a+b':'value'}
-#     {'c*d' : 'value'}
-#           ^
-#           ✘
-#
-# This code is wrong, but the highlighting  won't give any warning.  IMO, it's a
-# corner case  which is  not worth  supporting.  You'll  rarely write  keys with
-# special characters inside, *and* forget a space or add an extra space.
-#}}}
-
-# Warn about omitting whitespace between line specifier and command.{{{
-#
-# In addition to making the code less readable, it might confuse the syntax plugin:
-#
-#     :123delete
-#         ^----^
-#           ✘
-#         not recognized as an Ex command
-#
-#     :123 delete
-#          ^----^
-#            ✔
-#          recognized as an Ex command
-#
-# Note that this issue also affects the legacy script.
-# We could try to fix it by removing all digits from the *syntax* option 'iskeyword':
-#
-#     :syntax iskeyword @,_
-#
-# But that would cause  other issues which would require too  much extra code to
-# handle.   Indeed,  it would  break  all  the  `syn  keyword` rules  for  words
-# containing digits.   It would also change  the semantics of the  `\<` and `\>`
-# atoms in all regexes used for `syn match` and `syn region` rules.
-#}}}
-if get(g:, 'vim9_syntax', {})->get('range_missing_space')
-    syn match vim9RangeMissingSpace /\S\@1<=\a/ contained
-endif
-
-# Warn about missing `o` in `0o` prefix in octal number.{{{
-#
-#    > Numbers starting with zero are not considered to be octal, only numbers
-#    > starting with "0o" are octal: "0o744". |scriptversion-4|
-#
-# We don't  could install a  rule to  highlight the number  as an error,  but it
-# would not  work everywhere  (e.g. in  an `:echo`).  We  would need  to include
-# this  new group  in  other regions/matches.   It's simpler  to  just stop  the
-# highlighting at the `0`.
-#
-#           do not highlight
-#           vvv
-#     echo 0765
-#     echo 0o765
-#          ^---^
-#          *do* highlight
-#}}}
-if get(g:, 'vim9_syntax', {})->get('octal_missing_o')
-    # The  negative lookbehind  is necessary  to  ignore big  numbers which  are{{{
-    # written with quotes to be more readable:
-    #
-    #     1'076
-    #       ^^^
-    #
-    # Here, `076` is not a badly written octal number.
-    # There is no reason to stop the highlighting at `0`.
-    #}}}
-    syn match vim9Number /\%(\d'\)\@2<!\<0[0-7]\+\>/he=s+1 nextgroup=vim9Comment skipwhite
-endif
+# Deprecated syntaxes {{{2
 
 # Even in a `:def` function, or in a Vim9 script, there might be valid legacy code.{{{
 #
@@ -2585,7 +2576,10 @@ endif
 # because those are  common errors; e.g. when copy-pasting legacy  code in a new
 # Vim9 script.
 #}}}
-if get(g:, 'vim9_syntax', {})->get('deprecated', true)
+if get(g:, 'vim9_syntax', {})
+ ->get('errors', {})
+ ->get('deprecated_syntaxes', true)
+
     # `:let` is deprecated.
     syn keyword vim9LetDeprecated let contained
 
@@ -2594,9 +2588,272 @@ if get(g:, 'vim9_syntax', {})->get('deprecated', true)
     syn match vim9DictLiteralLegacyDeprecated /#{{\@!/
 endif
 
+# List unpack declaration {{{2
+
+# Declaring more than one variable at a  time, using the unpack notation, is not
+# supported.  See `:h E1092`.
+if get(g:, 'vim9_syntax', {})
+ ->get('errors', {})
+ ->get('list_unpack_declaration', true)
+
+    syn region vim9ListUnpackDeclaration
+        \ contained
+        \ contains=vim9ListUnpackDeclaration
+        \ end=/\]/
+        \ oneline
+        \ start=/\[/
+endif
+
+# Missing space / Extra space {{{2
+
+# We don't highlight a missing whitespace around an assignment operator:{{{
+#
+#     var name=123     # Error!
+#     var name= 123    # Error!
+#     var name =123    # Error!
+#
+# Because it's not syntax highlighted in those cases.
+# The  absence of  highlighting should  serve as  a good  enough warning  to the
+# user  (provided their  color scheme  highlights assignment  operators with  an
+# easy-to-notice color).
+#
+# Besides, handling  all the cases  (after a variable name,  after a type,  in a
+# heredoc, ...) would probably require many more rules.
+# And, to  be consistent, we would  need to also handle  other binary operators,
+# like the arithmetic ones.  But this  would require we first parse expressions,
+# which would open a can of worms.
+#}}}
+# We could highlight missing or extra spaces in dictionaries:{{{
+#
+#         ✘
+#         v
+#     {key:'value'}
+#     {key : 'value'}
+#         ^
+#         ✘
+#
+#     {key: 'value'}
+#         ^^
+#         ✔
+#}}}
+#   But we don't.{{{
+#
+# It's not necessary.  If you omit a space  after the colon, or add an extra one
+# before, the key  won't be highlighted as  a string, which gives  a visual clue
+# that something is wrong.
+#
+# There might still be an issue if  you use special characters in your keys, and
+# you need to put quotes around them:
+#
+#           ✘
+#           v
+#     {'a+b':'value'}
+#     {'c*d' : 'value'}
+#           ^
+#           ✘
+#
+# This code is wrong, but the highlighting  won't give any warning.  IMO, it's a
+# corner case  which is  not worth  supporting.  You'll  rarely write  keys with
+# special characters inside, *and* forget a space or add an extra space.
+#}}}
+
+if get(g:, 'vim9_syntax', {})
+ ->get('errors', {})
+ ->get('missing_or_extra_space', true)
+
+    #         ✘
+    #         v
+    #     Func (arg)
+    syn region vim9SpaceExtraAfterFuncname
+        \ matchgroup=vim9Error
+        \ start=/\s\+(/
+        \ matchgroup=vim9ParenSep
+        \ end=/)/
+        \ contains=@vim9OperGroup
+        \ contained
+
+    #           ✘
+    #           v
+    #     Func(1,2)
+    #     Func(1, 2)
+    #            ^
+    #            ✔
+    syn match vim9SpaceMissingBetweenArgs /,\S\@=/ contained
+
+    #           ✘
+    #           v
+    #     Func(1 , 2)
+    #     Func(1, 2)
+    #           ^
+    #           ✔
+    syn match vim9SpaceExtraBetweenArgs /\s\@1<=,/ contained
+
+    #                   need a space before
+    #                   v
+    #     var name = 123# Error!
+    syn region vim9Comment
+        \ matchgroup=vim9Error
+        \ start=/\S\@1<=#/
+        \ end=/$/
+        \ contains=@vim9CommentGroup
+        \ excludenl
+        \ oneline
+
+    # In a slice, the colon separating the 2 indexes must be surrounded with spaces:{{{
+    #
+    #             ✘
+    #             v
+    #     mylist[1:2]
+    #     mylist[1 : 2]
+    #             ^^^
+    #              ✔
+    #}}}
+    # To highlight a missing space, we must first recognize a list slice.{{{
+    #
+    # We don't try to  distinguish a slice of a list from a  simple list, because it
+    # seems too tricky.
+    #
+    #           mylist[1 : 2]
+    #     ReturnList()[1 : 2]
+    #        [1, 2, 3][1 : 2]
+    #     ...
+    #
+    # In particular, notice the variety of characters which can appear in front of a
+    # slice.
+    #}}}
+    syn region vim9ListSlice
+        \ matchgroup=vim9Sep
+        \ start=/\[/
+        \ end=/\]/
+        \ contains=
+        \     @vim9OperGroup,
+        \     vim9ColonForVariableScope,
+        \     vim9ListSlice,
+        \     vim9SpaceMissingListSlice
+    # If a colon is not prefixed with a space, it's an error.
+    syn match vim9SpaceMissingListSlice /[^ \t[]\@1<=:/ contained
+    # If a colon is not followed with a space, it's an error.
+    syn match vim9SpaceMissingListSlice /:[^ \t\]]\@=/ contained
+    # Corner Case: A colon can be used in a variable name.  Ignore it.{{{
+    #
+    #     b:name
+    #      ^
+    #      ✔
+    #}}}
+    # Order: Out of these 3 rules, this one must come last.
+    syn match vim9ColonForVariableScope /[bgstvw]\@1<=:\w\@=/ contained
+endif
+
+# Missing parens around dictionary in lambda {{{2
+
+if get(g:, 'vim9_syntax', {})
+ ->get('errors', {})
+ ->get('lambda_dict_missing_paren', true)
+
+    # In a lambda, a dictionary must be surrounded by parens.{{{
+    #
+    #                     ✘
+    #                     v
+    #     var Ref = () => {}
+    #     var Ref = () => ({})
+    #                     ^
+    #                     ✔
+    #
+    # ---
+    #
+    # This can also warn us about of block which is not correctly broken after `{`:
+    #
+    #                     ✘
+    #                     v
+    #     var Ref = () => { command  }
+    #
+    #                     ✔
+    #                     v
+    #     var Ref = () => {
+    #         command
+    #     }
+    #
+    # From `:h inline-function`:
+    #
+    #    > Unfortunately this means using "() => {  command  }" does not work, line
+    #    > breaks are always required.
+    #}}}
+    syn match vim9LambdaDictMissingParen /{/ contained
+endif
+
+# Octal numbers {{{2
+
+# Warn about missing `o` in `0o` prefix in octal number.{{{
+#
+#    > Numbers starting with zero are not considered to be octal, only numbers
+#    > starting with "0o" are octal: "0o744". |scriptversion-4|
+#
+# We don't  could install a  rule to  highlight the number  as an error,  but it
+# would not  work everywhere  (e.g. in  an `:echo`).  We  would need  to include
+# this  new group  in  other regions/matches.   It's simpler  to  just stop  the
+# highlighting at the `0`.
+#
+#           do not highlight
+#           vvv
+#     echo 0765
+#     echo 0o765
+#          ^---^
+#          *do* highlight
+#}}}
+if get(g:, 'vim9_syntax', {})
+ ->get('errors', {})
+ ->get('octal_missing_o_prefix', true)
+
+    # The  negative lookbehind  is necessary  to  ignore big  numbers which  are{{{
+    # written with quotes to be more readable:
+    #
+    #     1'076
+    #       ^^^
+    #
+    # Here, `076` is not a badly written octal number.
+    # There is no reason to stop the highlighting at `0`.
+    #}}}
+    syn match vim9Number /\%(\d'\)\@2<!\<0[0-7]\+\>/he=s+1 nextgroup=vim9Comment skipwhite
+endif
+
+# Range {{{2
+
+# Warn about omitting whitespace between line specifier and command.{{{
+#
+# In addition to making the code less readable, it might confuse the syntax plugin:
+#
+#     :123delete
+#         ^----^
+#           ✘
+#         not recognized as an Ex command
+#
+#     :123 delete
+#          ^----^
+#            ✔
+#          recognized as an Ex command
+#
+# Note that this issue also affects the legacy script.
+# We could try to fix it by removing all digits from the *syntax* option 'iskeyword':
+#
+#     :syntax iskeyword @,_
+#
+# But that would cause  other issues which would require too  much extra code to
+# handle.   Indeed,  it would  break  all  the  `syn  keyword` rules  for  words
+# containing digits.   It would also change  the semantics of the  `\<` and `\>`
+# atoms in all regexes used for `syn match` and `syn region` rules.
+#}}}
+if get(g:, 'vim9_syntax', {})
+ ->get('errors', {})
+ ->get('range_missing_space', false)
+
+    syn match vim9RangeMissingSpace /\S\@1<=\a/ contained
+endif
+
 # Discourage usage  of an  implicit line  specifier, because  it makes  the code
 # harder to read.
-if get(g:, 'vim9_syntax', {})->get('range_missing_specifier')
+if get(g:, 'vim9_syntax', {})
+ ->get('errors', {})
+ ->get('range_missing_specifier', false)
     syn match vim9RangeMissingSpecifier1 /[,;]/
         \ contained
         \ nextgroup=@vim9RangeContains
@@ -2607,6 +2864,22 @@ if get(g:, 'vim9_syntax', {})->get('range_missing_specifier')
         \ skipwhite
 endif
 
+# Reserved names {{{2
+
+if get(g:, 'vim9_syntax', {})
+ ->get('errors', {})
+ ->get('reserved_names', true)
+
+    # Some names cannot be used for variables, because they're reserved:{{{
+    #
+    #     var true = 0
+    #     var null = ''
+    #     var this = []
+    #     ...
+    #}}}
+    syn keyword vim9ReservedNames true false null this contained
+endif
+#}}}1
 # Synchronize (speed) {{{1
 
 syn sync maxlines=60
@@ -2672,22 +2945,23 @@ hi def link vim9CallFuncName vim9Error
 hi def link vim9CollClassErr vim9Error
 hi def link vim9DictLiteralLegacyDeprecated vim9Error
 hi def link vim9DictMayBeLiteralKey vim9Error
-hi def link vim9DictMissingParen vim9Error
-hi def link vim9ExtraSpaceBetweenArgs vim9Error
 hi def link vim9FTError vim9Error
 hi def link vim9HiAttribList vim9Error
 hi def link vim9HiCtermError vim9Error
 hi def link vim9HiKeyError vim9Error
+hi def link vim9LambdaDictMissingParen vim9Error
 hi def link vim9LetDeprecated vim9Error
 hi def link vim9ListUnpackDeclaration vim9Error
 hi def link vim9MapModErr vim9Error
-hi def link vim9MissingSpaceBetweenArgs vim9Error
 hi def link vim9OperError vim9Error
 hi def link vim9PatSepErr vim9Error
 hi def link vim9RangeMissingSpace vim9Error
 hi def link vim9RangeMissingSpecifier1 vim9Error
 hi def link vim9RangeMissingSpecifier2 vim9Error
 hi def link vim9ReservedNames vim9Error
+hi def link vim9SpaceExtraBetweenArgs vim9Error
+hi def link vim9SpaceMissingBetweenArgs vim9Error
+hi def link vim9SpaceMissingListSlice vim9Error
 hi def link vim9SubstFlagErr vim9Error
 hi def link vim9SynCaseError vim9Error
 hi def link vim9SynCaseError vim9Error
