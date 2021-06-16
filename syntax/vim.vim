@@ -87,6 +87,19 @@ var lookbehind: string
 # That's wrong.
 # Fix this.
 
+# TODO:
+#                             should be highlighted as a translated keycode?
+#                             v---v
+#     nno <expr> <F3> true ? '<c-a>' : '<c-b>'
+#                     ^--^
+#                     should be highlighted as an error?
+#
+# IMO, it's part of a more general issue.
+# Mappings  installed from  a Vim9  script should  use the  Vim9 syntax;  that's
+# probably what users would expect.  Unfortunately,  mappings are not run in the
+# context  of the  script where  they  were defined.   At the  very least,  this
+# pitfall should be documented.
+
 # TODO: Consider this highlighting:
 #
 #             v-------v
@@ -187,7 +200,19 @@ lookahead =
     # after a command, we know there must be a bang, a whitespace or a newline
        '[! \t\n]\@='
     # but there must *not* be a binary operator
-    .. '\%(\s*\%([-+*/%]\==\|\.\.=\)\|\_s*->\)\@!'
+    # Warning: Try not to break the highlighting of a command whose first argument is the register `=`.{{{
+    #
+    # That's why it's  important to match a  space after `=`; so  that `:put` is
+    # correctly highlighted when used to put an expression:
+    #
+    #     put =1 + 2
+    #
+    # But not when used as a variable name:
+    #
+    #     var put: number
+    #     put = 1 + 2
+    #}}}
+    .. '\%(\s*\%([-+*/%]=\|=\s\|\.\.=\)\|\_s*->\)\@!'
 
 # Order: `vim9MayBeCommand` must come before `vim9Augroup`, `vim9Import`, `vim9Set`.
 exe 'syn match vim9MayBeCommand /\<\h\w*\>' .. lookahead .. '/'
@@ -846,7 +871,8 @@ syn region vim9OperParen
     \ start=/(/
     \ end=/)/
     \ contains=@vim9OperGroup,vim9Args,vim9Block,vim9LambdaArrow
-    \,vim9MayBeOptionScoped
+    \,vim9ExtraSpaceBetweenArgs,vim9MayBeOptionScoped
+    \,vim9MissingSpaceBetweenArgs
 
 syn match vim9OperError /)/
 
@@ -1004,7 +1030,7 @@ syn match vim9SpecFile /<c\%(word\|WORD\)>/ nextgroup=vim9SpecFileMod,vim9Subst
 syn match vim9SpecFile /<\%([acs]file\|amatch\|abuf\)>/
     \ nextgroup=vim9SpecFileMod,vim9Subst
 
-# Do *not* add allow a space to match after `%`.{{{
+# Do *not* allow a space to match after `%`.{{{
 #
 #     \s%[: ]
 #          ^
@@ -1340,13 +1366,20 @@ syn match vim9SubstFlags /[&cegiIlnpr#]\+/ contained
 #
 # Second, `:term` is a better mechanism anyway; in your code, use it instead.
 #}}}
-syn region vim9Filter
-    \ matchgroup=vim9IsCommand
-    \ start=/!/
-    \ matchgroup=vim9ShellCmd
-    \ end=/.*/
-    \ contained
-    \ oneline
+syn match vim9Filter /!/ contained nextgroup=vim9FilterShellCmd
+syn match vim9FilterShellCmd /.*/ contained contains=vim9FilterLastShellCmd
+# TODO: Support special filenames like `%:p`, `%%`, ...
+
+# Inside a filter command, an unescaped `!` has a special meaning:{{{
+#
+# From `:h :!`:
+#
+#    > Any '!' in {cmd} is replaced with the previous
+#    > external command (see also 'cpoptions').  But not when
+#    > there is a backslash before the '!', then that
+#    > backslash is removed.
+#}}}
+syn match vim9FilterLastShellCmd /\\\@1<!!/ contained
 
 # Abbreviations {{{1
 
@@ -2340,9 +2373,6 @@ syn region vim9LuaRegion
 # which would open a can of worms.
 #}}}
 
-# `:let` is deprecated.
-syn keyword vim9LetDeprecated let contained
-
 # Some names cannot be used for variables, because they're reserved:{{{
 #
 #     var true = 0
@@ -2351,10 +2381,6 @@ syn keyword vim9LetDeprecated let contained
 #     ...
 #}}}
 syn keyword vim9ReservedNames true false null this contained
-
-# In legacy Vim script, a literal dictionary starts with `#{`.
-# This syntax is no longer valid in Vim9.
-syn match vim9DictLiteralLegacyDeprecated /#{{\@!/
 
 # In a lambda, a dictionary must be surrounded by parens.{{{
 #
@@ -2385,6 +2411,22 @@ syn match vim9DictLiteralLegacyDeprecated /#{{\@!/
 #    > breaks are always required.
 #}}}
 syn match vim9DictMissingParen /{/ contained
+
+#           ✘
+#           v
+#     Func(1,2)
+#     Func(1, 2)
+#            ^
+#            ✔
+syn match vim9MissingSpaceBetweenArgs /,\S\@=/ contained
+
+#           ✘
+#           v
+#     Func(1 , 2)
+#     Func(1, 2)
+#           ^
+#           ✔
+syn match vim9ExtraSpaceBetweenArgs /\s\@1<=,/ contained
 
 # Declaring more than one variable at a  time, using the unpack notation, is not
 # supported.  See `:h E1092`.
@@ -2417,18 +2459,39 @@ syn region vim9ExtraSpaceAfterFuncname
     \ contains=@vim9OperGroup
     \ contained
 
-# Discourage usage  of an  implicit line  specifier, because  it makes  the code
-# harder to read.
-if get(g:, 'vim9_syntax', {})->get('range_missing_specifier')
-    syn match vim9RangeMissingSpecifier1 /[,;]/
-        \ contained
-        \ nextgroup=@vim9RangeContains
-
-    syn match vim9RangeMissingSpecifier2 /[,;][a-zA-Z \t]\@=/
-        \ contained
-        \ nextgroup=@vim9CmdAllowedHere
-        \ skipwhite
-endif
+# We could also highlight missing or extra spaces in dictionaries:{{{
+#
+#         ✘
+#         v
+#     {key:'value'}
+#     {key : 'value'}
+#         ^
+#         ✘
+#
+#     {key: 'value'}
+#         ^^
+#         ✔
+#}}}
+#   But we don't.{{{
+#
+# It's not necessary.  If you omit a space  after the colon, or add an extra one
+# before, the key  won't be highlighted as  a string, which gives  a visual clue
+# that something is wrong.
+#
+# There might still be an issue if  you use special characters in your keys, and
+# you need to put quotes around them:
+#
+#           ✘
+#           v
+#     {'a+b':'value'}
+#     {'c*d' : 'value'}
+#           ^
+#           ✘
+#
+# This code is wrong, but the highlighting  won't give any warning.  IMO, it's a
+# corner case  which is  not worth  supporting.  You'll  rarely write  keys with
+# special characters inside, *and* forget a space or add an extra space.
+#}}}
 
 # Warn about omitting whitespace between line specifier and command.{{{
 #
@@ -2488,6 +2551,62 @@ if get(g:, 'vim9_syntax', {})->get('octal_missing_o')
     syn match vim9Number /\%(\d'\)\@2<!\<0[0-7]\+\>/he=s+1 nextgroup=vim9Comment skipwhite
 endif
 
+# Even in a `:def` function, or in a Vim9 script, there might be valid legacy code.{{{
+#
+# After `:legacy`, or in the rhs of a mapping.
+# We don't try to handle these contexts specially because those seem like corner
+# cases.
+#
+# `:legacy` should hardly be ever used.
+# And  in the  rhs of  a mapping,  it's easy  to avoid  any syntax  triggering a
+# highlighting error;  just wrap the problematic  code in a `:def`  function and
+# call it.
+#
+#     ✘
+#     nno <F3> <cmd>let g:myvar = 123<cr>
+#
+#     ✔
+#     nno <F3> <cmd>call Func()<cr>
+#     def Func()
+#         g:myvar = 123
+#     enddef
+#
+# This also gives  the benefit of making  the context (legacy vs  Vim9) in which
+# the code  is run explicit.   Which in turn can  fix some obscure  issues; e.g.
+# when a mapping  is executed – from  a Vim9 script –  with `feedkeys()` and
+# the `x` flag, the rhs is run in the Vim9 context, instead of the legacy one.
+# IOW, there  is no guarantee about  the context in  which the rhs will  be run;
+# unless you wrap it inside a function.
+#
+# ---
+#
+# In any  case, since these rules  might highlight valid syntaxes  as errors, we
+# should have  an option  to disable  them.  We still  install them  by default,
+# because those are  common errors; e.g. when copy-pasting legacy  code in a new
+# Vim9 script.
+#}}}
+if get(g:, 'vim9_syntax', {})->get('deprecated', true)
+    # `:let` is deprecated.
+    syn keyword vim9LetDeprecated let contained
+
+    # In legacy Vim script, a literal dictionary starts with `#{`.
+    # This syntax is no longer valid in Vim9.
+    syn match vim9DictLiteralLegacyDeprecated /#{{\@!/
+endif
+
+# Discourage usage  of an  implicit line  specifier, because  it makes  the code
+# harder to read.
+if get(g:, 'vim9_syntax', {})->get('range_missing_specifier')
+    syn match vim9RangeMissingSpecifier1 /[,;]/
+        \ contained
+        \ nextgroup=@vim9RangeContains
+
+    syn match vim9RangeMissingSpecifier2 /[,;][a-zA-Z \t]\@=/
+        \ contained
+        \ nextgroup=@vim9CmdAllowedHere
+        \ skipwhite
+endif
+
 # Synchronize (speed) {{{1
 
 syn sync maxlines=60
@@ -2545,20 +2664,40 @@ if execute('hi vim9UserCmdCall') =~ '\<cleared$'
     Derive('vim9CmdModifier', 'vim9IsCommand', 'term=italic cterm=italic gui=italic')
 endif
 
+hi def link vim9Error Error
+
+hi def link vim9AugroupError vim9Error
 hi def link vim9AutocmdEventBadCase vim9Error
 hi def link vim9CallFuncName vim9Error
 hi def link vim9CollClassErr vim9Error
+hi def link vim9DictLiteralLegacyDeprecated vim9Error
+hi def link vim9DictMayBeLiteralKey vim9Error
+hi def link vim9DictMissingParen vim9Error
+hi def link vim9ExtraSpaceBetweenArgs vim9Error
 hi def link vim9FTError vim9Error
 hi def link vim9HiAttribList vim9Error
 hi def link vim9HiCtermError vim9Error
 hi def link vim9HiKeyError vim9Error
+hi def link vim9LetDeprecated vim9Error
+hi def link vim9ListUnpackDeclaration vim9Error
 hi def link vim9MapModErr vim9Error
+hi def link vim9MissingSpaceBetweenArgs vim9Error
+hi def link vim9OperError vim9Error
+hi def link vim9PatSepErr vim9Error
+hi def link vim9RangeMissingSpace vim9Error
+hi def link vim9RangeMissingSpecifier1 vim9Error
+hi def link vim9RangeMissingSpecifier2 vim9Error
+hi def link vim9ReservedNames vim9Error
 hi def link vim9SubstFlagErr vim9Error
 hi def link vim9SynCaseError vim9Error
+hi def link vim9SynCaseError vim9Error
+hi def link vim9SynError vim9Error
+hi def link vim9SyncError vim9Error
+hi def link vim9UserAttrbError vim9Error
+hi def link vim9UserCmdError vim9Error
 
 hi def link vim9Args Identifier
 hi def link vim9AugroupEnd Special
-hi def link vim9AugroupError vim9Error
 hi def link vim9Autocmd vim9IsCommand
 hi def link vim9AutocmdAllEvents vim9AutocmdEventGoodCase
 hi def link vim9AutocmdEventGoodCase Type
@@ -2582,17 +2721,16 @@ hi def link vim9Declare Identifier
 hi def link vim9DefKey Keyword
 hi def link vim9DictIsLiteralKey String
 hi def link vim9DictKey String
-hi def link vim9DictLiteralLegacyDeprecated vim9Error
-hi def link vim9DictMayBeLiteralKey vim9Error
-hi def link vim9DictMissingParen vim9Error
 hi def link vim9Doautocmd vim9IsCommand
 hi def link vim9EchoHL vim9IsCommand
 hi def link vim9EchoHLNone vim9Group
-hi def link vim9Error Error
 hi def link vim9Export vim9Import
 hi def link vim9FTCmd vim9IsCommand
 hi def link vim9FTOption vim9SynType
 hi def link vim9FgBgAttrib vim9HiAttrib
+hi def link vim9Filter vim9IsCommand
+hi def link vim9FilterLastShellCmd Special
+hi def link vim9FilterShellCmd vim9ShellCmd
 hi def link vim9FuncScope Special
 hi def link vim9Group Type
 hi def link vim9GroupAdd vim9SynOption
@@ -2620,13 +2758,8 @@ hi def link vim9IsAbbrevCmd vim9IsCommand
 hi def link vim9IsOption PreProc
 hi def link vim9IskSep Delimiter
 hi def link vim9LambdaArrow vim9Sep
-hi def link vim9LetDeprecated vim9Error
-# NOTE: I think it's important to highlight the declaration commands differently
-# than other regular Ex commands.  They are more important/special in Vim9.
 hi def link vim9LineComment vim9Comment
-hi def link vim9ListUnpackDeclaration vim9Error
 hi def link vim9Map vim9IsCommand
-hi def link vim9MapBang vim9IsCommand
 hi def link vim9MapMod vim9Bracket
 hi def link vim9MapModExpr vim9MapMod
 hi def link vim9MapModKey vim9FuncScope
@@ -2640,19 +2773,14 @@ hi def link vim9Null Constant
 hi def link vim9Number Number
 hi def link vim9Oper Operator
 hi def link vim9OperAssign Identifier
-hi def link vim9OperError vim9Error
 hi def link vim9OptionSigil vim9IsOption
 hi def link vim9ParenSep Delimiter
 hi def link vim9PatSep SpecialChar
-hi def link vim9PatSepErr vim9Error
 hi def link vim9PatSepR vim9PatSep
 hi def link vim9PatSepZ vim9PatSep
 hi def link vim9PatSepZone vim9String
 hi def link vim9Pattern Type
 hi def link vim9RangeMark Special
-hi def link vim9RangeMissingSpace vim9Error
-hi def link vim9RangeMissingSpecifier1 vim9Error
-hi def link vim9RangeMissingSpecifier2 vim9Error
 hi def link vim9RangeNumber Number
 hi def link vim9RangeOffset Number
 hi def link vim9RangePattern String
@@ -2660,7 +2788,6 @@ hi def link vim9RangePatternBwdDelim Delimiter
 hi def link vim9RangePatternFwdDelim Delimiter
 hi def link vim9RangeSpecialChar Special
 hi def link vim9Repeat Repeat
-hi def link vim9ReservedNames vim9Error
 hi def link vim9Return vim9IsCommand
 hi def link vim9ScriptDelim Comment
 hi def link vim9Sep Delimiter
@@ -2683,10 +2810,8 @@ hi def link vim9SubstFlags Special
 hi def link vim9SubstSubstr SpecialChar
 hi def link vim9SubstTwoBS vim9String
 hi def link vim9SynCase Type
-hi def link vim9SynCaseError vim9Error
 hi def link vim9SynContains vim9SynOption
 hi def link vim9SynContinuePattern String
-hi def link vim9SynError vim9Error
 hi def link vim9SynKeyContainedin vim9SynContains
 hi def link vim9SynKeyOpt vim9SynOption
 hi def link vim9SynMtchGrp vim9SynOption
@@ -2700,7 +2825,6 @@ hi def link vim9SynRegOpt vim9SynOption
 hi def link vim9SynRegPat vim9String
 hi def link vim9SynType vim9Special
 hi def link vim9SyncC Type
-hi def link vim9SyncError vim9Error
 hi def link vim9SyncGroup vim9GroupName
 hi def link vim9SyncGroupName vim9GroupName
 hi def link vim9SyncKey Type
@@ -2714,10 +2838,8 @@ hi def link vim9Unmap vim9Map
 hi def link vim9UserAttrb vim9Special
 hi def link vim9UserAttrbCmplt vim9Special
 hi def link vim9UserAttrbCmpltFunc Special
-hi def link vim9UserAttrbError vim9Error
 hi def link vim9UserAttrbKey vim9IsOption
 hi def link vim9UserCmdDef vim9IsCommand
-hi def link vim9UserCmdError vim9Error
 hi def link vim9ValidSubType vim9DataType
 hi def link vim9Warn WarningMsg
 #}}}1
