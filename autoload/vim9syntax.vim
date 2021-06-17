@@ -10,6 +10,7 @@ var event_names: string
 var collation_class_names: string
 var command_address_names: string
 var command_complete_names: string
+var default_highlighting_group_names: string
 
 var option_names: string
 var term_option_names: string
@@ -181,11 +182,11 @@ def vim9syntax#getBuiltinFunctionNames(only_ambiguous = false): string #{{{2
     return builtin_funcnames
 enddef
 
-def vim9syntax#getCollClassNames(): string #{{{2
+def vim9syntax#getCollationClassNames(): string #{{{2
     if collation_class_names != ''
         return collation_class_names
     endif
-    collation_class_names = getcompletion('h [:', 'cmdline')
+    collation_class_names = getcompletion('[:', 'help')
         ->filter((_, v) => v =~ '^\[:')
         ->map((_, v) => v->trim('[]:'))
         ->join('\|')
@@ -253,6 +254,21 @@ def vim9syntax#getCommandNames(): string #{{{2
 
     command_names = cmds->join()
     return command_names
+enddef
+
+def vim9syntax#getDefaultHighlightingGroupNames(): string #{{{2
+    if default_highlighting_group_names != ''
+        return default_highlighting_group_names
+    endif
+    var completions: list<string> = getcompletion('hl-', 'help')
+        ->map((_, v: string): string => v->substitute('^hl-', '', ''))
+    for name in ['Ignore', 'Conceal', 'User1..9']
+        var i: number = completions->index(name)
+        completions->remove(i)
+    endfor
+    completions += range(2, 8)->mapnew((_, v: number): string => 'User' .. v)
+    default_highlighting_group_names = completions->join(' ')
+    return default_highlighting_group_names
 enddef
 
 def vim9syntax#getEventNames(): string #{{{2

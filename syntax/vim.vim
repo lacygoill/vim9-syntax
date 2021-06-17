@@ -81,17 +81,6 @@ var lookbehind: string
 #     ~/.vim/pack/mine/opt/doc/autoload/doc/mapping.vim
 #}}}
 
-# TODO: The delimiters in a global command are wrongly highlighted.
-#
-#      ✔       ✔
-#      v       v
-#     s/pattern/rep/
-#     g/pattern/eval 0
-#     ^       ^
-#     ✘       ✘
-#
-# Also, the executed command (here `:eval`) is not highlighted as such.
-
 # TODO:
 #
 #     noa nos edit ++encoding=cp437
@@ -786,24 +775,48 @@ syn match vim9None /\<v:none\>:\@!/
 
 syn case ignore
 syn keyword vim9Group contained
-    \ Comment Constant String Character Number Boolean Float Identifier Function
-    \ Statement Conditional Repeat Label Operator Keyword Exception PreProc
-    \ Include Define Macro PreCondit Type StorageClass Structure Typedef Special
-    \ SpecialChar Tag Delimiter SpecialComment Debug Underlined Ignore Error Todo
+    \ Comment
+    \ Constant
+    \ String
+    \ Character
+    \ Number
+    \ Boolean
+    \ Float
+    \ Identifier
+    \ Function
+    \ Statement
+    \ Conditional
+    \ Repeat
+    \ Label
+    \ Operator
+    \ Keyword
+    \ Exception
+    \ PreProc
+    \ Include
+    \ Define
+    \ Macro
+    \ PreCondit
+    \ Type
+    \ StorageClass
+    \ Structure
+    \ Typedef
+    \ Special
+    \ SpecialChar
+    \ Tag
+    \ Delimiter
+    \ SpecialComment
+    \ Debug
+    \ Underlined
+    \ Ignore
+    \ Error
+    \ Todo
 syn case match
 
 # Default highlighting groups {{{1
 
 syn case ignore
-syn keyword vim9HLGroup contained
-    \ ColorColumn Cursor CursorColumn CursorIM CursorLine CursorLineNr
-    \ DiffAdd DiffChange DiffDelete DiffText Directory EndOfBuffer ErrorMsg
-    \ FoldColumn Folded IncSearch LineNr LineNrAbove LineNrBelow MatchParen Menu
-    \ ModeMsg MoreMsg NonText Normal Pmenu PmenuSbar PmenuSel PmenuThumb Question
-    \ QuickFixLine Scrollbar Search SignColumn SpecialKey SpellBad SpellCap
-    \ SpellLocal SpellRare StatusLine StatusLineNC StatusLineTerm TabLine
-    \ TabLineFill TabLineSel Terminal Title Tooltip VertSplit Visual VisualNOS
-    \ WarningMsg WildMenu
+exe 'syn keyword vim9HLGroup contained ' .. vim9syntax#getDefaultHighlightingGroupNames()
+
 # Do *not* turn  this `match` into a `keyword` rule;  `conceal` would be wrongly
 # interpreted as an argument to `:syntax`.
 syn match vim9HLGroup /\<conceal\>/ contained
@@ -856,6 +869,7 @@ syn cluster vim9ExprContains contains=
     \ vim9FuncCall,
     \ vim9LambdaArrow,
     \ vim9List,
+    \ vim9ListSlice,
     \ vim9MayBeOptionScoped,
     \ vim9None,
     \ vim9Null,
@@ -1003,10 +1017,9 @@ syn region vim9OperParen
     \ end=/)/
     \ contains=
     \     @vim9OperGroup,
+    \     @vim9ExprContains,
     \     vim9Args,
     \     vim9Block,
-    \     vim9LambdaArrow,
-    \     vim9MayBeOptionScoped,
     \     vim9SpaceExtraBetweenArgs,
     \     vim9SpaceMissingBetweenArgs
 
@@ -1524,14 +1537,27 @@ syn cluster vim9SubstRepList contains=
     \ vim9SubstTwoBS
 
 # `:h pattern-delimiter`
-syn match vim9Subst /\<s\%[ubstitute]\ze\([^[:alnum:] \t\|]\@=.\).\{-}\1.\{-}\1/
-    \ display
+
+# In Vim9, `"` is still not a valid delimiter:{{{
+#
+#     vim9script
+#     ['aba bab']->repeat(3)->setline(1)
+#     sil! s/nowhere//
+#     :% s"b"B"g
+#     E486: Pattern not found: nowhere˜
+#
+# `#` seems to work,  but let's be consistent; if in  legacy, the comment leader
+# doesn't work, that should remain true in Vim9.
+#}}}
+syn match vim9Subst
+    \ /\<s\%[ubstitute]\>\ze\([^[:alnum:] \t\"#|]\@=.\).\{-}\1.\{-}\1/
     \ contained
+    \ display
     \ nextgroup=vim9SubstPat
 
 syn region vim9SubstPat
     \ matchgroup=vim9SubstDelim
-    \ start=/\z([^[:alnum:] \t\|]\@=.\)/rs=s+1
+    \ start=/\z([^[:alnum:] \t\"#|]\@=.\)/rs=s+1
     \ skip=/\\\\\|\\\z1/
     \ end=/\z1/re=e-1,me=e-1
     \ contained
@@ -1556,14 +1582,14 @@ syn region vim9Collection
     \ skip=/\\\[/
     \ end=/\]/
     \ contained
-    \ contains=vim9CollClass
+    \ contains=vim9CollationClass
     \ transparent
 
-syn match vim9CollClassErr /\[:.\{-\}:\]/ contained
+syn match vim9CollationClassErr /\[:.\{-\}:\]/ contained
 
-exe 'syn match vim9CollClass '
+exe 'syn match vim9CollationClass '
     .. ' /\%#=1\[:'
-    .. '\%(' .. vim9syntax#getCollClassNames() .. '\)'
+    .. '\%(' .. vim9syntax#getCollationClassNames() .. '\)'
     .. ':\]/'
     .. ' contained'
     .. ' transparent'
@@ -1575,25 +1601,20 @@ syn match vim9SubstFlags /[&cegiIlnpr#]\+/ contained
 
 # :global {{{1
 
-syn region vim9Global
-    \ matchgroup=Statement
-    \ start=/\<g\%[lobal]!\=\z([^[:alnum:] \t\|]\@=.\)/
-    \ skip=/\\\z1/
-    \ end=/\z1/
-    \ nextgroup=vim9Subst
+syn match vim9Global
+    \ /\<v\=g\%[lobal]\>!\=\ze\([^[:alnum:] \t\"#|]\@=.\).\{-}\1/
+    \ nextgroup=vim9GlobalPat
     \ contained
-    \ oneline
-    \ skipwhite
 
-syn region vim9Global
-    \ matchgroup=Statement
-    \ start=/\<v\%[global]\z([^[:alnum:] \t\|]\@=.\)/
-    \ skip=/\\\z1/
+syn region vim9GlobalPat
+    \ matchgroup=vim9SubstDelim
+    \ start=/\z([^[:alnum:] \t\"#|]\@=.\)/rs=s+1
+    \ skip=/\\\\\|\\\z1/
     \ end=/\z1/
-    \ nextgroup=vim9Subst
     \ contained
+    \ contains=@vim9SubstList
+    \ nextgroup=@vim9CmdAllowedHere
     \ oneline
-    \ skipwhite
 
 # :{range}!{filter} {{{1
 # `:h :range!`
@@ -3095,7 +3116,7 @@ endif
 hi def link vim9Error Error
 
 hi def link vim9AutocmdEventBadCase vim9Error
-hi def link vim9CollClassErr vim9Error
+hi def link vim9CollationClassErr vim9Error
 hi def link vim9DictLiteralLegacyDeprecated vim9Error
 hi def link vim9DictMayBeLiteralKey vim9Error
 hi def link vim9FTError vim9Error
@@ -3156,6 +3177,7 @@ hi def link vim9Filter vim9IsCmd
 hi def link vim9FilterLastShellCmd Special
 hi def link vim9FilterShellCmd vim9ShellCmd
 hi def link vim9FuncNameBuiltin Function
+hi def link vim9Global vim9IsCmd
 hi def link vim9Group Type
 hi def link vim9GroupAdd vim9SynOption
 hi def link vim9GroupName vim9Group
