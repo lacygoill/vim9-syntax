@@ -266,6 +266,7 @@ syn match vim9StartOfLine /^/
     \     vim9Export,
     \     vim9FuncHeader,
     \     vim9Import,
+    \     vim9LegacyFunction,
     \     vim9RangeIntroducer
 
 # Builtin Ex commands {{{1
@@ -1167,8 +1168,8 @@ exe 'syn match vim9LegacyFunction'
 
 syn region vim9LegacyFuncBody
     \ start=/\ze\s*(/
-    \ matchgroup=vim9IsCmd
-    \ end=/\<endf\%[unction]/
+    \ matchgroup=vim9DefKey
+    \ end=/^\s*\<endf\%[unction]/
     \ contained
 
 syn match vim9FuncScope /\<[gs]:/ contained
@@ -1507,7 +1508,7 @@ syn match vim9Number /\<0b[01]\+\>/ nextgroup=vim9Comment skipwhite
 #}}}
 syn match vim9Number /\d\@1<='\d\@=/ display nextgroup=vim9Comment skipwhite
 
-# Substitutions {{{1
+# :substitute {{{1
 
 syn cluster vim9SubstList contains=
     \ vim9Collection,
@@ -1561,7 +1562,7 @@ syn cluster vim9SubstRepList contains=
 #                ^       ^           ^
 #                ✔       ✔           ✔
 #}}}
-syn match vim9Subst /\%(^\|[^\\"'(]\)\@1<=\<\%(s\%[ubstitut]\|substitute(\@!\)\>[:#[:alpha:]"']\@!/
+syn match vim9Subst /\%(^\|[^\\"'(]\)\@1<=\<s\%[ubstitute]\>[:#[:alpha:]"'(]\@!/
     \ display
     \ contained
     \ nextgroup=vim9SubstPat
@@ -1576,10 +1577,10 @@ syn region vim9SubstPat
     \ end=/\z1/re=e-1,me=e-1
     \ contained
     \ contains=@vim9SubstList
-    \ nextgroup=vim9SubstRep4
+    \ nextgroup=vim9SubstRep
     \ oneline
 
-syn region vim9SubstRep4
+syn region vim9SubstRep
     \ matchgroup=vim9SubstDelim
     \ start=/\z(.\)/
     \ skip=/\\\\\|\\\z1/
@@ -1616,7 +1617,30 @@ syn match vim9SubstTwoBS /\\\\/ contained
 syn match vim9SubstFlagErr /[^< \t\r|]\+/ contained contains=vim9SubstFlags
 syn match vim9SubstFlags /[&cegiIlnpr#]\+/ contained
 
-# Filters {{{1
+# :global {{{1
+
+syn region vim9Global
+    \ matchgroup=Statement
+    \ start=+\<g\%[lobal]!\=/+
+    \ skip=/\\./
+    \ end=+/+
+    \ nextgroup=vim9Subst
+    \ contained
+    \ oneline
+    \ skipwhite
+
+syn region vim9Global
+    \ matchgroup=Statement
+    \ start=+\<v\%[global]/+
+    \ skip=/\\./
+    \ end=+/+
+    \ nextgroup=vim9Subst
+    \ contained
+    \ oneline
+    \ skipwhite
+
+# :{range}!{filter} {{{1
+# `:h :range!`
 
 # We only support `:!` when used to filter some lines in the buffer.{{{
 #
@@ -2599,28 +2623,6 @@ syn region vim9String
     \ contains=@vim9StringGroup,vim9Continue
     \ keepend
     \ oneline
-
-# Searches And Globals {{{1
-
-syn region vim9Global
-    \ matchgroup=Statement
-    \ start=+\<g\%[lobal]!\=/+
-    \ skip=/\\./
-    \ end=+/+
-    \ nextgroup=vim9Subst
-    \ contained
-    \ oneline
-    \ skipwhite
-
-syn region vim9Global
-    \ matchgroup=Statement
-    \ start=+\<v\%[global]!\=/+
-    \ skip=/\\./
-    \ end=+/+
-    \ nextgroup=vim9Subst
-    \ contained
-    \ oneline
-    \ skipwhite
 
 # Backtick expansion {{{1
 
