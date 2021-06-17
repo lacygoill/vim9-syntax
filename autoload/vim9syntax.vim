@@ -7,6 +7,9 @@ const OPTFILE: list<string> = readfile($VIMRUNTIME .. '/doc/options.txt')
 # Init {{{1
 
 var event_names: string
+var collation_class_names: string
+var command_address_names: string
+var command_complete_names: string
 
 var option_names: string
 var term_option_names: string
@@ -176,6 +179,35 @@ def vim9syntax#getBuiltinFunctionNames(only_ambiguous = false): string #{{{2
         builtin_funcnames = builtin_funclist->join(' ')
     endif
     return builtin_funcnames
+enddef
+
+def vim9syntax#getCollClassNames(): string #{{{2
+    if collation_class_names != ''
+        return collation_class_names
+    endif
+    collation_class_names = getcompletion('h [:', 'cmdline')
+        ->filter((_, v) => v =~ '^\[:')
+        ->map((_, v) => v->trim('[]:'))
+        ->join('\|')
+    return collation_class_names
+enddef
+
+def vim9syntax#getCommandAddressNames(): string #{{{2
+    if command_address_names != ''
+        return command_address_names
+    endif
+    command_address_names = getcompletion('com -addr=', 'cmdline')
+        ->join('\|')
+    return command_address_names
+enddef
+
+def vim9syntax#getCommandCompleteNames(): string #{{{2
+    if command_complete_names != ''
+        return command_complete_names
+    endif
+    command_complete_names = getcompletion('com -complete=', 'cmdline')
+        ->join('\|')
+    return command_complete_names
 enddef
 
 def vim9syntax#getCommandNames(): string #{{{2

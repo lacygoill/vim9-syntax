@@ -1051,7 +1051,7 @@ syn match vim9DictExprKey /\[.\{-}]\%(:\s\)\@=/
 #}}}1
 # Functions {{{1
 
-syn cluster vim9FuncList contains=vim9DefKey,vim9FuncScope
+syn cluster vim9FuncList contains=vim9DefKey
 
 # `vim9LineComment` needs to be in `@vim9FuncBodyContains`.{{{
 #
@@ -1172,7 +1172,6 @@ syn region vim9LegacyFuncBody
     \ end=/^\s*\<endf\%[unction]/
     \ contained
 
-syn match vim9FuncScope /\<[gs]:/ contained
 syn keyword vim9DefKey def fu[nction] contained
 syn match vim9FuncBlank /\s\+/ contained
 
@@ -1191,10 +1190,10 @@ syn region vim9Block
 
 # Special Filenames, Modifiers, Extension Removal {{{1
 
-syn match vim9SpecFile /<c\%(word\|WORD\)>/ nextgroup=vim9SpecFileMod,vim9Subst
+syn match vim9SpecFile /<c\%(word\|WORD\)>/ nextgroup=vim9SpecFileMod
 
 syn match vim9SpecFile /<\%([acs]file\|amatch\|abuf\)>/
-    \ nextgroup=vim9SpecFileMod,vim9Subst
+    \ nextgroup=vim9SpecFileMod
 
 # Do *not* allow a space to match after `%`.{{{
 #
@@ -1217,10 +1216,10 @@ syn match vim9SpecFile /<\%([acs]file\|amatch\|abuf\)>/
 # For the moment, it looks like a  corner case which we won't encounter often in
 # practice, so let's not try to fix it.
 #}}}
-syn match vim9SpecFile /\s%:/ms=s+1,me=e-1 nextgroup=vim9SpecFileMod,vim9Subst
-syn match vim9SpecFile /\s%$/ms=s+1 nextgroup=vim9SpecFileMod,vim9Subst
-syn match vim9SpecFile /\s%</ms=s+1,me=e-1 nextgroup=vim9SpecFileMod,vim9Subst
-syn match vim9SpecFile /#\d\+\|[#%]<\>/ nextgroup=vim9SpecFileMod,vim9Subst
+syn match vim9SpecFile /\s%:/ms=s+1,me=e-1 nextgroup=vim9SpecFileMod
+syn match vim9SpecFile /\s%$/ms=s+1 nextgroup=vim9SpecFileMod
+syn match vim9SpecFile /\s%</ms=s+1,me=e-1 nextgroup=vim9SpecFileMod
+syn match vim9SpecFile /#\d\+\|[#%]<\>/ nextgroup=vim9SpecFileMod
 syn match vim9SpecFileMod /\%(:[phtreS]\)\+/ contained
 
 # User Commands {{{1
@@ -1295,7 +1294,7 @@ syn match vim9UserCmdAttrb /-addr\>/
 
 exe 'syn match vim9UserCmdAttrbAddress '
     .. '/'
-    .. '=\%(' .. getcompletion('com -addr=', 'cmdline')->join('\|') .. '\)\>'
+    .. '=\%(' .. vim9syntax#getCommandAddressNames() .. '\)\>'
     .. '/'
     .. ' contained'
     .. ' contains=vim9UserCmdAttrbEqual'
@@ -1313,7 +1312,7 @@ syn match vim9UserCmdAttrb /-complete\>/
 # -complete=...
 exe 'syn match vim9UserCmdAttrbComplete '
     .. '/'
-    ..     '=\%(' .. getcompletion('com -complete=', 'cmdline')->join('\|') .. '\)'
+    ..     '=\%(' .. vim9syntax#getCommandCompleteNames() .. '\)'
     .. '/'
     .. ' contained'
     .. ' contains=vim9UserCmdAttrbEqual'
@@ -1524,55 +1523,15 @@ syn cluster vim9SubstRepList contains=
     \ vim9SubstSubstr,
     \ vim9SubstTwoBS
 
-# We don't recognize `(` as a delimiter.{{{
-#
-# That's because  – sometimes  – it  would cause `s`  or `substitute`  to be
-# wrongly highlighted as an Ex command.
-#
-# Example:
-#
-#     def A()
-#         B(s)
-#     enddef
-#
-# Also, when used as a method:
-#
-#     fu A()
-#         eval substitute('aaa', 'b', 'c', '')->B()
-#     endfu
-#
-#     fu A()
-#         call substitute('aaa', 'b', 'c', '')->B()
-#     endfu
-#
-#     fu A()
-#         return histget(':')->execute()->substitute('\n', '', '')
-#     endfu
-#
-# Besides, using `(` as a delimiter is a bad idea.
-# It makes the code more ambiguous and harder to read:
-#
-#     :substitute(pattern(replacement(flags
-#                ^       ^           ^
-#                ✘       ✘           ✘
-#
-# It's easy to choose a different and less problematic delimiter:
-#
-#     :substitute@pattern@replacement@flags
-#                ^       ^           ^
-#                ✔       ✔           ✔
-#}}}
-syn match vim9Subst /\%(^\|[^\\"'(]\)\@1<=\<s\%[ubstitute]\>[:#[:alpha:]"'(]\@!/
+# `:h pattern-delimiter`
+syn match vim9Subst /\<s\%[ubstitute]\ze\([^[:alnum:] \t\|]\@=.\).\{-}\1.\{-}\1/
     \ display
     \ contained
     \ nextgroup=vim9SubstPat
 
-syn match vim9Subst +/\zs\<s\%[ubstitute]\>\ze/+ nextgroup=vim9SubstPat
-syn match vim9Subst /\%(:\+\s*\|^\s*\)s\ze#.\{-}#.\{-}#/ nextgroup=vim9SubstPat
-
 syn region vim9SubstPat
     \ matchgroup=vim9SubstDelim
-    \ start=/\z([^a-zA-Z( \t[\]&]\)/rs=s+1
+    \ start=/\z([^[:alnum:] \t\|]\@=.\)/rs=s+1
     \ skip=/\\\\\|\\\z1/
     \ end=/\z1/re=e-1,me=e-1
     \ contained
@@ -1604,10 +1563,7 @@ syn match vim9CollClassErr /\[:.\{-\}:\]/ contained
 
 exe 'syn match vim9CollClass '
     .. ' /\%#=1\[:'
-    .. '\%('
-    ..         'alnum\|alpha\|blank\|cntrl\|digit\|graph\|lower\|print\|punct'
-    .. '\|' .. 'space\|upper\|xdigit\|return\|tab\|escape\|backspace'
-    .. '\)'
+    .. '\%(' .. vim9syntax#getCollClassNames() .. '\)'
     .. ':\]/'
     .. ' contained'
     .. ' transparent'
@@ -1621,9 +1577,9 @@ syn match vim9SubstFlags /[&cegiIlnpr#]\+/ contained
 
 syn region vim9Global
     \ matchgroup=Statement
-    \ start=+\<g\%[lobal]!\=/+
-    \ skip=/\\./
-    \ end=+/+
+    \ start=/\<g\%[lobal]!\=\z([^[:alnum:] \t\|]\@=.\)/
+    \ skip=/\\\z1/
+    \ end=/\z1/
     \ nextgroup=vim9Subst
     \ contained
     \ oneline
@@ -1631,9 +1587,9 @@ syn region vim9Global
 
 syn region vim9Global
     \ matchgroup=Statement
-    \ start=+\<v\%[global]/+
-    \ skip=/\\./
-    \ end=+/+
+    \ start=/\<v\%[global]\z([^[:alnum:] \t\|]\@=.\)/
+    \ skip=/\\\z1/
+    \ end=/\z1/
     \ nextgroup=vim9Subst
     \ contained
     \ oneline
@@ -2146,28 +2102,62 @@ syn cluster vim9ControlFlow contains=
     \ vim9Return,
     \ vim9TryCatch
 
+# :return
 syn match vim9Return
     \ /\<return\>/
     \ contained
     \ nextgroup=@vim9ExprContains
     \ skipwhite
 
+# :if
+# :elseif
 syn match vim9Conditional
     \ /\<\%(if\|el\%[seif]\)\>/
     \ contained
     \ nextgroup=@vim9ExprContains
     \ skipwhite
 
+# :endif
 syn match vim9Conditional /\<en\%[dif]\>/ contained skipwhite
 
+# :for
 syn match vim9Repeat
-    \ /\<\%(for\=\|wh\%[ile]\)\>/
+    \ /\<for\=\>/
+    \ contained
+    \ skipwhite
+    \ nextgroup=vim9RepeatForVar
+    \ skipwhite
+
+#           vv
+# :for name in ...
+# :for [name, ...] in ...
+#                  ^^
+syn match vim9RepeatForVar /\S\+/ contained nextgroup=vim9RepeatForIn skipwhite
+syn region vim9RepeatForVar
+    \ matchgroup=vim9Sep
+    \ start=/\[/
+    \ end=/]/
+    \ contained
+    \ nextgroup=vim9RepeatForIn
+    \ skipwhite
+syn match vim9RepeatForIn /\<in\>/ contained
+
+# :while
+syn match vim9Repeat
+    \ /\<wh\%[ile]\>/
     \ contained
     \ skipwhite
     \ nextgroup=@vim9ExprContains
 
+# :endfor
+# :endwhile
 syn match vim9Repeat /\<\%(endfor\=\|endw\%[hile]\)\>/ contained skipwhite
 
+# :try
+# :catch
+# :throw
+# :finally
+# :endtry
 syn match vim9TryCatch /\<\%(try\|endtry\|finally\)\>/ contained
 syn match vim9TryCatch /\<throw\>/ contained nextgroup=@vim9ExprContains skipwhite
 syn match vim9TryCatch -\<catch\>\%(\s\+/[^/]*/\)\=- contained contains=vim9TryCatchPattern
@@ -2577,7 +2567,7 @@ syn match vim9CtrlChar /[\x01-\x08\x0b\x0f-\x1f]/
 
 # Beginners - Patterns that involve ^ {{{1
 
-syn match vim9LineComment /^[ \t:]\+#.*$/ contains=@vim9CommentGroup
+syn match vim9LineComment /^[ \t]\+#.*$/ contains=@vim9CommentGroup
 
 # We've tweaked the original rule.{{{
 #
@@ -2837,8 +2827,8 @@ if get(g:, 'vim9_syntax', {})
     #     var name = 123# Error!
     # We need to match a whitespace to avoid reporting spurious errors:{{{
     #
-    #     start=/\S\@1<=#\s/
-    #                    ^^
+    #     start=/[^ \t]\@1<=#\s/
+    #                        ^^
     #
     #     g:autoload#name = 123
     #               ^
@@ -2849,9 +2839,13 @@ if get(g:, 'vim9_syntax', {})
     # non-whitespace.  But in  practice, it seems like a simple  and good enough
     # solution.
     #}}}
+    # And we need to ignore an error if `#` is preceded by `@`.{{{
+    #
+    # Because `@#` might be a reference to a register.
+    #}}}
     syn region vim9Comment
         \ matchgroup=vim9Error
-        \ start=/\S\@1<=#\s/
+        \ start=/[^ \t@]\@1<=#\s/
         \ end=/$/
         \ contains=@vim9CommentGroup
         \ excludenl
@@ -3162,7 +3156,6 @@ hi def link vim9Filter vim9IsCmd
 hi def link vim9FilterLastShellCmd Special
 hi def link vim9FilterShellCmd vim9ShellCmd
 hi def link vim9FuncNameBuiltin Function
-hi def link vim9FuncScope Special
 hi def link vim9Group Type
 hi def link vim9GroupAdd vim9SynOption
 hi def link vim9GroupName vim9Group
@@ -3193,7 +3186,7 @@ hi def link vim9LineComment vim9Comment
 hi def link vim9Map vim9IsCmd
 hi def link vim9MapMod vim9Bracket
 hi def link vim9MapModExpr vim9MapMod
-hi def link vim9MapModKey vim9FuncScope
+hi def link vim9MapModKey Special
 hi def link vim9MtchComment vim9Comment
 hi def link vim9None Constant
 hi def link vim9Norm vim9IsCmd
@@ -3219,6 +3212,7 @@ hi def link vim9RangePatternBwdDelim Delimiter
 hi def link vim9RangePatternFwdDelim Delimiter
 hi def link vim9RangeSpecialChar Special
 hi def link vim9Repeat Repeat
+hi def link vim9RepeatForIn vim9Repeat
 hi def link vim9Return vim9IsCmd
 hi def link vim9ScriptDelim Comment
 hi def link vim9Sep Delimiter
