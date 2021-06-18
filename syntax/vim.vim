@@ -183,6 +183,7 @@ import option_terminal_special from 'vim9syntax.vim'
 # in many places, including in the middle of an expression.
 syn cluster vim9IsCmd contains=
     \ @vim9ControlFlow,
+    \ vim9AbbrevCmd,
     \ vim9Augroup,
     \ vim9Autocmd,
     \ vim9CmdModifier,
@@ -192,19 +193,14 @@ syn cluster vim9IsCmd contains=
     \ vim9EchoHL,
     \ vim9Export,
     \ vim9Filetype,
-    \ vim9FuncCall,
     \ vim9GenericCmd,
-    \ vim9Global,
     \ vim9Highlight,
     \ vim9Import,
     \ vim9LetDeprecated,
     \ vim9Map,
-    \ vim9MayBeAbbrevCmd,
-    \ vim9MayBeCmd,
     \ vim9Norm,
     \ vim9RangeIntroducer,
     \ vim9Set,
-    \ vim9Subst,
     \ vim9Syntax,
     \ vim9Unmap,
     \ vim9UserCmd,
@@ -288,6 +284,10 @@ var cmd_can_be_before: string =
     #}}}
     .. '\%(\s*\%([-+*/%]=\|=\s\|\.\.=\)\|\_s*->\)\@!'
 
+# Order: Must come before the next rule with the lookahead.
+syn match vim9MayBeCmd /\%(\<\h\w*\>\)\@=/
+    \ contained
+    \ nextgroup=vim9Global,vim9Subst
 exe 'syn match vim9MayBeCmd /\%(\<\h\w*\>' .. cmd_can_be_before .. '\)\@=/'
     .. ' contained'
     .. ' nextgroup=@vim9IsCmd'
@@ -1668,24 +1668,10 @@ syn match vim9FilterLastShellCmd /\\\@1<!!/ display contained
 
 # Abbreviations {{{1
 
-exe 'syn match vim9MayBeAbbrevCmd'
-    .. ' /'
-    .. '\<\%('
-    ..             'inorea\%[bbrev]'
-    ..     '\|' .. 'cnorea\%[bbrev]'
-    ..     '\|' .. 'norea\%[bbrev]'
-    ..     '\|' .. 'ia\%[bbrev]'
-    ..     '\|' .. 'ca\%[bbrev]'
-    ..     '\|' .. 'ab\%[breviate]'
-    .. '\)'
-    .. '/'
-    .. ' contained'
-    .. ' contains=vim9IsAbbrevCmd'
-    .. ' nextgroup=@vim9MapLhs,@vim9MapMod'
-
-syn keyword vim9IsAbbrevCmd
+syn keyword vim9AbbrevCmd
     \ ab[breviate] ca[bbrev] inorea[bbrev] cnorea[bbrev] norea[bbrev] ia[bbrev]
     \ contained
+    \ nextgroup=@vim9MapLhs,@vim9MapMod
     \ skipwhite
 
 # Angle-Bracket Notation {{{1
@@ -3183,6 +3169,7 @@ hi def link vim9SynError vim9Error
 hi def link vim9SyncError vim9Error
 hi def link vim9UserCmdAttrbError vim9Error
 
+hi def link vim9AbbrevCmd vim9GenericCmd
 hi def link vim9Args Identifier
 hi def link vim9Augroup vim9GenericCmd
 hi def link vim9AugroupNameEnd Title
@@ -3240,7 +3227,6 @@ hi def link vim9HiStartStop vim9HiTerm
 hi def link vim9HiTerm Type
 hi def link vim9Highlight vim9GenericCmd
 hi def link vim9Import Include
-hi def link vim9IsAbbrevCmd vim9GenericCmd
 hi def link vim9IsOption PreProc
 hi def link vim9IskSep Delimiter
 hi def link vim9LambdaArrow vim9Sep
