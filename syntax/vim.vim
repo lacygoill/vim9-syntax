@@ -96,14 +96,6 @@ endif
 #          ✘         ✘
 
 # TODO:
-#             ✔
-#         v-------v
-#     set mp=pandoc
-#     CompilerSet mp=pandoc
-#                 ^-------^
-#                     ✘
-
-# TODO:
 #                             should be highlighted as a translated keycode?
 #                             v---v
 #     nno <expr> <F3> true ? '<c-a>' : '<c-b>'
@@ -1986,6 +1978,26 @@ exe 'syn match vim9UserCmd '
     .. '\)\@!"'
     .. ' contained'
     .. ' nextgroup=vim9SpaceExtraAfterFuncname'
+
+# `:h :CompilerSet`{{{
+# This lets Vim highlight the name of an option and its value, when we set it with `:CompilerSet`.
+#
+#     CompilerSet mp=pandoc
+#                 ^-------^
+#}}}
+# But it breaks the highlighting of `:CompilerSet`.  It should be highlighted as a *custom* command!{{{
+#
+# No, it should not.
+# The fact that  its name starts with  an uppercase does not mean  it's a custom
+# command.  It's definitely not one:
+#
+#     :com CompilerSet
+#     No user-defined commands found˜
+#}}}
+syn match vim9Set /\<CompilerSet\s/
+    \ contained
+    \ nextgroup=vim9MayBeOptionSet
+    \ skipwhite
 
 # Data Types {{{1
 
