@@ -145,6 +145,21 @@ endif
 # TODO: Whenever we've used `syn case ignore`, should we have enforced a specific case?
 # Similar to what we did for the names of autocmds events.
 
+# Imports {{{1
+
+import builtin_func from 'vim9syntax.vim'
+import builtin_func_ambiguous from 'vim9syntax.vim'
+import collation_class from 'vim9syntax.vim'
+import command_address_type from 'vim9syntax.vim'
+import command_complete_type from 'vim9syntax.vim'
+import command_modifier from 'vim9syntax.vim'
+import command_name from 'vim9syntax.vim'
+import default_highlighting_group from 'vim9syntax.vim'
+import event from 'vim9syntax.vim'
+import option from 'vim9syntax.vim'
+import option_terminal from 'vim9syntax.vim'
+import option_terminal_special from 'vim9syntax.vim'
+
 # All `vim9GenericCmd` are contained by `vim9MayBeCmd`. {{{1
 
 # TODO: Whenever you  use this cluster, make  sure it does not  contain too many
@@ -155,8 +170,8 @@ endif
 # all  commands that  expect  special  arguments which  need  to be  highlighted
 # themselves  (e.g. `:map`);  or  commands which  need to  be  highlighted in  a
 # different way (e.g. `try`).
-# Also, make  sure to  remove the  names of  these commands  from the  output of
-# `vim9syntax#getCommandNames()` (include them in the `special` heredoc).
+# Also, make  sure to  remove the  names of  these commands  from `command_name`
+# (include them in the `special` heredoc).
 #
 # ---
 #
@@ -289,15 +304,23 @@ syn match vim9StartOfLine /^/
 # Builtin Ex commands {{{1
 # Generic ones {{{2
 
-exe 'syn keyword vim9GenericCmd ' .. vim9syntax#getCommandNames() .. ' contained'
+exe 'syn keyword vim9GenericCmd ' .. command_name .. ' contained'
 
 syn match vim9GenericCmd /\<z[-+^.=]\=\>/ contained
 
 # Special ones {{{2
+# A command is special iff it needs a special highlighting.{{{
+#
+# For example, `:for` – as a  control flow statement – should be highlighted
+# differently than `:delete`.   Same thing for `:autocmd`; not  because it needs
+# to be  highlighted differently, but because  some of its arguments  need to be
+# highlighted.
+#}}}
+
 # Modifier commands {{{3
 
 exe 'syn match vim9CmdModifier /'
-    ..     '\<\%(' .. vim9syntax#getCommandModifierNames() .. '\)\>'
+    ..     '\<\%(' .. command_modifier .. '\)\>'
     .. '/'
     .. ' contained'
     .. ' nextgroup=vim9CmdBang,vim9MayBeCmd,vim9RangeIntroducer'
@@ -337,7 +360,10 @@ exe 'syn region vim9CmdTakesExpr'
 
 # Import/Export {{{3
 
-syn match vim9Export /\<export\>/ contained
+syn match vim9Export /\<export\>/
+    \ contained
+    \ nextgroup=vim9Declare
+    \ skipwhite
 
 syn match vim9Import /\<\%(import\|from\|as\)\>/
     \ contained
@@ -501,13 +527,20 @@ exe 'syn match vim9MayBeOptionSet '
 syn match vim9OptionSigil /&\%([gl]:\)\=/ contained
 
 exe 'syn keyword vim9IsOption '
-    .. vim9syntax#getOptionNames()
+    .. option
     .. ' contained'
     .. ' nextgroup=vim9MayBeOptionScoped,vim9SetEqual'
     .. ' skipwhite'
 
-# terminal options are tricky
-vim9syntax#installTerminalOptionsRules()
+exe 'syn keyword vim9IsOption '
+    .. option_terminal
+    .. ' nextgroup=vim9MayBeOptionScoped,vim9SetEqual'
+
+exe 'syn match vim9IsOption '
+    .. '/\V'
+    .. option_terminal_special
+    .. '/'
+    .. ' nextgroup=vim9MayBeOptionScoped,vim9SetEqual'
 
 # Modifiers (e.g. `&vim`) {{{2
 
@@ -673,16 +706,15 @@ syn match vim9AutocmdMod /++\%(nested\|once\)/
 # Events {{{2
 
 # TODO: Hide the bad case error behind an option.
-var events: string = vim9syntax#getEventNames()
 syn case ignore
-exe 'syn keyword vim9AutocmdEventBadCase ' .. events
+exe 'syn keyword vim9AutocmdEventBadCase ' .. event
     .. ' contained'
     .. ' nextgroup=vim9AutocmdPat,vim9AutocmdEndOfEventList'
     .. ' skipwhite'
 syn case match
 
 # Order: Must come after `vim9AutocmdEventBadCase`.
-exe 'syn keyword vim9AutocmdEventGoodCase ' .. events
+exe 'syn keyword vim9AutocmdEventGoodCase ' .. event
     .. ' contained'
     .. ' nextgroup=vim9AutocmdPat,vim9AutocmdEndOfEventList'
     .. ' skipwhite'
@@ -802,7 +834,7 @@ syn case match
 # Default highlighting groups {{{1
 
 syn case ignore
-exe 'syn keyword vim9HLGroup contained ' .. vim9syntax#getDefaultHighlightingGroupNames()
+exe 'syn keyword vim9HLGroup contained ' .. default_highlighting_group
 
 # Do *not* turn  this `match` into a `keyword` rule;  `conceal` would be wrongly
 # interpreted as an argument to `:syntax`.
@@ -824,13 +856,11 @@ syn case match
 # necessary regex would be too costly.
 #}}}
 exe 'syn keyword vim9FuncNameBuiltin '
-    .. vim9syntax#getBuiltinFunctionNames()
+    .. builtin_func
     .. ' contained'
 
 exe 'syn match vim9FuncNameBuiltin '
-    .. '/\<\%('
-    ..     vim9syntax#getBuiltinFunctionNames(true)
-    .. '\)'
+    .. '/\<\%(' .. builtin_func_ambiguous .. '\)'
     .. '(\@='
     .. '/'
     .. ' contained'
@@ -1297,7 +1327,7 @@ syn match vim9UserCmdAttrb /-addr\>/
 
 exe 'syn match vim9UserCmdAttrbAddress '
     .. '/'
-    .. '=\%(' .. vim9syntax#getCommandAddressNames() .. '\)\>'
+    .. '=\%(' .. command_address_type .. '\)\>'
     .. '/'
     .. ' contained'
     .. ' contains=vim9UserCmdAttrbEqual'
@@ -1315,7 +1345,7 @@ syn match vim9UserCmdAttrb /-complete\>/
 # -complete=...
 exe 'syn match vim9UserCmdAttrbComplete '
     .. '/'
-    ..     '=\%(' .. vim9syntax#getCommandCompleteNames() .. '\)'
+    ..     '=\%(' .. command_complete_type .. '\)'
     .. '/'
     .. ' contained'
     .. ' contains=vim9UserCmdAttrbEqual'
@@ -1579,7 +1609,7 @@ syn match vim9CollationClassErr /\[:.\{-\}:\]/ contained
 
 exe 'syn match vim9CollationClass '
     .. ' /\%#=1\[:'
-    .. '\%(' .. vim9syntax#getCollationClassNames() .. '\)'
+    .. '\%(' .. collation_class .. '\)'
     .. ':\]/'
     .. ' contained'
     .. ' transparent'
