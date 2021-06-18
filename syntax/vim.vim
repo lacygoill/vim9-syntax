@@ -145,20 +145,20 @@ endif
 # TODO: Whenever we've used `syn case ignore`, should we have enforced a specific case?
 # Similar to what we did for the names of autocmds events.
 
-# Variables {{{1
+# Imports {{{1
 
-var builtin_func: string = vim9syntax#BuiltinFunc()
-var builtin_func_ambiguous: string = vim9syntax#BuiltinFuncAmbiguous()
-var collation_class: string = vim9syntax#CollationClass()
-var command_address_type: string = vim9syntax#CommandAddressType()
-var command_complete_type: string = vim9syntax#CommandCompleteType()
-var command_modifier: string = vim9syntax#CommandModifer()
-var command_name: string = vim9syntax#CommandName()
-var default_highlighting_group: string = vim9syntax#DefaultHighlightingGroup()
-var event: string = vim9syntax#Event()
-var option: string = vim9syntax#Option()
-var option_terminal: string = vim9syntax#OptionTerminal()
-var option_terminal_special: string = vim9syntax#OptionTerminal()
+import builtin_func from 'vim9syntax.vim'
+import builtin_func_ambiguous from 'vim9syntax.vim'
+import collation_class from 'vim9syntax.vim'
+import command_address_type from 'vim9syntax.vim'
+import command_complete_type from 'vim9syntax.vim'
+import command_modifier from 'vim9syntax.vim'
+import command_name from 'vim9syntax.vim'
+import default_highlighting_group from 'vim9syntax.vim'
+import event from 'vim9syntax.vim'
+import option from 'vim9syntax.vim'
+import option_terminal from 'vim9syntax.vim'
+import option_terminal_special from 'vim9syntax.vim'
 
 # All `vim9GenericCmd` are contained by `vim9MayBeCmd`. {{{1
 
@@ -635,7 +635,7 @@ syn match vim9SetNumberValue /\d\+\_s\@=/
 #}}}
 
 syn match vim9Augroup
-    \ /\<aug\%[roup]\ze\s\+\h\%(\w\|-\)*/
+    \ /\<aug\%[roup]\ze!\=\s\+\h\%(\w\|-\)*/
     \ contained
     \ nextgroup=vim9AugroupNameEnd
     \ skipwhite
@@ -3144,7 +3144,7 @@ hi def link vim9GenericCmd Statement
 #                                    ✘
 #}}}
 if execute('hi vim9UserCmd') =~ '\<cleared$'
-    import Derive from 'vim9syntax.vim'
+    import Derive from 'Vim9SyntaxUtil.vim'
     Derive('vim9UserFuncNameCustom', 'Function', 'term=bold cterm=bold gui=bold')
     Derive('vim9UserCmd', 'vim9GenericCmd', 'term=bold cterm=bold gui=bold')
     Derive('vim9FuncHeader', 'Function', 'term=bold cterm=bold gui=bold')
