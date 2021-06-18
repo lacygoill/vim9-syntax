@@ -232,25 +232,6 @@ const DEPRECATED_CMDS: list<string> =<< trim END
     t
 END
 
-const VARIOUS_SPECIAL_CMDS: list<string> =<< trim END
-    augroup
-    autocmd
-    command
-    doautoall
-    doautocmd
-    echohl
-    export
-    global
-    highlight
-    import
-    normal
-    set
-    setlocal
-    substitute
-    syntax
-    z
-END
-
 const CONTROL_FLOW_CMDS: list<string> =<< trim END
     if
     else
@@ -272,6 +253,17 @@ const DECLARE_CMDS: list<string> =<< trim END
     final
     unlet
     var
+END
+
+const DO_CMDS: list<string> =<< trim END
+    argdo
+    bufdo
+    cdo
+    cfdo
+    ldo
+    lfdo
+    tabdo
+    windo
 END
 
 const EXPECT_EXPR_CMDS: list<string> =<< trim END
@@ -333,12 +325,32 @@ const MAPPING_CMDS: list<string> =<< trim END
     xmapclear
 END
 
+const VARIOUS_SPECIAL_CMDS: list<string> =<< trim END
+    augroup
+    autocmd
+    command
+    doautoall
+    doautocmd
+    echohl
+    export
+    global
+    highlight
+    import
+    normal
+    set
+    setlocal
+    substitute
+    syntax
+    z
+END
+
 const SPECIAL_CMDS: list<string> =
-      VARIOUS_SPECIAL_CMDS
-    + CONTROL_FLOW_CMDS
+      CONTROL_FLOW_CMDS
     + DECLARE_CMDS
+    + DO_CMDS
     + EXPECT_EXPR_CMDS
     + MAPPING_CMDS
+    + VARIOUS_SPECIAL_CMDS
 
 def CommandName(): string
     var to_abbreviate: list<string> = getcompletion('', 'command')

@@ -78,6 +78,17 @@ endif
 #     ~/.vim/pack/mine/opt/doc/autoload/doc/mapping.vim
 #}}}
 
+# TODO: Try to extract as many complex regexes into importable items.
+# Look for the pattern `^exe`.
+
+# TODO: Try to remove as many `Order:` requirements as possible.
+#
+# If such a requirement involves 2 rules in the same section, that should be fine.
+# But not if  it involves 2 rules  in different sections; because  in that case,
+# you might one day re-order the section, and unknowingly break the requirement
+#
+# To remove such a requirement, try to improve some of your regexes.
+
 # TODO:
 #
 #     edit ++encoding=cp437
@@ -195,6 +206,7 @@ syn cluster vim9IsCmd contains=
     \ vim9CmdModifier,
     \ vim9CmdTakesExpr,
     \ vim9Declare,
+    \ vim9DoCmds,
     \ vim9Doautocmd,
     \ vim9EchoHL,
     \ vim9Export,
@@ -244,6 +256,11 @@ syn match vim9MayBeCmd /\%(\<\h\w*\>\)\@=/
 exe 'syn match vim9MayBeCmd /\%(\<\h\w*\>' .. command_can_be_before .. '\)\@=/'
     .. ' contained'
     .. ' nextgroup=@vim9IsCmd'
+
+# Now  that  we  have  a  syntax group  validating  possible  Ex  command  names
+# (`vim9MayBeCmd`), let's use  it in relevant contexts.  We won't  list them all
+# here; only the ones which don't have  a dedicated section (i.e. start of line,
+# and after a bar).
 
 # An Ex command might be at the start of a line.
 syn match vim9StartOfLine /^/
@@ -2089,7 +2106,7 @@ syn region vim9DataTypeCastComposite
     \ contains=vim9DataTypeFuncref,vim9DataTypeListDict,vim9ValidSubType
     \ oneline
 
-# Control Flow + Return {{{1
+# Control Flow {{{1
 
 syn cluster vim9ControlFlow contains=
     \ vim9Conditional,
@@ -2167,6 +2184,15 @@ syn match vim9TryCatch -\<catch\>\%(\s\+/[^/]*/\)\=- contained contains=vim9TryC
 # lookbehind.  But it would be more expensive.
 syn match vim9TryCatchPattern +/.*/+ contained contains=vim9TryCatchPatternDelim
 syn match vim9TryCatchPatternDelim +/+ contained
+
+# `:*do` {{{1
+
+syn match vim9DoCmds
+    \ /\<\%(arg\|buf\|cf\=\|lf\=\|tab\|win\)do\>/
+    \ contained
+    \ skipwhite
+    \ nextgroup=vim9MayBeCmd
+    \ skipwhite
 
 # Norm {{{1
 
@@ -3143,6 +3169,7 @@ hi def link vim9DataTypeCast vim9DataType
 hi def link vim9Declare Identifier
 hi def link vim9DefKey Keyword
 hi def link vim9DictIsLiteralKey String
+hi def link vim9DoCmds vim9Repeat
 hi def link vim9Doautocmd vim9GenericCmd
 hi def link vim9EchoHL vim9GenericCmd
 hi def link vim9EchoHLNone vim9Group
