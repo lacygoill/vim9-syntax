@@ -252,7 +252,8 @@ syn match vim9StartOfLine /^/
     \     vim9FuncHeader,
     \     vim9LegacyFunction,
     \     vim9MayBeCmd,
-    \     vim9RangeIntroducer
+    \     vim9RangeIntroducer,
+    \     vim9UselessColon
 
 # Or in the middle of a line, after a bar.
 syn match vim9CmdSep /|/ skipwhite nextgroup=vim9MayBeCmd
@@ -369,6 +370,19 @@ syn cluster vim9RangeContains contains=
 syn match vim9RangeIntroducer /\%(^\|\s\):\S\@=/
     \ nextgroup=@vim9RangeContains,vim9RangeMissingSpecifier1
     \ contained
+
+# Sometimes, we might want to add a colon in front of an Ex command, even if it's not necessary.{{{
+#
+# Maybe for the sake of consistency:
+#
+#     :1,2 s/.../.../
+#     :3,4 s/.../.../
+#     : s/.../.../
+#     ^
+#     to get a column of colons
+#}}}
+# Order: Must come after `vim9RangeIntroducer`.
+syn match vim9UselessColon /\s\=:/ contained nextgroup=vim9MayBeCmd skipwhite
 
 syn cluster vim9RangeAfterSpecifier contains=
     \ @vim9RangeContains,
