@@ -266,6 +266,7 @@ const VARIOUS_SPECIAL_CMDS: list<string> =<< trim END
     import
     normal
     set
+    setlocal
     substitute
     syntax
     z
