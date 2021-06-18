@@ -114,6 +114,7 @@ const SPECIAL_CMDS: list<string> =<< trim END
     endwhile
     echo
     echoconsole
+    echohl
     echomsg
     eval
     execute
@@ -121,6 +122,9 @@ const SPECIAL_CMDS: list<string> =<< trim END
     final
     unlet
     var
+    import
+    export
+    syntax
     cmap
     cnoremap
     imap
