@@ -1,4 +1,4 @@
-vim9script noclear
+vim9script
 
 # Functions {{{1
 # Interface {{{2
@@ -262,6 +262,7 @@ const VARIOUS_SPECIAL_CMDS: list<string> =<< trim END
     echohl
     export
     global
+    highlight
     import
     normal
     set
@@ -283,6 +284,7 @@ const CONTROL_FLOW_CMDS: list<string> =<< trim END
     catch
     throw
     endtry
+    return
 END
 
 const DECLARE_CMDS: list<string> =<< trim END
@@ -351,7 +353,8 @@ const MAPPING_CMDS: list<string> =<< trim END
     xmapclear
 END
 
-const SPECIAL_CMDS: list<string> = VARIOUS_SPECIAL_CMDS
+const SPECIAL_CMDS: list<string> =
+      VARIOUS_SPECIAL_CMDS
     + CONTROL_FLOW_CMDS
     + DECLARE_CMDS
     + EXPECT_EXPR_CMDS
@@ -423,7 +426,7 @@ export const event: string =
 
 def Option(): string
     var helptags: list<string>
-    eval readfile($VIMRUNTIME .. '/doc/options.txt')
+    readfile($VIMRUNTIME .. '/doc/options.txt')
         ->join()
         ->substitute('\*''[a-z]\{2,\}''\*',
             (m: list<string>): string => !!helptags->add(m[0]) ? '' : '', 'g')

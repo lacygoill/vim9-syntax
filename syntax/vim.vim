@@ -1981,7 +1981,9 @@ exe 'syn match vim9UserCmd '
     #     ...
     #}}}
     ..     '\s\+\%([-+*/%]\=\|\.\.\)='
-    # Don't highlight a funcref expression at the start of a line; nor a key in a literal dictionary.{{{
+    .. '\|'
+    .. '\%('
+    # Don't highlight a funcref expression at the start of a line.{{{
     #
     #     def Foo(): string
     #         return 'some text'
@@ -1995,8 +1997,9 @@ exe 'syn match vim9UserCmd '
     #     vvv
     #     Foo->Bar()
     #        ->setline(1)
-    #
-    # ---
+    #}}}
+    ..     '\_s*->'
+    # Nor a key in a literal dictionary.{{{
     #
     #     var d = {
     #         Key: 123,
@@ -2018,7 +2021,15 @@ exe 'syn match vim9UserCmd '
     # But depending on  how you've scrolled vertically in the  buffer, the issue
     # might not be reproducible or disappear.
     #}}}
-    .. '\|' .. '\%(\s*->\|:\)'
+    ..     '\|' .. '\s*:'
+    # Nor an expression followed by an operator on the next line.{{{
+    #
+    #     var name =
+    #           Foo
+    #         + Bar
+    #}}}
+    ..     '\|' .. '\_s*\%([-+*/%?]\|\.\.\)'
+    .. '\)'
     .. '\)\@!"'
     .. ' contained'
     .. ' nextgroup=vim9SpaceExtraAfterFuncname'
@@ -3264,7 +3275,7 @@ hi def link vim9RangePatternFwdDelim Delimiter
 hi def link vim9RangeSpecialChar Special
 hi def link vim9Repeat Repeat
 hi def link vim9RepeatForIn vim9Repeat
-hi def link vim9Return vim9GenericCmd
+hi def link vim9Return vim9DefKey
 hi def link vim9ScriptDelim Comment
 hi def link vim9Sep Delimiter
 hi def link vim9Set vim9GenericCmd
