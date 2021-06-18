@@ -19,8 +19,8 @@ var lookbehind: string
 # In particular,  we don't want  the color choices we  make for Vim9  scripts to
 # affect legacy Vim scripts.
 # That could happen if  we use a syntax group name which is  already used in the
-# default Vim syntax plugin,  and we load a Vim9 script file  after a legacy Vim
-# script file.
+# legacy syntax plugin, and we load a Vim9 script file after a legacy Vim script
+# file.
 #
 # Remember that the name  you choose for a syntax group  affects the name you'll
 # have to use in a `:hi link` command.  And while syntax items are buffer-local,
@@ -28,14 +28,14 @@ var lookbehind: string
 #
 # ---
 #
-# Q: But what if the default syntax plugin also uses the `vim9` prefix?
+# Q: But what if the legacy syntax plugin also uses the `vim9` prefix?
 #
 # A: That should not be an issue.
 #
-# If we and the default plugin install the same `vim9Foo` rule, we most probably
+# If we and the legacy plugin install  the same `vim9Foo` rule, we most probably
 # also want the same colors.
 #
-# For example, right now, the default syntax plugin installs these groups:
+# For example, right now, the legacy syntax plugin installs these groups:
 #
 #    - `vim9Comment`
 #    - `vim9LineComment`
@@ -83,9 +83,9 @@ var lookbehind: string
 
 # TODO:
 #
-#     noa nos edit ++encoding=cp437
-#                  ^^        ^
-#                  ✘         ✘
+#     edit ++encoding=cp437
+#          ^^        ^
+#          ✘         ✘
 
 # TODO:
 #
@@ -106,19 +106,6 @@ var lookbehind: string
 # probably what users would expect.  Unfortunately,  mappings are not run in the
 # context  of the  script where  they  were defined.   At the  very least,  this
 # pitfall should be documented.
-
-# TODO: Consider this highlighting:
-#
-#             v-------v
-#     augroup MyAugroup
-#     ...
-#     augroup END
-#             ^^^
-#
-# Highlight both of these tokens with `vim9AutocmdGroup`.
-# Rationale: More consistent (we  already highlight the name of  an augroup with
-# this rule in an `:au` command), and symmetrical (the arguments in the starting
-# and ending commands would be highlighted in the same way).
 
 # TODO: Find the commands which expect a pattern as argument.
 # Highlight it as a string.
@@ -183,6 +170,7 @@ var lookbehind: string
 # in many places, including in the middle of an expression.
 syn cluster vim9CmdAllowedHere contains=
     \ @vim9ControlFlow,
+    \ vim9Augroup,
     \ vim9Autocmd,
     \ vim9CmdModifier,
     \ vim9CmdTakesExpr,
@@ -268,30 +256,7 @@ syn match vim9IsCmd /\<z[-+^.=]\=\>/ contained
 # Special ones {{{2
 # Modifier commands {{{3
 
-exe 'syn match vim9CmdModifier /\<\%('
-    ..         'bel\%[owright]'
-    .. '\|' .. 'bo\%[tright]'
-    .. '\|' .. 'bro\%[wse]'
-    .. '\|' .. 'hid\%[e]'
-    .. '\|' .. 'keepalt'
-    .. '\|' .. 'keep\%[jumps]'
-    .. '\|' .. 'kee\%[pmarks]'
-    .. '\|' .. 'keepp\%[atterns]'
-    .. '\|' .. 'lefta\%[bove]'
-    .. '\|' .. 'leg\%[acy]'
-    .. '\|' .. 'loc\%[kmarks]'
-    .. '\|' .. 'noa\%[utocmd]'
-    .. '\|' .. 'nos\%[wapfile]'
-    .. '\|' .. 'rightb\%[elow]'
-    .. '\|' .. 'san\%[dbox]'
-    .. '\|' .. 'sil\%[ent]'
-    .. '\|' .. 'tab'
-    .. '\|' .. 'to\%[pleft]'
-    .. '\|' .. 'uns\%[ilent]'
-    .. '\|' .. 'verb\%[ose]'
-    .. '\|' .. 'vert\%[ical]'
-    .. '\|' .. 'vim9\%[cmd]'
-    .. '\)\>/'
+exe 'syn match vim9CmdModifier /\<\%(' .. vim9syntax#getCommandModifierNames() .. '\)\>/'
     .. ' contained'
     .. ' nextgroup=@vim9CmdAllowedHere,vim9CmdBang,vim9RangeIntroducer'
     .. ' skipwhite'
@@ -569,62 +534,59 @@ syn match vim9SetNumberValue /\d\+\_s\@=/
 # Autocmds {{{1
 # `:augroup` {{{2
 
-syn cluster vim9AugroupList contains=
-    \ @vim9DataTypeCluster,
-    \ vim9Augroup,
-    \ vim9BacktickExpansion,
-    \ vim9BacktickExpansionVimExpr,
-    \ vim9Block,
-    \ vim9Bool,
-    \ vim9CmdModifier,
-    \ vim9CmdSep,
-    \ vim9Comment,
-    \ vim9Conditional,
-    \ vim9Continue,
-    \ vim9CtrlChar,
-    \ vim9Declare,
-    \ vim9Dict,
-    \ vim9EnvVar,
-    \ vim9FuncCall,
-    \ vim9FuncHeader,
-    \ vim9HereDoc,
-    \ vim9LegacyFunction,
-    \ vim9Map,
-    \ vim9MayBeOptionScoped,
-    \ vim9Notation,
-    \ vim9Number,
-    \ vim9Oper,
-    \ vim9OperAssign,
-    \ vim9OperParen,
-    \ vim9Region,
-    \ vim9Repeat,
-    \ vim9Return,
-    \ vim9Set,
-    \ vim9SpecFile,
-    \ vim9StartOfLine,
-    \ vim9String,
-    \ vim9Subst,
-    \ vim9SynLine,
-    \ vim9UserCmdDef
+# The default syntax plugin wraps all the contents of an augroup inside a region.{{{
+#
+# I think it does  that to highlight a possible error, in case  we wrote the end
+# statement without the starting one:
+#
+#         autocmd ...
+#         ...
+#     augroup END
+#     ^---------^
+#        error, because orphan
+#}}}
+#   We don't.{{{
+#
+# It creates too many issues and complexity.
+# Technically, you can write any statement between the start and end of an augroup.
+# That includes, for example, a function.
+# But the default syntax plugin wrongly handles such a situation:
+#
+#     augroup Name | au!
+#         def Func()
+#         ^^^
+#         wrongly highlighted as an option (:def is confused with 'def')
+#         enddef
+#     augroup END
+#
+# That's because the region doesn't include the right syntax group(s).
+# Finding and writing the right ones is cumbersome is brittle.
+#
+# Besides, the  gain is dubious; I  can't remember the  last time we did  such a
+# mistake.
+#
+# Finally,  it's inconsistent.   Why warning  against  the missing  start of  an
+# augroup, but not the missing start of a function?
+#
+#         eval 0
+#     endfu
+#     ^---^
+#     orphan, but still highlighted as a command; not as an error
+#
+# It's not worth the trouble.
+#}}}
 
-# Actually, the case of `END` does not matter.{{{
-#
-# Also, the name of an augroup can contain any keyword character.
-# But in both cases, I prefer to enforce widely adopted conventions.
-#}}}
-# `keepend` is necessary to prevent `vim9MayBeCmd` from consuming `END`.{{{
-#
-# This would force Vim to wrongly extend  the augroup/region to find a new match
-# for the region's end.
-#}}}
-# The  `end`  pattern needs  `^\s*`  to  prevent a  wrong  match  on a  possible
-# commented augroup inside the current augroup.
-syn region vim9Augroup
-    \ start=/\<aug\%[roup]\s\+\%(END\)\@!\h\%(\w\|-\)*/
-    \ matchgroup=vim9AugroupEnd
-    \ end=/^\s*aug\%[roup]\s\+\zsEND\>/
-    \ contains=@vim9AugroupList
-    \ keepend
+syn match vim9Augroup
+    \ /\<aug\%[roup]\ze\s\+\h\%(\w\|-\)*/
+    \ contained
+    \ nextgroup=vim9AugroupNameEnd
+    \ skipwhite
+
+#          v--v
+# :augroup Name
+# :augroup END
+#          ^^^
+syn match vim9AugroupNameEnd /\h\%(\w\|-\)*/ contained
 
 # `:autocmd` {{{2
 
@@ -744,7 +706,7 @@ syn keyword vim9Declare cons[t] final unl[et] var
     \ skipwhite
     \ nextgroup=vim9ListUnpackDeclaration,vim9ReservedNames
 
-# NOTE: In the default syntax plugin, `vimLetHereDoc` contains `vimComment` and `vim9Comment`.{{{
+# NOTE: In the legacy syntax plugin, `vimLetHereDoc` contains `vimComment` and `vim9Comment`.{{{
 #
 # That's wrong.
 #
@@ -1071,7 +1033,7 @@ syn cluster vim9FuncList contains=vim9DefKey
 # So that the comment leader is highlighted  on an empty commented line inside a
 # function.
 #}}}
-# The default script includes `vimSynType` inside `@vimFuncBodyList`.  Don't do the same.{{{
+# The legacy script includes `vimSynType` inside `@vimFuncBodyList`.  Don't do the same.{{{
 #
 #     ✘
 #     syn cluster vim9FuncBodyContains add=vim9SynType
@@ -1185,8 +1147,13 @@ syn region vim9LegacyFuncBody
     \ end=/^\s*\<endf\%[unction]/
     \ contained
 
-syn keyword vim9DefKey def fu[nction] contained
-syn match vim9FuncBlank /\s\+/ contained
+syn keyword vim9DefKey def fu[nction]
+    \ contained
+    \ nextgroup=vim9DefBangError,vim9DefBang
+# :def! is valid
+syn match vim9DefBang /!/ contained
+# but only for global functions
+syn match vim9DefBangError /!\%(\s\+g:\)\@!/ contained
 
 syn keyword vim9Pattern start skip end contained
 
@@ -1674,8 +1641,15 @@ syn case ignore
 exe 'syn match vim9Notation'
     .. ' /'
     .. '\%#=1\%(\\\|<lt>\)\='
-    .. '<' .. '\%([scamd]-\)\{0,4}x\='
+    .. '<' .. '\%([scamd]-\)\{,3}x\='
     .. '\%('
+    # TODO: Build the pattern programmatically:
+    #
+    #     echo getcompletion('set <', 'cmdline')
+    #         ->filter((_, v: string): bool => v !~ '^<t_')
+    #
+    # There are many completions.
+    # Consider using nested keywords to be faster.
     .. 'f\d\{1,2}\|[^ \t:]\|cr\|lf\|linefeed\|return\|k\=del\%[ete]'
     .. '\|' .. 'bs\|backspace\|tab\|esc\|right\|left\|help\|undo\|insert\|ins'
     .. '\|' .. 'mouse\|k\=home\|k\=end\|kplus\|kminus\|kdivide\|kmultiply'
@@ -2190,7 +2164,7 @@ syn match vim9TryCatch -\<catch\>\%(\s\+/[^/]*/\)\=- contained contains=vim9TryC
 # Let's start with a `:catch` pattern.
 #
 # NOTE: We  could  achieve  the  desired  result  with  a  single  rule,  and  a
-# lookbehind.  But it would be more costly.
+# lookbehind.  But it would be more expensive.
 syn match vim9TryCatchPattern +/.*/+ contained contains=vim9TryCatchPatternDelim
 syn match vim9TryCatchPatternDelim +/+ contained
 
@@ -3008,7 +2982,7 @@ endif
 #            ✔
 #          recognized as an Ex command
 #
-# Note that this issue also affects the legacy script.
+# Note that this issue also affects the legacy syntax plugin.
 # We could try to fix it by removing all digits from the *syntax* option 'iskeyword':
 #
 #     :syntax iskeyword @,_
@@ -3117,6 +3091,7 @@ hi def link vim9Error Error
 
 hi def link vim9AutocmdEventBadCase vim9Error
 hi def link vim9CollationClassErr vim9Error
+hi def link vim9DefBangError vim9Error
 hi def link vim9DictLiteralLegacyDeprecated vim9Error
 hi def link vim9DictMayBeLiteralKey vim9Error
 hi def link vim9FTError vim9Error
@@ -3145,11 +3120,12 @@ hi def link vim9SyncError vim9Error
 hi def link vim9UserCmdAttrbError vim9Error
 
 hi def link vim9Args Identifier
-hi def link vim9AugroupEnd Special
+hi def link vim9Augroup vim9IsCmd
+hi def link vim9AugroupNameEnd Title
 hi def link vim9Autocmd vim9IsCmd
 hi def link vim9AutocmdAllEvents vim9AutocmdEventGoodCase
 hi def link vim9AutocmdEventGoodCase Type
-hi def link vim9AutocmdGroup Title
+hi def link vim9AutocmdGroup vim9AugroupNameEnd
 hi def link vim9AutocmdMod Special
 hi def link vim9AutocmdPat vim9String
 hi def link vim9BacktickExpansion vim9ShellCmd

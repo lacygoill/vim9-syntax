@@ -10,6 +10,7 @@ var event_names: string
 var collation_class_names: string
 var command_address_names: string
 var command_complete_names: string
+var command_modifier_names: string
 var default_highlighting_group_names: string
 
 var option_names: string
@@ -49,6 +50,7 @@ const MODIFIER_CMDS: list<string> =<< trim END
     belowright
     botright
     browse
+    confirm
     hide
     keepalt
     keepjumps
@@ -89,6 +91,7 @@ END
 #}}}
 # Same thing for `:g`, `:if`, ...
 const SPECIAL_CMDS: list<string> =<< trim END
+    augroup
     autocmd
     doautocmd
     doautoall
@@ -161,7 +164,8 @@ const SPECIAL_CMDS: list<string> =<< trim END
 END
 
 # Functions {{{1
-def vim9syntax#getBuiltinFunctionNames(only_ambiguous = false): string #{{{2
+# Interface {{{2
+def vim9syntax#getBuiltinFunctionNames(only_ambiguous = false): string #{{{3
     if only_ambiguous
         return ambiguous_funcnames->join('\|')
     endif
@@ -182,7 +186,7 @@ def vim9syntax#getBuiltinFunctionNames(only_ambiguous = false): string #{{{2
     return builtin_funcnames
 enddef
 
-def vim9syntax#getCollationClassNames(): string #{{{2
+def vim9syntax#getCollationClassNames(): string #{{{3
     if collation_class_names != ''
         return collation_class_names
     endif
@@ -193,7 +197,7 @@ def vim9syntax#getCollationClassNames(): string #{{{2
     return collation_class_names
 enddef
 
-def vim9syntax#getCommandAddressNames(): string #{{{2
+def vim9syntax#getCommandAddressNames(): string #{{{3
     if command_address_names != ''
         return command_address_names
     endif
@@ -202,7 +206,7 @@ def vim9syntax#getCommandAddressNames(): string #{{{2
     return command_address_names
 enddef
 
-def vim9syntax#getCommandCompleteNames(): string #{{{2
+def vim9syntax#getCommandCompleteNames(): string #{{{3
     if command_complete_names != ''
         return command_complete_names
     endif
@@ -211,52 +215,45 @@ def vim9syntax#getCommandCompleteNames(): string #{{{2
     return command_complete_names
 enddef
 
-def vim9syntax#getCommandNames(): string #{{{2
+def vim9syntax#getCommandModifierNames(): string #{{{3
+    if command_modifier_names != ''
+        return command_modifier_names
+    endif
+    command_modifier_names = MODIFIER_CMDS
+        ->Abbreviate(true)
+        ->join('\|')
+    return command_modifier_names
+enddef
+
+def vim9syntax#getCommandNames(): string #{{{3
     if command_names != ''
         return command_names
     endif
 
-    var to_iterate_over: list<string> = getcompletion('', 'command')
+    var to_abbreviate: list<string> = getcompletion('', 'command')
           ->filter((_, v: string): bool => v =~ '^[a-z]')
     for cmd in DEPRECATED_CMDS + MODIFIER_CMDS + NEED_FIX_CMDS + SPECIAL_CMDS
-        var i: number = to_iterate_over->index(cmd)
+        var i: number = to_abbreviate->index(cmd)
         if i == -1
             continue
         endif
-        to_iterate_over->remove(i)
+        to_abbreviate->remove(i)
     endfor
 
-    var cmds: list<string>
-    for cmd in to_iterate_over
-        var len: number
-        for l in strcharlen(cmd)->range()->reverse()
-            if l == 0
-                continue
-            endif
-            if cmd->slice(0, l)->fullcommand() != cmd
-                len = l
-                break
-            endif
-        endfor
-        if len == cmd->strcharlen() - 1
-            cmds += [cmd]
-        else
-            cmds += [cmd[: len] .. '[' .. cmd[len + 1 :] .. ']']
-        endif
-    endfor
+    var abbreviated: list<string> = to_abbreviate->Abbreviate()
 
     var missing: list<string> =<< trim END
         addd
         fina[lly]
         in
     END
-    cmds += missing
+    abbreviated += missing
 
-    command_names = cmds->join()
+    command_names = abbreviated->join()
     return command_names
 enddef
 
-def vim9syntax#getDefaultHighlightingGroupNames(): string #{{{2
+def vim9syntax#getDefaultHighlightingGroupNames(): string #{{{3
     if default_highlighting_group_names != ''
         return default_highlighting_group_names
     endif
@@ -271,7 +268,7 @@ def vim9syntax#getDefaultHighlightingGroupNames(): string #{{{2
     return default_highlighting_group_names
 enddef
 
-def vim9syntax#getEventNames(): string #{{{2
+def vim9syntax#getEventNames(): string #{{{3
     if event_names != ''
         return event_names
     else
@@ -281,7 +278,7 @@ def vim9syntax#getEventNames(): string #{{{2
     return event_names
 enddef
 
-def vim9syntax#getOptionNames(): string #{{{2
+def vim9syntax#getOptionNames(): string #{{{3
     if option_names != ''
         return option_names
     endif
@@ -318,7 +315,7 @@ def vim9syntax#getOptionNames(): string #{{{2
     return option_names
 enddef
 
-def vim9syntax#installTerminalOptionsRules() #{{{2
+def vim9syntax#installTerminalOptionsRules() #{{{3
     if has('vim_starting')
         # We need to  delay the installation of the rules  for terminal options,
         # because not all of them can be given by `getcompletion()` while Vim is
@@ -365,4 +362,35 @@ def GetTerminalOptionNames(keyword_only = true): string
         return term_option_names_with_nonkw
     endif
 enddef
+#}}}2
+# Util {{{2
+def Abbreviate( #{{{3
+    to_abbreviate: list<string>,
+    for_match: bool = false
+): list<string>
 
+    var abbreviated: list<string>
+    for cmd in to_abbreviate
+        var len: number
+        for l in strcharlen(cmd)->range()->reverse()
+            if l == 0
+                continue
+            endif
+            if cmd->slice(0, l)->fullcommand() != cmd
+                len = l
+                break
+            endif
+        endfor
+        if len == cmd->strcharlen() - 1
+            abbreviated += [cmd]
+        else
+            abbreviated += [printf(
+                '%s%s[%s]',
+                cmd[: len],
+                for_match ? '\%' : '',
+                cmd[len + 1 :]
+            )]
+        endif
+    endfor
+    return abbreviated
+enddef
