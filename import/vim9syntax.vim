@@ -34,7 +34,108 @@ def Abbreviate( #{{{3
 enddef
 #}}}1
 # Variables {{{1
-# builtin_func {{{2
+# regexes {{{2
+# command_can_be_before {{{3
+# This regex should make sure that we're in a position where an Ex command could
+# appear right before.
+
+# Warning: Do *not* consume any token.{{{
+#
+# Only use lookarounds to assert something about the current position.
+# If you consume a token, and it turns  out that it's indeed a command, then –
+# to highlight it – you'll need to include a syntax group:
+#
+#     set option=value
+#     ^^^
+#     vim9Set ⊂ vim9MayBeCmd
+#
+# This  creates a  stack which  might be  problematic for  a group  defined with
+# `nextgroup=`.  Suppose that `B ⊂ A`:
+#
+#        BBB
+#     AAAAAAAAA
+#
+# And you want `C` to match after `B`, so you define the latter like this:
+#
+#     syn ... B ... nextgroup=C
+#
+# If `C` goes beyond `A`, Vim will extend the latter:
+#
+#        BBBCCCCCC
+#     AAAAAAAAAAAA
+#              ^^^
+#              extended
+#
+# That's because Vim  wants `C` to be  contained in `A`, just  like its neighbor
+# `B`.  But that fails if `B` has consumed the end of `A`:
+#
+#           BBB
+#     AAAAAAAAA
+#             ^
+#             ✘
+#
+# Here, Vim won't match `C` after `B`,  because it would need to extend `A`; but
+# it can't, because it has reached its end: there's nothing left to extend.
+#
+# In practice,  it means  that you  wouldn't be able  to highlight  arguments of
+# complex  commands  (like  `:autocmd`  or  `:syntax`).   There  might  be  some
+# workarounds,  but  they  come  with  their own  pitfalls,  and  add  too  much
+# complexity.
+#}}}
+export const command_can_be_before: string =
+    # after a command, we know there must be a whitespace or a newline
+       '\%('
+       # (possibly after a bang)
+       ..     '!\=' .. '[ \t\n]\@='
+       .. '\|'
+       # Special Case: An Ex command in the rhs of a mapping, right after `<cmd>` or `<bar>`.
+       ..     '<\%(bar\|cr\)>'
+       .. '\)'
+    # but there must *not* be a binary operator
+    # Warning: Try not to break the highlighting of a command whose first argument is the register `=`.{{{
+    #
+    # That's why it's  important to match a  space after `=`; so  that `:put` is
+    # correctly highlighted when used to put an expression:
+    #
+    #     put =1 + 2
+    #
+    # But not when used as a variable name:
+    #
+    #     var put: number
+    #     put = 1 + 2
+    #}}}
+    .. '\%(\s*\%([-+*/%]=\|=\s\|\.\.=\)\|\_s*->\)\@!'
+
+# option_can_be_after {{{3
+# This regex should make sure that we're  in a position where a Vim option could
+# appear right after.
+
+# We  include  `-` and  `+`  in  the lookbehind  to  support  the increment  and
+# decrement operators (`--` and `++`).  Example:
+#
+#     ++&l:foldlevel
+#     ^^
+export const option_can_be_after: string = '\%(^\|[-+ \t!([]\)\@1<='
+
+# option_sigil {{{3
+
+# sigil to refer to option value
+export const option_sigil: string = '&\%([gl]:\)\='
+
+# option_valid {{{3
+# This regex  should make sure  that we're matching  valid characters for  a Vim
+# option name.
+
+export const option_valid: string = '\%('
+            # name of regular option
+    ..     '[a-z]\{2,}\>'
+    .. '\|'
+            # name of terminal option
+    ..     't_[a-zA-Z0-9#%*:@_]\{2}'
+    .. '\)'
+#}}}2
+# names {{{2
+# builtin_func {{{3
 
 def Ambiguous(): list<string>
     var cmds: list<string> = getcompletion('', 'command')
@@ -61,13 +162,13 @@ export const builtin_func: string = getcompletion('', 'function')
     ->filter((_, v: string): bool => ambi->index(v) == - 1)
     ->join(' ')
 
-# builtin_func_ambiguous {{{2
+# builtin_func_ambiguous {{{3
 # Functions whose names can be confused with Ex commands.
 # E.g. `:eval` vs `eval()`.
 
 export const builtin_func_ambiguous: string = ambi->join('\|')
 
-# collation_class {{{2
+# collation_class {{{3
 
 export const collation_class: string =
     getcompletion('[:', 'help')
@@ -75,19 +176,19 @@ export const collation_class: string =
         ->map((_, v) => v->trim('[]:'))
         ->join('\|')
 
-# command_address_type {{{2
+# command_address_type {{{3
 
 export const command_address_type: string =
     getcompletion('com -addr=', 'cmdline')
         ->join('\|')
 
-# command_complete_type {{{2
+# command_complete_type {{{3
 
 export const command_complete_type: string =
     getcompletion('com -complete=', 'cmdline')
         ->join('\|')
 
-# command_modifier {{{2
+# command_modifier {{{3
 
 const MODIFIER_CMDS: list<string> =<< trim END
     belowright
@@ -119,7 +220,7 @@ export const command_modifier: string = MODIFIER_CMDS
     ->Abbreviate(true)
     ->join('\|')
 
-# command_name {{{2
+# command_name {{{3
 
 const DEPRECATED_CMDS: list<string> =<< trim END
     append
@@ -280,7 +381,7 @@ enddef
 
 export const command_name: string = CommandName()
 
-# default_highlighting_group {{{2
+# default_highlighting_group {{{3
 
 def DefaultHighlightingGroup(): string
     var completions: list<string> = getcompletion('hl-', 'help')
@@ -295,13 +396,13 @@ enddef
 
 export const default_highlighting_group: string = DefaultHighlightingGroup()
 
-# event {{{2
+# event {{{3
 
 export const event: string =
     getcompletion('', 'event')
         ->join(' ')
 
-# option {{{2
+# option {{{3
 
 def Option(): string
     var helptags: list<string>
@@ -337,7 +438,7 @@ enddef
 
 export const option: string = Option()
 
-# option_terminal {{{2
+# option_terminal {{{3
 
 # terminal options with only word characters
 export const option_terminal: string = (
@@ -348,7 +449,7 @@ export const option_terminal: string = (
         + ['t_PE', 't_PS']
     )->join()
 
-# option_terminal_special {{{2
+# option_terminal_special {{{3
 
 # terminal options with at least 1 non-word character
 export const option_terminal_special: string =

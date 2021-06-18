@@ -147,6 +147,11 @@ endif
 
 # Imports {{{1
 
+import command_can_be_before from 'vim9syntax.vim'
+import option_can_be_after from 'vim9syntax.vim'
+import option_sigil from 'vim9syntax.vim'
+import option_valid from 'vim9syntax.vim'
+
 import builtin_func from 'vim9syntax.vim'
 import builtin_func_ambiguous from 'vim9syntax.vim'
 import collation_class from 'vim9syntax.vim'
@@ -160,11 +165,12 @@ import option from 'vim9syntax.vim'
 import option_terminal from 'vim9syntax.vim'
 import option_terminal_special from 'vim9syntax.vim'
 
-# All `vim9GenericCmd` are contained by `vim9MayBeCmd`. {{{1
+# Assert where builtin Ex commands can match. {{{1
 
 # TODO: Whenever you  use this cluster, make  sure it does not  contain too many
 # syntax  groups in  the  current  context.  If  necessary,  create (a)  smaller
 # cluster(s).
+
 # TODO: Add more groups  in this "mega" cluster.  It should  contain all special
 # commands which can't  be matched by the generic `syn  keyword` rule.  That is,
 # all  commands that  expect  special  arguments which  need  to be  highlighted
@@ -206,89 +212,36 @@ syn cluster vim9IsCmd contains=
     \ vim9UserCmd,
     \ vim9UserCmdDef
 
-syn match vim9CmdSep /|/ skipwhite nextgroup=vim9MayBeCmd
-
-# Before matching a command, we need a way to make sure we're in a context where one can appear.{{{
+# Problem: a token might look like a command, but be something else.{{{
 #
 # For example:
 #
 #     var set: bool
 #     set = true
 #     ^^^
+#
 # This is not the `:set` command.  This is just a variable.
 #}}}
-# Warning: Do *not* consume any token.{{{
+# Solution: Before matching a command, let's match a suitable position.{{{
 #
-# Only use lookarounds to assert something about the current position.
-# If you consume a token, and it turns  out that it's indeed a command, then –
-# to highlight it – you'll need to include a syntax group:
-#
-#     set option=value
-#     ^^^
-#     vim9Set ⊂ vim9MayBeCmd
-#
-# This  creates a  stack which  might be  problematic for  a group  defined with
-# `nextgroup=`.  Suppose that `B ⊂ A`:
-#
-#        BBB
-#     AAAAAAAAA
-#
-# And you want `C` to match after `B`, so you define the latter like this:
-#
-#     syn ... B ... nextgroup=C
-#
-# If `C` goes beyond `A`, Vim will extend the latter:
-#
-#        BBBCCCCCC
-#     AAAAAAAAAAAA
-#              ^^^
-#              extended
-#
-# That's because Vim  wants `C` to be  contained in `A`, just  like its neighbor
-# `B`.  But that fails if `B` has consumed the end of `A`:
-#
-#           BBB
-#     AAAAAAAAA
-#             ^
-#             ✘
-#
-# Here, Vim won't match `C` after `B`,  because it would need to extend `A`; but
-# it can't, because it has reached its end: there's nothing left to extend.
-#
-# In practice,  it means  that you  wouldn't be able  to highlight  arguments of
-# complex  commands  (like  `:autocmd`  or  `:syntax`).   There  might  be  some
-# workarounds,  but  they  come  with  their own  pitfalls,  and  add  too  much
-# complexity.
+# That is,  in addition to assert  the presence of a  name which is valid  for a
+# builtin Ex command (`\<\h\w*\>`), we also want to assert some properties about
+# the position at  the end of this name  which are necessary for the  name to be
+# parsed as a command; like the presence of a whitespace.
 #}}}
-var cmd_can_be_before: string =
-    # after a command, we know there must be a whitespace or a newline
-       '\%('
-       # (possibly after a bang)
-       ..     '!\=' .. '[ \t\n]\@='
-       .. '\|'
-       # Special Case: An Ex command in the rhs of a mapping, right after `<cmd>` or `<bar>`.
-       ..     '<\%(bar\|cr\)>'
-       .. '\)'
-    # but there must *not* be a binary operator
-    # Warning: Try not to break the highlighting of a command whose first argument is the register `=`.{{{
-    #
-    # That's why it's  important to match a  space after `=`; so  that `:put` is
-    # correctly highlighted when used to put an expression:
-    #
-    #     put =1 + 2
-    #
-    # But not when used as a variable name:
-    #
-    #     var put: number
-    #     put = 1 + 2
-    #}}}
-    .. '\%(\s*\%([-+*/%]=\|=\s\|\.\.=\)\|\_s*->\)\@!'
 
+# Special Case: We need different assertions regarding the end of `:g` and `:s`.{{{
+#
+# For  example, for  most commands,  the next  character must  be a  whitespace,
+# but  not for  `:g`  and `:s`;  for  those,  the next  character  is usually  a
+# non-whitespace like a slash.
+#}}}
 # Order: Must come before the next rule with the lookahead.
 syn match vim9MayBeCmd /\%(\<\h\w*\>\)\@=/
     \ contained
     \ nextgroup=vim9Global,vim9Subst
-exe 'syn match vim9MayBeCmd /\%(\<\h\w*\>' .. cmd_can_be_before .. '\)\@=/'
+# General case
+exe 'syn match vim9MayBeCmd /\%(\<\h\w*\>' .. command_can_be_before .. '\)\@=/'
     .. ' contained'
     .. ' nextgroup=@vim9IsCmd'
 
@@ -300,6 +253,9 @@ syn match vim9StartOfLine /^/
     \     vim9LegacyFunction,
     \     vim9MayBeCmd,
     \     vim9RangeIntroducer
+
+# Or in the middle of a line, after a bar.
+syn match vim9CmdSep /|/ skipwhite nextgroup=vim9MayBeCmd
 
 # Builtin Ex commands {{{1
 # Generic ones {{{2
@@ -479,24 +435,6 @@ syn match vim9Set /\<\%(setl\%[ocal]\|setg\%[lobal]\|se\%[t]\)\s/
 
 # Option names {{{2
 
-# We  include  `-` and  `+`  in  the lookbehind  to  support  the increment  and
-# decrement operators (`--` and `++`).  Example:
-#
-#     ++&l:foldlevel
-#     ^^
-var option_can_be_after: string = '\%(^\|[-+ \t!([]\)\@1<='
-
-# sigil to refer to option value
-var sigil: string = '&\%([gl]:\)\='
-
-var option_name: string = '\%('
-            # name of regular option
-    ..     '[a-z]\{2,}\>'
-    .. '\|'
-            # name of terminal option
-    ..     't_[a-zA-Z0-9#%*:@_]\{2}'
-    .. '\)'
-
 # Note that an option value can be written right at the start of the line.{{{
 #
 #     &guioptions = 'M'
@@ -505,8 +443,8 @@ var option_name: string = '\%('
 exe 'syn match vim9MayBeOptionScoped '
     .. '/'
     ..     option_can_be_after
-    ..     sigil
-    ..     option_name
+    ..     option_sigil
+    ..     option_valid
     .. '/'
     .. ' display'
     .. ' contains=vim9IsOption,vim9OptionSigil'
@@ -516,7 +454,7 @@ exe 'syn match vim9MayBeOptionScoped '
 exe 'syn match vim9MayBeOptionSet '
     .. '/'
     ..     option_can_be_after
-    ..     option_name
+    ..     option_valid
     .. '/'
     .. ' display'
     .. ' contained'
@@ -1115,7 +1053,6 @@ syn cluster vim9FuncList contains=vim9DefKey
 # which can appear after `:syntax` (e.g. `match`, `cluster`, `include`, ...).
 #}}}
 syn cluster vim9FuncBodyContains contains=
-    \ vim9Augroup,
     \ vim9BacktickExpansion,
     \ vim9BacktickExpansionVimExpr,
     \ vim9Block,
@@ -1149,7 +1086,6 @@ syn cluster vim9FuncBodyContains contains=
     \ vim9OperAssign,
     \ vim9OperParen,
     \ vim9PythonRegion,
-    \ vim9RangeIntroducer,
     \ vim9Region,
     \ vim9SpecFile,
     \ vim9StartOfLine,
