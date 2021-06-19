@@ -559,10 +559,10 @@ exe 'syn match vim9IsOption '
 #}}}
 # The positive lookahead is necessary to avoid a spurious highlight:{{{
 #
-#     nno <key> <cmd>set nowrap <bar> eval 0<cr>
-#                               ^
-#                               this is not a modifier which applies to nowrap;
-#                               this is the start of the Vim keycode <bar>
+#     nno <key> <cmd>set wrap <bar> eval 0<cr>
+#                             ^
+#                             this is not a modifier which applies to 'wrap';
+#                             this is the start of the Vim keycode <bar>
 #}}}
 syn match vim9SetMod /\%(&\%(vim\)\=\|[<?!]\)\%(\_s\||\)\@=/
     \ contained
@@ -945,7 +945,25 @@ syn cluster vim9OperGroup contains=
     \ vim9OperAssign,
     \ vim9OperParen
 
-syn match vim9Oper "\s\@1<=\%([-+*/%!]\|\.\.\|==\|!=\|>=\|<=\|=\~\|!\~\|>\|<\)[?#]\=\_s\@="
+# We need to make sure there is no bar at the end.{{{
+#
+#     \%(\s*[|<]\)\@!
+#            ^
+#
+# For this:
+#
+#     source % | eval 0
+#            ^
+#            this is not the modulo operator;
+#            this is the current filename
+#
+# Note that  in a  mapping, `|`  is often  written as  `<bar>`, hence  the angle
+# bracket:
+#
+#     \%(\s*[|<]\)\@!
+#             ^
+#}}}
+syn match vim9Oper "\s\@1<=\%([-+*/%!]\|\.\.\|==\|!=\|>=\|<=\|=\~\|!\~\|>\|<\)[?#]\=\_s\@=\%(\s*[|<]\)\@!"
     \ display
     \ nextgroup=vim9Bool,vim9SpecFile,vim9String
     \ skipwhite
