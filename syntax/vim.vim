@@ -1665,17 +1665,17 @@ syn match vim9SubstFlags /[&cegiIlnpr#]\+/ contained
 
 # g/pat/cmd
 syn match vim9Global
-    \ /\<g\%[lobal]\>!\=\ze\([^:[:alnum:] \t\"#|]\@=.\).\{-}\1/
+    \ /\<g\%[lobal]\>!\=\ze\([^[:alnum:] \t\"#|]\@=.\).\{-}\1/
     \ nextgroup=vim9GlobalPat
     \ contained
 
 # v/pat/cmd
 syn match vim9Global
-    \ /\<v\%[global]\>\ze\([^:[:alnum:] \t\"#|]\@=.\).\{-}\1/
+    \ /\<v\%[global]\>\ze\([^[:alnum:] \t\"#|]\@=.\).\{-}\1/
     \ nextgroup=vim9GlobalPat
     \ contained
 
-# global:pat:cmd{{{
+# `g:pattern:command` is an error.{{{
 #
 # This is a special case.  From `:h vim9-gotchas`:
 #
@@ -1691,8 +1691,16 @@ syn match vim9Global
 #
 #     g:name = 'value'
 #
-# Anyway, there are 2 solutions to this pitfall.
-# You can either choose a different delimiter:
+# Anyway, there are 4 solutions to this pitfall.
+#
+# You can prepend a colon  in front of `g` so that Vim knows  you refer to an Ex
+# *command*, and not to a global *variable*:
+#
+#     :g:pattern:command
+#     ^
+#     ✔
+#
+# You can choose a different delimiter:
 #
 #      ✘       ✘
 #      v       v
@@ -1701,7 +1709,7 @@ syn match vim9Global
 #      ^       ^
 #      ✔       ✔
 #
-# Or write a longer version of the command:
+# You can write a longer version of the command:
 #
 #     ✘
 #     v
@@ -1710,39 +1718,15 @@ syn match vim9Global
 #     ^----^
 #       ✔
 #
-# The next rule supports the second solution.
+# You can tweak the pattern so that it includes a non-word character:
+#
+#     g:pat\%x74ern:command
+#          ^---^
+#          hexadecimal representation of 't' character,
+#          which includes 2 non-word characters: \ and %
 #}}}
-syn match vim9Global
-    \ /\<gl\%[obal]\>!\=\ze:.\{-}:/
-    \ nextgroup=vim9GlobalPat
-    \ contained
-    # There is a third solution:{{{
-    #
-    #     :g:pattern:command
-    #     ^
-    #     ✔
-    #}}}
-    syn match vim9Global
-        \ /:\@1<=g\ze:.\{-}:/
-        \ nextgroup=vim9GlobalPat
-        \ contained
-    # `g:pattern:command` is an error
-    syn match vim9GlobalError
-        \ /:\@1<!\<g:[^: \t]\+:/
-        \ contained
-
-# vglobal:pat:cmd
-syn match vim9Global
-    \ /\<vgl\%[obal]\>\ze:.\{-}:/
-    \ nextgroup=vim9GlobalPat
-    \ contained
-    syn match vim9Global
-        \ /:\@1<=v\ze:.\{-}:/
-        \ nextgroup=vim9GlobalPat
-        \ contained
-    syn match vim9GlobalError
-        \ /:\@1<!\<v:[^: \t]\+:/
-        \ contained
+syn match vim9GlobalError /\<g!\=:\w*:/ contained
+syn match vim9GlobalError /\<v\=:\w*:/ contained
 
 syn region vim9GlobalPat
     \ matchgroup=vim9SubstDelim
