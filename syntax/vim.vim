@@ -183,8 +183,7 @@ import option_terminal_special from 'vim9syntax.vim'
 # all  commands that  expect  special  arguments which  need  to be  highlighted
 # themselves  (e.g. `:map`);  or  commands which  need to  be  highlighted in  a
 # different way (e.g. `try`).
-# Also, make  sure to  remove the  names of  these commands  from `command_name`
-# (include them in the `special` heredoc).
+# Also, make  sure to  remove the  names of  these commands  from `command_name`.
 #
 # ---
 #
@@ -200,7 +199,7 @@ syn cluster vim9IsCmd contains=
     \ vim9Augroup,
     \ vim9Autocmd,
     \ vim9CmdModifier,
-    \ vim9CmdTakesExpr,
+    \ vim9CmdTakeExpr,
     \ vim9Declare,
     \ vim9DoCmds,
     \ vim9Doautocmd,
@@ -213,7 +212,6 @@ syn cluster vim9IsCmd contains=
     \ vim9LetDeprecated,
     \ vim9Map,
     \ vim9Norm,
-    \ vim9RangeIntroducer,
     \ vim9Set,
     \ vim9Syntax,
     \ vim9Unmap,
@@ -309,7 +307,7 @@ syn match vim9CmdBang /!/ contained nextgroup=@vim9CanBeAtStartOfLine skipwhite
 
 # Commands taking expression as argument {{{3
 
-exe 'syn region vim9CmdTakesExpr'
+exe 'syn region vim9CmdTakeExpr'
     .. ' excludenl'
     .. ' matchgroup=vim9GenericCmd'
     .. ' start='
@@ -405,16 +403,24 @@ syn match vim9RangeIntroducer /\%(^\|\s\):\S\@=/
 #
 # Or maybe to  remove an ambiguity where the next  token could be misinterpreted
 # as something else than an Ex command.
-# Note that  we assert the  presence of a  non-whitespace afterward, so  that we
-# don't break the highlighting of a colon used in the ternary operator `?:`:
+#
+# ---
+#
+# Note that we  assert the presence of a lowercase  character afterward, so that
+# we don't break the highlighting of a colon used in the ternary operator `?:`:
 #
 #     var name = test
 #         ? value1
 #         : value2
 #         ^
+#
+# And we don't break a range introducer either:
+#
+#     :% s/pat/rep/
+#     ^
 #}}}
 # Order: Must come after `vim9RangeIntroducer`.
-syn match vim9UnambiguousColon /\s\=:\S\@=/ contained nextgroup=@vim9CanBeAtStartOfLine skipwhite
+syn match vim9UnambiguousColon /\s\=:[a-z]\@=/ contained nextgroup=@vim9CanBeAtStartOfLine skipwhite
 
 syn cluster vim9RangeAfterSpecifier contains=
     \ @vim9CanBeAtStartOfLine,

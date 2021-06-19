@@ -1,6 +1,185 @@
 vim9script
 
-# Functions {{{1
+# Declarations {{{1
+
+const ABBREV_CMDS: list<string> =<< trim END
+    abbreviate
+    abclear
+    cabbrev
+    cabclear
+    cnoreabbrev
+    cunabbrev
+    iabbrev
+    iabclear
+    inoreabbrev
+    iunabbrev
+    noreabbrev
+    unabbreviate
+END
+
+const CONTROL_FLOW_CMDS: list<string> =<< trim END
+    if
+    else
+    elseif
+    endif
+    for
+    endfor
+    while
+    endwhile
+    try
+    catch
+    finally
+    throw
+    endtry
+    return
+END
+
+const DECLARE_CMDS: list<string> =<< trim END
+    const
+    final
+    unlet
+    var
+END
+
+const DEPRECATED_CMDS: list<string> =<< trim END
+    append
+    change
+    insert
+    k
+    let
+    open
+    t
+END
+
+const DO_CMDS: list<string> =<< trim END
+    argdo
+    bufdo
+    cdo
+    cfdo
+    ldo
+    lfdo
+    tabdo
+    windo
+END
+
+#     :vim9 echo getcompletion('*map', 'command')->filter((_, v) => v =~ '^[a-z]' && v != 'loadkeymap')
+const MAPPING_CMDS: list<string> =<< trim END
+    cmap
+    imap
+    lmap
+    nmap
+    omap
+    smap
+    tmap
+    vmap
+    xmap
+    cnoremap
+    inoremap
+    lnoremap
+    nnoremap
+    noremap
+    onoremap
+    snoremap
+    tnoremap
+    vnoremap
+    xnoremap
+    cunmap
+    iunmap
+    lunmap
+    nunmap
+    ounmap
+    sunmap
+    tunmap
+    unmap
+    unmap
+    vunmap
+    xunmap
+    cmapclear
+    imapclear
+    lmapclear
+    mapclear
+    nmapclear
+    omapclear
+    smapclear
+    tmapclear
+    vmapclear
+    xmapclear
+END
+
+const MODIFIER_CMDS: list<string> =<< trim END
+    belowright
+    botright
+    browse
+    confirm
+    hide
+    keepalt
+    keepjumps
+    keepmarks
+    keeppatterns
+    leftabove
+    legacy
+    lockmarks
+    noautocmd
+    noswapfile
+    rightbelow
+    sandbox
+    silent
+    tab
+    topleft
+    unsilent
+    verbose
+    vertical
+    vim9cmd
+END
+
+const TAKE_EXPR_CMDS: list<string> =<< trim END
+    cexpr
+    lexpr
+    caddexpr
+    laddexpr
+    cgetexpr
+    lgetexpr
+    echo
+    echoconsole
+    echoerr
+    echomsg
+    echon
+    eval
+    execute
+END
+
+const VARIOUS_SPECIAL_CMDS: list<string> =<< trim END
+    augroup
+    autocmd
+    command
+    doautoall
+    doautocmd
+    echohl
+    export
+    filetype
+    global
+    highlight
+    import
+    normal
+    set
+    setlocal
+    substitute
+    syntax
+    z
+END
+
+const SPECIAL_CMDS: list<string> =
+      ABBREV_CMDS
+    + CONTROL_FLOW_CMDS
+    + DECLARE_CMDS
+    + DEPRECATED_CMDS
+    + DO_CMDS
+    + MAPPING_CMDS
+    + MODIFIER_CMDS
+    + TAKE_EXPR_CMDS
+    + VARIOUS_SPECIAL_CMDS
+
+# Exported Functions {{{1
 # Util {{{2
 def Abbreviate( #{{{3
     to_abbreviate: list<string>,
@@ -33,7 +212,7 @@ def Abbreviate( #{{{3
     return abbreviated
 enddef
 #}}}1
-# Variables {{{1
+# Exported Variables {{{1
 # regexes {{{2
 # command_can_be_before {{{3
 # This regex should make sure that we're in a position where an Ex command could
@@ -190,175 +369,16 @@ export const command_complete_type: string =
 
 # command_modifier {{{3
 
-const MODIFIER_CMDS: list<string> =<< trim END
-    belowright
-    botright
-    browse
-    confirm
-    hide
-    keepalt
-    keepjumps
-    keepmarks
-    keeppatterns
-    leftabove
-    legacy
-    lockmarks
-    noautocmd
-    noswapfile
-    rightbelow
-    sandbox
-    silent
-    tab
-    topleft
-    unsilent
-    verbose
-    vertical
-    vim9cmd
-END
-
 export const command_modifier: string = MODIFIER_CMDS
     ->Abbreviate(true)
     ->join('\|')
 
 # command_name {{{3
 
-const DEPRECATED_CMDS: list<string> =<< trim END
-    append
-    change
-    insert
-    k
-    let
-    open
-    t
-END
-
-const CONTROL_FLOW_CMDS: list<string> =<< trim END
-    if
-    else
-    elseif
-    endif
-    for
-    endfor
-    while
-    endwhile
-    try
-    catch
-    finally
-    throw
-    endtry
-    return
-END
-
-const DECLARE_CMDS: list<string> =<< trim END
-    const
-    final
-    unlet
-    var
-END
-
-const DO_CMDS: list<string> =<< trim END
-    argdo
-    bufdo
-    cdo
-    cfdo
-    ldo
-    lfdo
-    tabdo
-    windo
-END
-
-const EXPECT_EXPR_CMDS: list<string> =<< trim END
-    cexpr
-    lexpr
-    caddexpr
-    laddexpr
-    cgetexpr
-    lgetexpr
-    echo
-    echoconsole
-    echoerr
-    echomsg
-    echon
-    eval
-    execute
-END
-
-const MAPPING_CMDS: list<string> =<< trim END
-    cmap
-    imap
-    lmap
-    nmap
-    omap
-    smap
-    tmap
-    vmap
-    xmap
-    cnoremap
-    inoremap
-    lnoremap
-    nnoremap
-    noremap
-    onoremap
-    snoremap
-    tnoremap
-    vnoremap
-    xnoremap
-    cunmap
-    iunmap
-    lunmap
-    nunmap
-    ounmap
-    sunmap
-    tunmap
-    unmap
-    unmap
-    vunmap
-    xunmap
-    cmapclear
-    imapclear
-    lmapclear
-    mapclear
-    nmapclear
-    omapclear
-    smapclear
-    tmapclear
-    vmapclear
-    xmapclear
-END
-
-const VARIOUS_SPECIAL_CMDS: list<string> =<< trim END
-    augroup
-    autocmd
-    command
-    doautoall
-    doautocmd
-    echohl
-    export
-    global
-    highlight
-    import
-    normal
-    set
-    setlocal
-    substitute
-    syntax
-    z
-END
-
-const SPECIAL_CMDS: list<string> =
-      CONTROL_FLOW_CMDS
-    + DECLARE_CMDS
-    + DO_CMDS
-    + EXPECT_EXPR_CMDS
-    + MAPPING_CMDS
-    + VARIOUS_SPECIAL_CMDS
-
 def CommandName(): string
     var to_abbreviate: list<string> = getcompletion('', 'command')
           ->filter((_, v: string): bool => v =~ '^[a-z]')
-    for cmd in DEPRECATED_CMDS
-      + MODIFIER_CMDS
-      + SPECIAL_CMDS
+    for cmd in SPECIAL_CMDS
         var i: number = to_abbreviate->index(cmd)
         if i == -1
             continue
