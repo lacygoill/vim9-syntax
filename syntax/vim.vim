@@ -239,9 +239,18 @@ syn cluster vim9IsCmd contains=
 # For  example, for  most commands,  the next  character must  be a  whitespace,
 # but  not for  `:g`  and `:s`;  for  those,  the next  character  is usually  a
 # non-whitespace like a slash.
+#
+# ---
+#
+# Note  that `=`  might optionally  match  in front  of the  command to  support
+# writing a colon whose purpose is to  remove an ambiguity.  This is useful, for
+# example, for `vim9Global`:
+#
+#     :g:pattern:yank A
+#     ^
 #}}}
 # Order: Must come before the next rule with the lookahead.
-syn match vim9MayBeCmd /\%(\<\h\w*\>\)\@=/
+syn match vim9MayBeCmd /\%(:\=\<\h\w*\>\)\@=/
     \ contained
     \ nextgroup=vim9Global,vim9Subst
 # General case
@@ -249,23 +258,23 @@ exe 'syn match vim9MayBeCmd /\%(\<\h\w*\>' .. command_can_be_before .. '\)\@=/'
     .. ' contained'
     .. ' nextgroup=@vim9IsCmd'
 
-# Now  that  we  have  a  syntax group  validating  possible  Ex  command  names
-# (`vim9MayBeCmd`), let's use  it in relevant contexts.  We won't  list them all
-# here; only the ones which don't have  a dedicated section (i.e. start of line,
-# and after a bar).
-
-# An Ex command might be at the start of a line.
-syn match vim9StartOfLine /^/
-    \ skipwhite
-    \ nextgroup=
+# Now, let's build a cluster containing all groups which can appear at the start of a line.
+syn cluster vim9CanBeAtStartOfLine contains=
+    \     vim9MayBeCmd,
+    \     vim9FuncCall,
     \     vim9FuncHeader,
     \     vim9LegacyFunction,
-    \     vim9MayBeCmd,
     \     vim9RangeIntroducer,
-    \     vim9UselessColon
+    \     vim9UnambiguousColon
 
-# Or in the middle of a line, after a bar.
-syn match vim9CmdSep /|/ skipwhite nextgroup=vim9MayBeCmd
+# Let's use it in all relevant contexts.   We won't list them all here; only the
+# ones which  don't have a  dedicated section (i.e. start  of line, and  after a
+# bar).
+syn match vim9StartOfLine /^/
+    \ skipwhite
+    \ nextgroup=@vim9CanBeAtStartOfLine
+
+syn match vim9CmdSep /|/ skipwhite nextgroup=@vim9CanBeAtStartOfLine
 
 # Builtin Ex commands {{{1
 # Generic ones {{{2
@@ -289,10 +298,10 @@ exe 'syn match vim9CmdModifier /'
     ..     '\<\%(' .. command_modifier .. '\)\>'
     .. '/'
     .. ' contained'
-    .. ' nextgroup=vim9CmdBang,vim9MayBeCmd,vim9RangeIntroducer'
+    .. ' nextgroup=@vim9CanBeAtStartOfLine,vim9CmdBang'
     .. ' skipwhite'
 
-syn match vim9CmdBang /!/ contained nextgroup=vim9MayBeCmd skipwhite
+syn match vim9CmdBang /!/ contained nextgroup=@vim9CanBeAtStartOfLine skipwhite
 
 # Commands taking expression as argument {{{3
 
@@ -389,14 +398,17 @@ syn match vim9RangeIntroducer /\%(^\|\s\):\S\@=/
 #     : s/.../.../
 #     ^
 #     to get a column of colons
+#
+# Or maybe to  remove an ambiguity where the next  token could be misinterpreted
+# as something else than an Ex command.
 #}}}
 # Order: Must come after `vim9RangeIntroducer`.
-syn match vim9UselessColon /\s\=:/ contained nextgroup=vim9MayBeCmd skipwhite
+syn match vim9UnambiguousColon /\s\=:/ contained nextgroup=@vim9CanBeAtStartOfLine skipwhite
 
 syn cluster vim9RangeAfterSpecifier contains=
+    \ @vim9CanBeAtStartOfLine,
     \ @vim9RangeContains,
     \ vim9Filter,
-    \ vim9MayBeCmd,
     \ vim9RangeMissingSpace
 
 #                 v-----v v-----v
@@ -451,7 +463,7 @@ syn match vim9RangeDelimiter /[,;]/
 #     \<\%(setl\%[ocal]\|setg\%[lobal]\|se\%[t]\)\>\s\|&\%([gl]:\)\=[a-z]\{2,\}\|&t_..
 # Assignment commands {{{2
 
-syn match vim9Set /\<\%(setl\%[ocal]\|setg\%[lobal]\|se\%[t]\)\s/
+syn match vim9Set /\<\%(setl\%[ocal]\|setg\%[lobal]\|se\%[t]\)\>/
     \ contained
     \ nextgroup=vim9MayBeOptionSet
     \ skipwhite
@@ -657,11 +669,11 @@ syn match vim9AutocmdAllEvents /\*\_s\@=/
 
 syn match vim9AutocmdPat /\S\+/
     \ contained
-    \ nextgroup=vim9AutocmdMod,vim9MayBeCmd
+    \ nextgroup=@vim9CanBeAtStartOfLine,vim9AutocmdMod
     \ skipwhite
 
 syn match vim9AutocmdMod /++\%(nested\|once\)/
-    \ nextgroup=vim9MayBeCmd
+    \ nextgroup=@vim9CanBeAtStartOfLine
     \ skipwhite
 
 # Events {{{2
@@ -1375,7 +1387,7 @@ syn match vim9UserCmdAttrbRange /=\%(%\|-\=\d\+\)/
 
 syn match vim9UserCmdLhs /\u\w*/
     \ contained
-    \ nextgroup=vim9MayBeCmd
+    \ nextgroup=@vim9CanBeAtStartOfLine
     \ skipwhite
 #}}}1
 # Lower Priority Comments: after some vim commands... {{{1
@@ -1580,10 +1592,79 @@ syn match vim9SubstFlags /[&cegiIlnpr#]\+/ contained
 
 # :global {{{1
 
+# g/pat/cmd
 syn match vim9Global
-    \ /\<v\=g\%[lobal]\>!\=\ze\([^[:alnum:] \t\"#|]\@=.\).\{-}\1/
+    \ /\<g\%[lobal]\>!\=\ze\([^:[:alnum:] \t\"#|]\@=.\).\{-}\1/
     \ nextgroup=vim9GlobalPat
     \ contained
+
+# v/pat/cmd
+syn match vim9Global
+    \ /\<v\%[global]\>\ze\([^:[:alnum:] \t\"#|]\@=.\).\{-}\1/
+    \ nextgroup=vim9GlobalPat
+    \ contained
+
+# global:pat:cmd{{{
+#
+# This is a special case.  From `:h vim9-gotchas`:
+#
+#    > Some Ex commands can be confused with assignments in Vim9 script: >
+#    >         g:name = value    # assignment
+#    >         g:pattern:cmd     # invalid command - ERROR
+#    >         :g:pattern:cmd    # :global command
+#
+# Vim  can't distinguish  the  global scope  `g:` from  the  global command  `g`
+# followed by the delimiter `:`.  It was not an issue in legacy, because there
+# you had to write `:let` to assign a value to a global variable; it was enough
+# to remove any ambiguity.  But in Vim9, there is no need for `:let` anymore:
+#
+#     g:name = 'value'
+#
+# Anyway, there are 2 solutions to this pitfall.
+# You can either choose a different delimiter:
+#
+#      ✘       ✘
+#      v       v
+#     g:pattern:yank A
+#     g/pattern/yank A
+#      ^       ^
+#      ✔       ✔
+#
+# Or write a longer version of the command:
+#
+#     ✘
+#     v
+#     g:pattern:yank A
+#     global:pattern:yank A
+#     ^----^
+#       ✔
+#
+# The next rule supports the second solution.
+#}}}
+syn match vim9Global
+    \ /\<gl\%[obal]\>!\=\ze:.\{-}:/
+    \ nextgroup=vim9GlobalPat
+    \ contained
+    # There is a third solution:{{{
+    #
+    #     :g:pattern:yank A
+    #     ^
+    #     ✔
+    #}}}
+    syn match vim9Global
+        \ /:\@1<=g\ze:.\{-}:/
+        \ nextgroup=vim9GlobalPat
+        \ contained
+
+# vglobal:pat:cmd
+syn match vim9Global
+    \ /\<vgl\%[obal]\>\ze:.\{-}:/
+    \ nextgroup=vim9GlobalPat
+    \ contained
+    syn match vim9Global
+        \ /:\@1<=v\ze:.\{-}:/
+        \ nextgroup=vim9GlobalPat
+        \ contained
 
 syn region vim9GlobalPat
     \ matchgroup=vim9SubstDelim
@@ -1592,7 +1673,7 @@ syn region vim9GlobalPat
     \ end=/\z1/
     \ contained
     \ contains=@vim9SubstList
-    \ nextgroup=vim9MayBeCmd
+    \ nextgroup=@vim9CanBeAtStartOfLine
     \ oneline
 
 # :{range}!{filter} {{{1
@@ -1661,7 +1742,7 @@ exe 'syn match vim9Notation'
 
 syn match vim9Notation /<cmd>/
     \ contains=vim9Bracket
-    \ nextgroup=@vim9RangeContains,vim9MayBeCmd
+    \ nextgroup=@vim9CanBeAtStartOfLine,@vim9RangeContains
 
 exe 'syn match vim9Notation '
     .. '/'
@@ -1839,7 +1920,7 @@ syn region vim9MapCmdlineExpr
 syn match vim9MapCmdBar /<bar>/
     \ contained
     \ contains=vim9Notation
-    \ nextgroup=vim9MayBeCmd
+    \ nextgroup=@vim9CanBeAtStartOfLine
     \ skipwhite
 
 syn match vim9MapRhsExtend /^\s*\\.*$/ contained contains=vim9Continue
@@ -1994,7 +2075,7 @@ exe 'syn match vim9UserCmd '
 #     :com CompilerSet
 #     No user-defined commands found˜
 #}}}
-syn match vim9Set /\<CompilerSet\s/
+syn match vim9Set /\<CompilerSet\>/
     \ contained
     \ nextgroup=vim9MayBeOptionSet
     \ skipwhite
@@ -2203,7 +2284,7 @@ syn match vim9DoCmds
     \ /\<\%(arg\|buf\|cf\=\|lf\=\|tab\|win\)do\>/
     \ contained
     \ skipwhite
-    \ nextgroup=vim9MayBeCmd
+    \ nextgroup=@vim9CanBeAtStartOfLine
     \ skipwhite
 
 # Norm {{{1
@@ -2926,7 +3007,7 @@ if get(g:, 'vim9_syntax', {})
     #      ✔
     #}}}
     # Order: Out of these 3 rules, this one must come last.
-    syn match vim9ColonForVariableScope /\<[bgstvw]\@1<=:\w\@=/ display contained
+    syn match vim9ColonForVariableScope /\<[bgstvw]:\w/ display contained
 endif
 
 # Missing parens around dictionary in lambda {{{2
@@ -3048,7 +3129,7 @@ if get(g:, 'vim9_syntax', {})
 
     syn match vim9RangeMissingSpecifier2 /[,;][a-zA-Z \t]\@=/
         \ contained
-        \ nextgroup=vim9MayBeCmd
+        \ nextgroup=@vim9CanBeAtStartOfLine
         \ skipwhite
 endif
 
