@@ -2338,7 +2338,8 @@ syn match vim9SynContains /\<contain\%(s\|edin\)=/
 syn match vim9SynKeyContainedin /\<containedin=/ contained nextgroup=vim9GroupList
 syn match vim9SynNextgroup /nextgroup=/ contained nextgroup=vim9GroupList
 
-syn keyword vim9Syntax sy[ntax]
+# Warning: Do not turn `:syn match` into `:syn keyword`.
+syn match vim9Syntax /\<sy\%[ntax]\>/
     \ contained
     \ contains=vim9GenericCmd
     \ nextgroup=vim9Comment,vim9SynType
@@ -2550,7 +2551,8 @@ syn keyword vim9SyncLinecont linecont contained nextgroup=vim9SynRegPat skipwhit
 syn match vim9SyncLines /\%(min\|max\)\=lines=/ contained nextgroup=vim9Number
 syn match vim9SyncGroupName /\h\w*/ contained nextgroup=vim9SyncKey skipwhite
 
-syn keyword vim9SyncKey groupthere grouphere
+# Warning: Do not turn `:syn match` into `:syn keyword`.
+syn match vim9SyncKey /\<\%(groupthere\|grouphere\)\>/
     \ contained
     \ nextgroup=vim9SyncGroup
     \ skipwhite
