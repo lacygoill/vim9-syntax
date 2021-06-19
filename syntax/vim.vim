@@ -2226,36 +2226,31 @@ syn region vim9DataTypeCastComposite
 # Control Flow {{{1
 
 syn cluster vim9ControlFlow contains=
+    \ vim9BreakContinue,
     \ vim9Conditional,
+    \ vim9Finish,
     \ vim9Repeat,
     \ vim9Return,
     \ vim9TryCatch
 
 # :return
-syn match vim9Return
-    \ /\<return\>/
-    \ contained
-    \ nextgroup=@vim9ExprContains
-    \ skipwhite
+syn keyword vim9Return retu[rn] contained nextgroup=@vim9ExprContains skipwhite
+
+# :break
+# :continue
+syn keyword vim9BreakContinue brea[k] con[tinue] contained skipwhite
+# :finish
+syn keyword vim9Finish fini[sh] contained skipwhite
 
 # :if
 # :elseif
-syn match vim9Conditional
-    \ /\<\%(if\|el\%[seif]\)\>/
-    \ contained
-    \ nextgroup=@vim9ExprContains
-    \ skipwhite
+syn keyword vim9Conditional if el[seif] contained nextgroup=@vim9ExprContains skipwhite
 
 # :endif
-syn match vim9Conditional /\<en\%[dif]\>/ contained skipwhite
+syn keyword vim9Conditional en[dif] contained skipwhite
 
 # :for
-syn match vim9Repeat
-    \ /\<for\=\>/
-    \ contained
-    \ skipwhite
-    \ nextgroup=vim9RepeatForVar
-    \ skipwhite
+syn keyword vim9Repeat fo[r] contained skipwhite nextgroup=vim9RepeatForVar skipwhite
 
 #           vv
 # :for name in ...
@@ -2272,26 +2267,22 @@ syn region vim9RepeatForVar
 syn match vim9RepeatForIn /\<in\>/ contained
 
 # :while
-syn match vim9Repeat
-    \ /\<wh\%[ile]\>/
-    \ contained
-    \ skipwhite
-    \ nextgroup=@vim9ExprContains
+syn keyword vim9Repeat wh[ile] contained skipwhite nextgroup=@vim9ExprContains
 
 # :endfor
 # :endwhile
-syn match vim9Repeat /\<\%(endfor\=\|endw\%[hile]\)\>/ contained skipwhite
+syn keyword vim9Repeat endfo[r] endw[hile] contained skipwhite
 
 # :try
 # :catch
 # :throw
 # :finally
 # :endtry
-# ---
-# NOTE: We can't  write `:fina\%[lly]`, because  it would break  `:final`, which
-# has a different meaning.
-syn match vim9TryCatch /\<\%(try\|endtry\|fina\|finall\|finally\)\>/ contained
-syn match vim9TryCatch /\<throw\>/ contained nextgroup=@vim9ExprContains skipwhite
+syn keyword vim9TryCatch try endt[ry] contained
+# We can't write `:syn keyword ...  fina[lly]`, because it would break `:final`,
+# which has a different meaning.
+syn match vim9TryCatch /\<\%(fina\|finall\|finally\)\>/ contained
+syn keyword vim9TryCatch th[row] contained nextgroup=@vim9ExprContains skipwhite
 syn match vim9TryCatch -\<catch\>\%(\s\+/[^/]*/\)\=- contained contains=vim9TryCatchPattern
 
 # Problem: A pattern can contain any text; in particular, an unbalanced paren is
@@ -3279,6 +3270,7 @@ hi def link vim9AutocmdPat vim9String
 hi def link vim9BacktickExpansion vim9ShellCmd
 hi def link vim9Bool Boolean
 hi def link vim9Bracket Delimiter
+hi def link vim9BreakContinue vim9Repeat
 hi def link vim9Comment Comment
 hi def link vim9CommentString vim9String
 hi def link vim9CommentTitle PreProc
@@ -3301,6 +3293,7 @@ hi def link vim9FgBgAttrib vim9HiAttrib
 hi def link vim9Filter vim9GenericCmd
 hi def link vim9FilterLastShellCmd Special
 hi def link vim9FilterShellCmd vim9ShellCmd
+hi def link vim9Finish vim9Return
 hi def link vim9FuncNameBuiltin Function
 hi def link vim9Global vim9GenericCmd
 hi def link vim9Group Type

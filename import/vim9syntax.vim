@@ -32,6 +32,9 @@ const CONTROL_FLOW_CMDS: list<string> =<< trim END
     throw
     endtry
     return
+    break
+    continue
+    finish
 END
 
 const DECLARE_CMDS: list<string> =<< trim END
