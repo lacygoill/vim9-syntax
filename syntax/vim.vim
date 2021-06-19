@@ -557,7 +557,14 @@ exe 'syn match vim9IsOption '
 # ? = show value
 # ! = invert value
 #}}}
-syn match vim9SetMod /&\%(vim\)\=\|[<?!]/
+# The positive lookahead is necessary to avoid a spurious highlight:{{{
+#
+#     nno <key> <cmd>set nowrap <bar> eval 0<cr>
+#                               ^
+#                               this is not a modifier which applies to nowrap;
+#                               this is the start of the Vim keycode <bar>
+#}}}
+syn match vim9SetMod /\%(&\%(vim\)\=\|[<?!]\)\%(\_s\||\)\@=/
     \ contained
     \ nextgroup=vim9MayBeOptionScoped,vim9MayBeOptionSet
     \ skipwhite
