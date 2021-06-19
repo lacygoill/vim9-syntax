@@ -91,8 +91,9 @@ endif
 # TODO: Try to remove as many `Order:` requirements as possible.
 #
 # If such a requirement involves 2 rules in the same section, that should be fine.
-# But not if  it involves 2 rules  in different sections; because  in that case,
-# you might one day re-order the section, and unknowingly break the requirement
+# But  not  if it  involves  2  rules in  different  sections;  because in  that
+# case,  you might  one day  re-order the  sections, and  unknowingly break  the
+# requirement.
 #
 # To remove such a requirement, try to improve some of your regexes.
 
@@ -402,15 +403,22 @@ syn match vim9RangeIntroducer /\%(^\|\s\):\S\@=/
 #
 #     :1,2 s/.../.../
 #     :3,4 s/.../.../
-#     : s/.../.../
+#     :s/.../.../
 #     ^
 #     to get a column of colons
 #
 # Or maybe to  remove an ambiguity where the next  token could be misinterpreted
 # as something else than an Ex command.
+# Note that  we assert the  presence of a  non-whitespace afterward, so  that we
+# don't break the highlighting of a colon used in the ternary operator `?:`:
+#
+#     var name = test
+#         ? value1
+#         : value2
+#         ^
 #}}}
 # Order: Must come after `vim9RangeIntroducer`.
-syn match vim9UnambiguousColon /\s\=:/ contained nextgroup=@vim9CanBeAtStartOfLine skipwhite
+syn match vim9UnambiguousColon /\s\=:\S\@=/ contained nextgroup=@vim9CanBeAtStartOfLine skipwhite
 
 syn cluster vim9RangeAfterSpecifier contains=
     \ @vim9CanBeAtStartOfLine,
