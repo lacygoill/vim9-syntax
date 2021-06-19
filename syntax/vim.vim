@@ -1,5 +1,8 @@
 vim9script
 
+# Credits: Charles E. Campbell <NcampObell@SdrPchip.AorgM-NOSPAM>
+# Author of syntax plugin for Vim script legacy.
+
 if exists('b:current_syntax')
     # bail out for a file written in legacy Vim script
     || "\n" .. getline(1, 10)->join("\n") !~ '\n\s*vim9\%[script]\>'
