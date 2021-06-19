@@ -215,7 +215,7 @@ syn cluster vim9IsCmd contains=
     \ vim9Set,
     \ vim9Syntax,
     \ vim9Unmap,
-    \ vim9UserCmd,
+    \ vim9UserCmdExe,
     \ vim9UserCmdDef
 
 # Problem: a token might look like a command, but be something else.{{{
@@ -1999,9 +1999,9 @@ exe 'syn match vim9UserFuncNameCustom '
     .. ' contained'
     .. ' contains=vim9Notation'
 
-# User Command Call {{{1
+# User Command Executed {{{1
 
-exe 'syn match vim9UserCmd '
+exe 'syn match vim9UserCmdExe '
     .. '"\u\%(\w*\)\@>'
     .. '\%('
     # Don't highlight a custom Vim function invoked without ":call".{{{
@@ -2060,7 +2060,7 @@ exe 'syn match vim9UserCmd '
     # Actually,  in this  simple example,  there is  no issue,  probably because
     # `Key`  is in  `vim9OperParen`.   But if  the start  of  the dictionary  is
     # far  away,  then  the  syntax  *might*  fail  to  parse  `Key`  as  inside
-    # `vim9OperParen`, which can cause `Key` to be parsed as `vim9UserCmd`.
+    # `vim9OperParen`, which can cause `Key` to be parsed as `vim9UserCmdExe`.
     # To reproduce, we  need – approximately – twice the  number assigned to
     # `:syn sync maxlines`:
     #
@@ -3209,26 +3209,26 @@ hi def link vim9GenericCmd Statement
 #
 # If you don't care about this distinction, you could get away with just:
 #
-#     hi def link vim9UserCmd vim9GenericCmd
+#     hi def link vim9UserCmdExe vim9GenericCmd
 #}}}
 # The guard makes sure the highlighting group is defined only if necessary.{{{
 #
-# Note that when  the syntax item for `vim9UserCmd` was  defined earlier (with a
-# `:syn` command), Vim has automatically created a highlight group with the same
-# name; but it's cleared:
+# Note that when the syntax item for `vim9UserCmdExe` was defined earlier (with
+# a `:syn`  command), Vim has automatically  created a highlight group  with the
+# same name; but it's cleared:
 #
-#     vim9UserCmd      xxx cleared
+#     vim9UserCmdExe      xxx cleared
 #
 # That's why we don't write this:
 #
-#     if execute('hi vim9UserCmd') == ''
-#                                  ^---^
-#                                    ✘
+#     if execute('hi vim9UserCmdExe') == ''
+#                                     ^---^
+#                                       ✘
 #}}}
-if execute('hi vim9UserCmd') =~ '\<cleared$'
+if execute('hi vim9UserCmdExe') =~ '\<cleared$'
     import Derive from 'vim9syntaxUtil.vim'
     Derive('vim9UserFuncNameCustom', 'Function', 'term=bold cterm=bold gui=bold')
-    Derive('vim9UserCmd', 'vim9GenericCmd', 'term=bold cterm=bold gui=bold')
+    Derive('vim9UserCmdExe', 'vim9GenericCmd', 'term=bold cterm=bold gui=bold')
     Derive('vim9FuncHeader', 'Function', 'term=bold cterm=bold gui=bold')
     Derive('vim9CmdModifier', 'vim9GenericCmd', 'term=italic cterm=italic gui=italic')
 endif
@@ -3417,7 +3417,7 @@ hi def link vim9UserCmdAttrbNargs vim9String
 hi def link vim9UserCmdAttrbNargsNumber vim9Number
 hi def link vim9UserCmdAttrbRange vim9String
 hi def link vim9UserCmdDef Statement
-hi def link vim9UserCmdLhs vim9UserCmd
+hi def link vim9UserCmdLhs vim9UserCmdExe
 hi def link vim9ValidSubType vim9DataType
 #}}}1
 
