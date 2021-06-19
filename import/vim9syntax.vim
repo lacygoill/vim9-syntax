@@ -296,9 +296,27 @@ export const command_can_be_before: string =
     .. '\%('
     ..     '\s*\%([-+*/%]=\|=\s\|\.\.=\)'
     .. '\|'
-    # Matching  a  space  at  the  end   is  necessary  to  avoid  breaking  the
-    # highlighting  of a  slash-delimited pattern  passed  as an  argument to  a
-    # command (e.g. `:catch /pattern/`).
+    # Matching a space at the end is necessary.{{{
+    #
+    # It makes sure  we don't break the  highlighting of a pattern  passed as an
+    # argument to a command (e.g. `:catch /pattern/`).
+    #
+    # This does mean that  the pattern can't start with a space,  but IMO it's a
+    # corner case which doesn't warrant a fix  (at least for now).  We can still
+    # write `\s` instead.
+    #
+    #            ✘
+    #            v
+    #     catch / pattern/
+    #     catch /\spattern/
+    #            ^^
+    #            ✔
+    #
+    # Or, if we *really* want a space, and not a tab, we can write `\%x20`.
+    #
+    #     catch /\%x20pattern/
+    #            ^---^
+    #}}}
     ..     '\_s*\%(->\|[-+*/%]\s\)'
     .. '\)\@!'
 

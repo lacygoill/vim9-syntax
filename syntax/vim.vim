@@ -116,17 +116,12 @@ endif
 # context  of the  script where  they  were defined.   At the  very least,  this
 # pitfall should be documented.
 
-# TODO: Find the commands which expect a pattern as argument.
-# Highlight it as a string.
+# TODO: These command expect a pattern as argument:
 #
-#     :global
-#     :substitute
-#     :vglobal
 #     :vimgrep
 #     :vimgrepadd
 #     :lvimgrep
 #     :lvimgrepadd
-#
 #     :2match
 #     :3match
 #     :argdelete
@@ -137,16 +132,12 @@ endif
 #     :prof[ile] func {pattern}
 #     :prof[ile][!] file {pattern}
 #     :sort
-#     :syntax
 #     :tag
+#
+# Highlight it as a string.
 
-# TODO: Find the commands which expect another command as argument.
-# Handle them specially and consistently.
-
-# TODO: Try to  nest all function names,  event names, ... inside  a match.  Use
-# the match to assert some lookarounds and fix some spurious highlightings.  For
-# example, try  to assert  that a  function name  must always  be followed  by a
-# paren.
+# TODO: Some commands expect another command as argument.
+# Highlight the latter properly.
 
 # TODO: Try to simplify the values of all the `contains=` arguments.
 # Remove what any cluster or syntax group which is useless.
@@ -887,7 +878,6 @@ syn cluster vim9ExprContains contains=
     \ vim9EnvVar,
     \ vim9FuncCall,
     \ vim9LambdaArrow,
-    \ vim9List,
     \ vim9ListSlice,
     \ vim9MayBeOptionScoped,
     \ vim9None,
@@ -1106,38 +1096,26 @@ syn cluster vim9FuncList contains=vim9DefKey
 # which can appear after `:syntax` (e.g. `match`, `cluster`, `include`, ...).
 #}}}
 syn cluster vim9FuncBodyContains contains=
+    \ @vim9ExprContains,
     \ vim9BacktickExpansion,
     \ vim9BacktickExpansionVimExpr,
     \ vim9Block,
-    \ vim9Bool,
     \ vim9CmdSep,
     \ vim9Comment,
     \ vim9CtrlChar,
     \ vim9DataType,
-    \ vim9DataTypeCast,
     \ vim9DataTypeCastComposite,
     \ vim9DataTypeCompositeLeadingColon,
-    \ vim9Dict,
-    \ vim9EnvVar,
-    \ vim9FuncCall,
     \ vim9FuncHeader,
     \ vim9GroupAdd,
     \ vim9GroupRem,
     \ vim9HereDoc,
     \ vim9HiLink,
-    \ vim9LambdaArrow,
     \ vim9LegacyFunction,
-    \ vim9ListSlice,
-    \ vim9MayBeOptionScoped,
     \ vim9Notation,
-    \ vim9Null,
-    \ vim9Number,
-    \ vim9Oper,
     \ vim9OperAssign,
-    \ vim9OperParen,
     \ vim9SpecFile,
     \ vim9StartOfLine,
-    \ vim9String,
     \ vim9SynMtchGroup
 
 exe 'syn match vim9FuncHeader'
@@ -1580,6 +1558,19 @@ syn region vim9SubstRep
     \ nextgroup=vim9SubstFlagErr
     \ oneline
 
+syn region vim9SubstRep
+    \ matchgroup=vim9SubstDelim
+    \ start=/\z(.\)\%(\\=\)\@=/
+    \ skip=/\\\\\|\\\z1/
+    \ end=/\z1/
+    \ matchgroup=vim9Notation
+    \ end=/<[cC][rR]>/
+    \ contained
+    \ contains=@vim9ExprContains,vim9EvalExpr
+    \ nextgroup=vim9SubstFlagErr
+    \ oneline
+syn match vim9EvalExpr /\\=/ contained
+
 syn region vim9Collection
     \ start=/\\\@1<!\[/
     \ skip=/\\\[/
@@ -1781,7 +1772,7 @@ syn match vim9Notation
 
 syn match vim9Notation /<bar>/ contains=vim9Bracket skipwhite
 
-syn match vim9Notation /\%(\\\|<lt>\)\=<C-R>[0-9a-z"%#:.\-=]/he=e-1
+syn match vim9Notation /\%(\\\|<lt>\)\=<c-r>[0-9a-z"%#:.\-=]\@=/
     \ contains=vim9Bracket
 
 exe 'syn match vim9Notation '
@@ -1912,13 +1903,16 @@ syn region vim9MapCmd
     \ contains=@vim9ExprContains,vim9Notation,vim9MapCmdBar
     \ keepend
     \ oneline
+
 syn region vim9MapInsertExpr
-    \ start=/\s*\c<c-r>=/
+    \ start=/\s*\c<c-r>=\@=/
     \ end=/\c<cr>/
     \ contained
-    \ contains=@vim9ExprContains,vim9Notation
+    \ contains=@vim9ExprContains,vim9Notation,vim9EvalExpr
     \ keepend
     \ oneline
+syn match vim9EvalExpr /\%(<c-r>\)\@6<==/ contained
+
 syn region vim9MapCmdlineExpr
     \ start=/\s*\c<c-\\>e/
     \ end=/\c<cr>/
@@ -3196,6 +3190,7 @@ hi def link vim9DoCmds vim9Repeat
 hi def link vim9Doautocmd vim9GenericCmd
 hi def link vim9EchoHL vim9GenericCmd
 hi def link vim9EchoHLNone vim9Group
+hi def link vim9EvalExpr vim9OperAssign
 hi def link vim9Export vim9Import
 hi def link vim9FTCmd vim9GenericCmd
 hi def link vim9FTOption vim9SynType
@@ -3206,6 +3201,7 @@ hi def link vim9FilterShellCmd vim9ShellCmd
 hi def link vim9Finish vim9Return
 hi def link vim9FuncNameBuiltin Function
 hi def link vim9Global vim9GenericCmd
+hi def link vim9GlobalPat vim9String
 hi def link vim9Group Type
 hi def link vim9GroupAdd vim9SynOption
 hi def link vim9GroupName vim9Group
@@ -3282,6 +3278,8 @@ hi def link vim9StringEnd vim9String
 hi def link vim9Subst vim9GenericCmd
 hi def link vim9SubstDelim Delimiter
 hi def link vim9SubstFlags Special
+hi def link vim9SubstPat vim9String
+hi def link vim9SubstRep vim9String
 hi def link vim9SubstSubstr SpecialChar
 hi def link vim9SubstTwoBS vim9String
 hi def link vim9SynCase Type
