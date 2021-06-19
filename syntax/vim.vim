@@ -178,21 +178,23 @@ import option_terminal_special from 'vim9syntax.vim'
 
 # Assert where builtin Ex commands can match. {{{1
 
-# TODO: Add more groups  in this "mega" cluster.  It should  contain all special
-# commands which can't  be matched by the generic `syn  keyword` rule.  That is,
-# all  commands that  expect  special  arguments which  need  to be  highlighted
-# themselves  (e.g. `:map`);  or  commands which  need to  be  highlighted in  a
-# different way (e.g. `try`).
-# Also, make  sure to  remove the  names of  these commands  from `command_name`.
+# `vim9GenericCmd` handles most Ex commands.
+# But some of  them are special.{{{
 #
-# ---
+# Either they  – or one  of their  arguments – need  to be highlighted  in a
+# certain way.   For example, `:if`  is a control  flow statement and  should be
+# highighted differently than – say – `:delete`.
 #
-# Also, make sure  to remove the syntax groups/subclusters of  this mega cluster
-# out of `@vim9FuncBodyContains`.
-# Warning: Don't remove a  group blindly.  Only if the text  it matches can only
-# appear in a limited set of positions.  For example, in the past, we've wrongly
-# removed `vim9FuncCall`.  We shouldn't have, because a function call can appear
-# in many places, including in the middle of an expression.
+# Similarly, while `:map` is not a  control flow statement, and does not require
+# a specific highlighting, its arguments do.
+#}}}
+# Let's list them in this cluster.
+# One of them is not properly highlighted!{{{
+#
+# First, as mentioned before, make sure it's listed in this cluster.
+# Second, make sure it's listed in `SPECIAL_CMDS` in `./import/vim9syntax.vim`.
+# So that it's removed from `command_name`, and in turn from the `vim9GenericCmd` rule.
+#}}}
 syn cluster vim9IsCmd contains=
     \ @vim9ControlFlow,
     \ vim9AbbrevCmd,
@@ -210,8 +212,10 @@ syn cluster vim9IsCmd contains=
     \ vim9Highlight,
     \ vim9Import,
     \ vim9LetDeprecated,
+    \ vim9LuaRegion,
     \ vim9Map,
     \ vim9Norm,
+    \ vim9PythonRegion,
     \ vim9Set,
     \ vim9Syntax,
     \ vim9Unmap,
@@ -262,10 +266,11 @@ exe 'syn match vim9MayBeCmd /\%(\<\h\w*\>' .. command_can_be_before .. '\)\@=/'
 
 # Now, let's build a cluster containing all groups which can appear at the start of a line.
 syn cluster vim9CanBeAtStartOfLine contains=
-    \     vim9MayBeCmd,
+    \     vim9Continuation,
     \     vim9FuncCall,
     \     vim9FuncHeader,
     \     vim9LegacyFunction,
+    \     vim9MayBeCmd,
     \     vim9RangeIntroducer,
     \     vim9UnambiguousColon
 
@@ -339,8 +344,8 @@ exe 'syn region vim9CmdTakeExpr'
 
 # :import
 # :export
-syn keyword vim9Export exp[ort] contained nextgroup=vim9Declare skipwhite
 syn keyword vim9Import imp[ort] contained nextgroup=vim9ImportedItems skipwhite
+syn keyword vim9Export exp[ort] contained nextgroup=vim9Declare skipwhite
 
 #        v----v
 # import MyItem ...
@@ -649,7 +654,7 @@ syn match vim9AugroupNameEnd /\h\%(\w\|-\)*/ contained
 # `:autocmd` {{{2
 
 # :au[tocmd] [group] {event} {pat} [++once] [++nested] {cmd}
-syn match vim9Autocmd /\<au\%[tocmd]\>\%(\s*\w\)\@=/
+syn match vim9Autocmd /\<au\%[tocmd]\>/
     \ contained
     \ skipwhite
     \ nextgroup=
@@ -658,8 +663,6 @@ syn match vim9Autocmd /\<au\%[tocmd]\>\%(\s*\w\)\@=/
     \     vim9AutocmdEventGoodCase,
     \     vim9AutocmdGroup,
     \     vim9AutocmdMod
-# The positive  lookahead prevents  a variable named  `auto` from  being wrongly
-# highlighted as a command in an assignment or a computation.
 
 #           v
 # :au[tocmd]! ...
@@ -745,8 +748,7 @@ syn match vim9AutocmdMod /<nomodeline>/
     \     vim9AutocmdEventGoodCase,
     \     vim9AutocmdGroup
 #}}}1
-# vim9Todo: contains common special-notices for comments {{{1
-# Use the `vim9CommentGroup` cluster to add your own.
+# fixme/todo notices in comments {{{1
 
 syn keyword vim9Todo FIXME TODO contained
 syn cluster vim9CommentGroup contains=
@@ -836,8 +838,8 @@ syn case match
 syn case ignore
 exe 'syn keyword vim9HLGroup contained ' .. default_highlighting_group
 
-# Do *not* turn  this `match` into a `keyword` rule;  `conceal` would be wrongly
-# interpreted as an argument to `:syntax`.
+# Warning: Do *not* turn this `match` into  a `keyword` rule; `conceal` would be
+# wrongly interpreted as an argument to `:syntax`.
 syn match vim9HLGroup /\<conceal\>/ contained
 syn case match
 
@@ -895,20 +897,14 @@ syn cluster vim9ExprContains contains=
     \ vim9OperParen,
     \ vim9String
 
-# `vim9LineComment` needs to be in `@vim9OperGroup`.{{{
-#
-# So that the comment leader is highlighted  on an empty commented line inside a
-# dictionary inside a function.
-#}}}
 syn cluster vim9OperGroup contains=
     \ @vim9ExprContains,
     \ vim9Comment,
-    \ vim9Continue,
+    \ vim9Continuation,
     \ vim9DataType,
     \ vim9DataTypeCast,
     \ vim9DataTypeCastComposite,
     \ vim9DataTypeCompositeLeadingColon,
-    \ vim9LineComment,
     \ vim9Notation,
     \ vim9Oper,
     \ vim9OperAssign,
@@ -1083,11 +1079,6 @@ syn match vim9DictExprKey /\[.\{-}]\%(:\s\)\@=/
 
 syn cluster vim9FuncList contains=vim9DefKey
 
-# `vim9LineComment` needs to be in `@vim9FuncBodyContains`.{{{
-#
-# So that the comment leader is highlighted  on an empty commented line inside a
-# function.
-#}}}
 # The legacy script includes `vimSynType` inside `@vimFuncBodyList`.  Don't do the same.{{{
 #
 #     ✘
@@ -1121,7 +1112,6 @@ syn cluster vim9FuncBodyContains contains=
     \ vim9Bool,
     \ vim9CmdSep,
     \ vim9Comment,
-    \ vim9Continue,
     \ vim9CtrlChar,
     \ vim9DataType,
     \ vim9DataTypeCast,
@@ -1137,9 +1127,7 @@ syn cluster vim9FuncBodyContains contains=
     \ vim9HiLink,
     \ vim9LambdaArrow,
     \ vim9LegacyFunction,
-    \ vim9LineComment,
     \ vim9ListSlice,
-    \ vim9LuaRegion,
     \ vim9MayBeOptionScoped,
     \ vim9Notation,
     \ vim9Null,
@@ -1147,12 +1135,9 @@ syn cluster vim9FuncBodyContains contains=
     \ vim9Oper,
     \ vim9OperAssign,
     \ vim9OperParen,
-    \ vim9PythonRegion,
-    \ vim9Region,
     \ vim9SpecFile,
     \ vim9StartOfLine,
     \ vim9String,
-    \ vim9SynLine,
     \ vim9SynMtchGroup
 
 exe 'syn match vim9FuncHeader'
@@ -1957,10 +1942,10 @@ syn match vim9MapCmdBar /<bar>/
     \ nextgroup=@vim9CanBeAtStartOfLine
     \ skipwhite
 
-syn match vim9MapRhsExtend /^\s*\\.*$/ contained contains=vim9Continue
+syn match vim9MapRhsExtend /^\s*\\.*$/ contained contains=vim9Continuation
 syn match vim9MapRhsExtendExpr /^\s*\\.*$/
     \ contained
-    \ contains=@vim9ExprContains,vim9Continue
+    \ contains=@vim9ExprContains,vim9Continuation
 
 # User Function Call {{{1
 
@@ -2011,88 +1996,7 @@ exe 'syn match vim9UserFuncNameUser '
 
 # User Command Executed {{{1
 
-exe 'syn match vim9UserCmdExe '
-    .. '"\u\%(\w*\)\@>'
-    .. '\%('
-    # Don't highlight a user Vim function invoked without ":call".{{{
-    #
-    #     Func()
-    #     ^--^
-    #}}}
-    # Don't highlight a capitalized autoload function name, in a function call:{{{
-    #
-    #     Script#func()
-    #     ^----^
-    #}}}
-    # Don't highlight the member of a list/dictionary:{{{
-    #
-    #     var NAME: list<number> = [1]
-    #     NAME[0] = 2
-    #     ^--^
-    #}}}
-    ..     '[(#[]'
-    .. '\|'
-    # Don't highlight a capitalized variable name, in an assignment without declaration:{{{
-    #
-    #     var MYCONSTANT: number
-    #     MYCONSTANT = 12
-    #     MYCONSTANT += 34
-    #     MYCONSTANT *= 56
-    #     ...
-    #}}}
-    ..     '\s\+\%([-+*/%]\=\|\.\.\)='
-    .. '\|'
-    .. '\%('
-    # Don't highlight a funcref expression at the start of a line.{{{
-    #
-    #     def Foo(): string
-    #         return 'some text'
-    #     enddef
-    #
-    #     def Bar(F: func): string
-    #         return F()
-    #     enddef
-    #
-    #     # should NOT be highlighted as an Ex command
-    #     vvv
-    #     Foo->Bar()
-    #        ->setline(1)
-    #}}}
-    ..     '\_s*->'
-    # Nor a key in a literal dictionary.{{{
-    #
-    #     var d = {
-    #         Key: 123,
-    #         ^^^
-    #         # should NOT be highlighted as an Ex command
-    #     }
-    #
-    # Actually,  in this  simple example,  there is  no issue,  probably because
-    # `Key`  is in  `vim9OperParen`.   But if  the start  of  the dictionary  is
-    # far  away,  then  the  syntax  *might*  fail  to  parse  `Key`  as  inside
-    # `vim9OperParen`, which can cause `Key` to be parsed as `vim9UserCmdExe`.
-    # To reproduce, we  need – approximately – twice the  number assigned to
-    # `:syn sync maxlines`:
-    #
-    #     syn sync maxlines=60
-    #                       ^^
-    #                       60 * 2 = 120
-    #
-    # But depending on  how you've scrolled vertically in the  buffer, the issue
-    # might not be reproducible or disappear.
-    #}}}
-    ..     '\|' .. '\s*:'
-    # Nor an expression followed by an operator on the next line.{{{
-    #
-    #     var name =
-    #           Foo
-    #         + Bar
-    #}}}
-    ..     '\|' .. '\_s*\%([-+*/%?]\|\.\.\)'
-    .. '\)'
-    .. '\)\@!"'
-    .. ' contained'
-    .. ' nextgroup=vim9SpaceExtraAfterFuncname'
+syn match vim9UserCmdExe /\u\w*/ contained nextgroup=vim9SpaceExtraAfterFuncname
 
 # `:h :CompilerSet`{{{
 # This lets Vim highlight the name of an option and its value, when we set it with `:CompilerSet`.
@@ -2737,7 +2641,7 @@ syn match vim9CommentTitle /#\s*\u\%(\w\|[()]\)*\%(\s\+\u\w*\)*:/hs=s+1
     \ contained
     \ contains=@vim9CommentGroup
 
-syn match vim9Continue /^\s*\\/
+syn match vim9Continuation /^\s*\\/
     \ skipwhite
     \ nextgroup=
     \     vim9SynContains,
@@ -2753,7 +2657,7 @@ syn region vim9String
     \ start=/^\s*\\\z(['"]\)/
     \ skip=/\\\\\|\\\z1/
     \ end=/\z1/
-    \ contains=@vim9StringGroup,vim9Continue
+    \ contains=@vim9StringGroup,vim9Continuation
     \ keepend
     \ oneline
 
@@ -2773,49 +2677,44 @@ syn region vim9BacktickExpansionVimExpr
     \ contains=@vim9ExprContains
 
 # Embedded Scripts  {{{1
+# Python {{{2
 
 unlet! b:current_syntax
 syn include @vim9PythonScript syntax/python.vim
 
 syn region vim9PythonRegion
     \ matchgroup=vim9ScriptDelim
-    \ start=/py\%[thon][3x]\=\s*<<\s*\z(\S*\)\ze\%(\s*#.*\)\=$/
-    \ end=/^\z1\ze\%(\s*".*\)\=$/
+    \ start=/py\%[thon][3x]\=\s\+<<\s\+\z(\S\+\)$/
+    \ end=/^\z1$/
+    \ matchgroup=vim9Error
+    \ end=/^\s\+\z1$/
     \ contains=@vim9PythonScript
 
 syn region vim9PythonRegion
     \ matchgroup=vim9ScriptDelim
-    \ start=/py\%[thon][3x]\=\s*<<\s*$/
+    \ start=/py\%[thon][3x]\=\s\+<<$/
     \ end=/\.$/
     \ contains=@vim9PythonScript
 
-syn region vim9PythonRegion
-    \ matchgroup=vim9ScriptDelim
-    \ start=/Py\%[thon]2or3\s*<<\s*\z(\S*\)\ze\%(\s*#.*\)\=$/
-    \ end=/^\z1\ze\%(\s*".*\)\=$/
-    \ contains=@vim9PythonScript
-
-syn region vim9PythonRegion
-    \ matchgroup=vim9ScriptDelim
-    \ start=/Py\%[thon]2or3\=\s*<<\s*$/
-    \ end=/\.$/
-    \ contains=@vim9PythonScript
+# Lua {{{2
 
 unlet! b:current_syntax
 syn include @vim9LuaScript syntax/lua.vim
 
 syn region vim9LuaRegion
     \ matchgroup=vim9ScriptDelim
-    \ start=/lua\s*<<\s*\z(.*\)$/
+    \ start=/lua\s\+<<\s\+\z(\S\+\)$/
     \ end=/^\z1$/
+    \ matchgroup=vim9Error
+    \ end=/^\s\+\z1$/
     \ contains=@vim9LuaScript
 
 syn region vim9LuaRegion
     \ matchgroup=vim9ScriptDelim
-    \ start=/lua\s*<<\s*$/
+    \ start=/lua\s\+<<$/
     \ end=/\.$/
     \ contains=@vim9LuaScript
-
+#}}}1
 # Errors {{{1
 # Deprecated syntaxes {{{2
 
@@ -3286,7 +3185,7 @@ hi def link vim9Comment Comment
 hi def link vim9CommentString vim9String
 hi def link vim9CommentTitle PreProc
 hi def link vim9Conditional Conditional
-hi def link vim9Continue Special
+hi def link vim9Continuation Special
 hi def link vim9CtrlChar SpecialChar
 hi def link vim9DataType Type
 hi def link vim9DataTypeCast vim9DataType

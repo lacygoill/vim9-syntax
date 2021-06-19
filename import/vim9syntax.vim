@@ -165,7 +165,11 @@ const VARIOUS_SPECIAL_CMDS: list<string> =<< trim END
     global
     highlight
     import
+    lua
     normal
+    python
+    python3
+    pythonx
     set
     setglobal
     setlocal
@@ -289,7 +293,11 @@ export const command_can_be_before: string =
     #     var put: number
     #     put = 1 + 2
     #}}}
-    .. '\%(\s*\%([-+*/%]=\|=\s\|\.\.=\)\|\_s*->\)\@!'
+    .. '\%('
+    ..     '\s*\%([-+*/%]=\|=\s\|\.\.=\)'
+    .. '\|'
+    ..     '\_s*\%(->\|[-+*/%]\)'
+    .. '\)\@!'
 
 # option_can_be_after {{{3
 # This regex should make sure that we're  in a position where a Vim option could
