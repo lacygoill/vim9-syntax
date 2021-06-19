@@ -253,13 +253,13 @@ syn cluster vim9IsCmd contains=
 # writing a colon whose purpose is to  remove an ambiguity.  This is useful, for
 # example, for `vim9Global`:
 #
-#     :g:pattern:yank A
+#     :g:pattern:command
 #     ^
 #}}}
 # Order: Must come before the next rule with the lookahead.
 syn match vim9MayBeCmd /\%(:\=\<\h\w*\>\)\@=/
     \ contained
-    \ nextgroup=vim9Global,vim9Subst
+    \ nextgroup=vim9Global,vim9GlobalError,vim9Subst
 # General case
 exe 'syn match vim9MayBeCmd /\%(\<\h\w*\>' .. command_can_be_before .. '\)\@=/'
     .. ' contained'
@@ -1632,8 +1632,8 @@ syn match vim9Global
 #
 #      ✘       ✘
 #      v       v
-#     g:pattern:yank A
-#     g/pattern/yank A
+#     g:pattern:command
+#     g/pattern/command
 #      ^       ^
 #      ✔       ✔
 #
@@ -1641,8 +1641,8 @@ syn match vim9Global
 #
 #     ✘
 #     v
-#     g:pattern:yank A
-#     global:pattern:yank A
+#     g:pattern:command
+#     global:pattern:command
 #     ^----^
 #       ✔
 #
@@ -1654,13 +1654,17 @@ syn match vim9Global
     \ contained
     # There is a third solution:{{{
     #
-    #     :g:pattern:yank A
+    #     :g:pattern:command
     #     ^
     #     ✔
     #}}}
     syn match vim9Global
         \ /:\@1<=g\ze:.\{-}:/
         \ nextgroup=vim9GlobalPat
+        \ contained
+    # `g:pattern:command` is an error
+    syn match vim9GlobalError
+        \ /:\@1<!\<g:[^: \t]\+:/
         \ contained
 
 # vglobal:pat:cmd
@@ -1671,6 +1675,9 @@ syn match vim9Global
     syn match vim9Global
         \ /:\@1<=v\ze:.\{-}:/
         \ nextgroup=vim9GlobalPat
+        \ contained
+    syn match vim9GlobalError
+        \ /:\@1<!\<v:[^: \t]\+:/
         \ contained
 
 syn region vim9GlobalPat
@@ -3222,6 +3229,7 @@ hi def link vim9DictLiteralLegacyDeprecated vim9Error
 hi def link vim9DictMayBeLiteralKey vim9Error
 hi def link vim9FTError vim9Error
 hi def link vim9FuncCall vim9Error
+hi def link vim9GlobalError vim9Error
 hi def link vim9HiAttribList vim9Error
 hi def link vim9HiCtermError vim9Error
 hi def link vim9HiKeyError vim9Error
