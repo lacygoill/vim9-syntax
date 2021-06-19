@@ -296,7 +296,10 @@ export const command_can_be_before: string =
     .. '\%('
     ..     '\s*\%([-+*/%]=\|=\s\|\.\.=\)'
     .. '\|'
-    ..     '\_s*\%(->\|[-+*/%]\)'
+    # Matching  a  space  at  the  end   is  necessary  to  avoid  breaking  the
+    # highlighting  of a  slash-delimited pattern  passed  as an  argument to  a
+    # command (e.g. `:catch /pattern/`).
+    ..     '\_s*\%(->\|[-+*/%]\s\)'
     .. '\)\@!'
 
 # option_can_be_after {{{3
