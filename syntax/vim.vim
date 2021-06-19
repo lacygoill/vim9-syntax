@@ -215,8 +215,8 @@ syn cluster vim9IsCmd contains=
     \ vim9Set,
     \ vim9Syntax,
     \ vim9Unmap,
-    \ vim9UserCmdExe,
-    \ vim9UserCmdDef
+    \ vim9UserCmdDef,
+    \ vim9UserCmdExe
 
 # Problem: a token might look like a command, but be something else.{{{
 #
@@ -337,26 +337,39 @@ exe 'syn region vim9CmdTakeExpr'
 
 # Import/Export {{{3
 
+# :import
+# :export
 syn keyword vim9Export exp[ort] contained nextgroup=vim9Declare skipwhite
+syn keyword vim9Import imp[ort] contained nextgroup=vim9ImportedItems skipwhite
 
-syn keyword vim9Import imp[ort] from as
+#        v----v
+# import MyItem ...
+syn match vim9ImportedItems /\h[a-zA-Z0-9_]*/
     \ contained
-    \ nextgroup=vim9ImportedItems
+    \ nextgroup=vim9ImportAsFrom
     \ skipwhite
 
+#        v---------v
+# import {My, Items} ...
 syn region vim9ImportedItems matchgroup=vim9Sep
     \ start=/{/
     \ end=/}/
     \ contained
-    \ nextgroup=vim9Import
+    \ contains=vim9ImportAsFrom
+    \ nextgroup=vim9ImportAsFrom
     \ skipwhite
+syn match vim9ImportedItems /\*/ contained nextgroup=vim9ImportAsFrom skipwhite
 
-syn match vim9ImportedItems /\h[a-zA-Z0-9_]*/
+#               vv         v--v
+# import MyItem as MyAlias from 'myfile.vim'
+syn keyword vim9ImportAsFrom as from contained nextgroup=vim9ImportAlias skipwhite
+
+#                  v-----v
+# import MyItem as MyAlias from 'myfile.vim'
+syn match vim9ImportAlias /\h[a-zA-Z0-9_]*/
     \ contained
-    \ nextgroup=vim9Import
+    \ nextgroup=vim9ImportAsFrom
     \ skipwhite
-
-syn match vim9ImportedItems /\*/ contained nextgroup=vim9Import skipwhite
 
 # `:echohl` arguments {{{3
 
@@ -1951,7 +1964,7 @@ syn match vim9MapRhsExtendExpr /^\s*\\.*$/
 
 # User Function Call {{{1
 
-# call to any kind of function (builtin + custom)
+# call to any kind of function (builtin + user)
 exe 'syn match vim9FuncCall '
     .. '/\<'
     .. '\%('
@@ -1976,10 +1989,10 @@ exe 'syn match vim9FuncCall '
     #}}}
     .. '\ze('
     .. '/'
-    .. ' contains=vim9FuncNameBuiltin,vim9UserFuncNameCustom'
+    .. ' contains=vim9FuncNameBuiltin,vim9UserFuncNameUser'
 
-# name of custom function in function call
-exe 'syn match vim9UserFuncNameCustom '
+# name of user function in function call
+exe 'syn match vim9UserFuncNameUser '
     .. '/\<'
     .. '\%('
     ..     '[gs]:\w\+'
@@ -2001,7 +2014,7 @@ exe 'syn match vim9UserFuncNameCustom '
 exe 'syn match vim9UserCmdExe '
     .. '"\u\%(\w*\)\@>'
     .. '\%('
-    # Don't highlight a custom Vim function invoked without ":call".{{{
+    # Don't highlight a user Vim function invoked without ":call".{{{
     #
     #     Func()
     #     ^--^
@@ -2087,10 +2100,10 @@ exe 'syn match vim9UserCmdExe '
 #     CompilerSet mp=pandoc
 #                 ^-------^
 #}}}
-# But it breaks the highlighting of `:CompilerSet`.  It should be highlighted as a *custom* command!{{{
+# But it breaks the highlighting of `:CompilerSet`.  It should be highlighted as a *user* command!{{{
 #
 # No, it should not.
-# The fact that  its name starts with  an uppercase does not mean  it's a custom
+# The fact  that its name  starts with  an uppercase does  not mean it's  a user
 # command.  It's definitely not one:
 #
 #     :com CompilerSet
@@ -2103,7 +2116,7 @@ syn keyword vim9Set CompilerSet
 
 # Data Types {{{1
 
-# Order: This section must come *after* the `vim9FuncCall` and `vim9UserFuncNameCustom` rules.{{{
+# Order: This section must come *after* the `vim9FuncCall` and `vim9UserFuncNameUser` rules.{{{
 #
 # Otherwise, a funcref return type in a function's header would sometimes not be
 # highlighted in its entirety:
@@ -3191,9 +3204,9 @@ syn sync match vim9AugroupSyncA groupthere NONE /\<aug\%[roup]\>\s\+END/
 #}}}
 
 hi def link vim9GenericCmd Statement
-# Make Vim highlight custom commands in a similar way as for builtin Ex commands.{{{
+# Make Vim highlight user commands in a similar way as for builtin Ex commands.{{{
 #
-# With a  twist: we want  them to be  bold, so that  we can't conflate  a custom
+# With a  twist: we  want them  to be  bold, so  that we  can't conflate  a user
 # command with a builtin one.
 #
 # If you don't care about this distinction, you could get away with just:
@@ -3216,7 +3229,7 @@ hi def link vim9GenericCmd Statement
 #}}}
 if execute('hi vim9UserCmdExe') =~ '\<cleared$'
     import Derive from 'vim9syntaxUtil.vim'
-    Derive('vim9UserFuncNameCustom', 'Function', 'term=bold cterm=bold gui=bold')
+    Derive('vim9UserFuncNameUser', 'Function', 'term=bold cterm=bold gui=bold')
     Derive('vim9UserCmdExe', 'vim9GenericCmd', 'term=bold cterm=bold gui=bold')
     Derive('vim9FuncHeader', 'Function', 'term=bold cterm=bold gui=bold')
     Derive('vim9CmdModifier', 'vim9GenericCmd', 'term=italic cterm=italic gui=italic')
@@ -3316,6 +3329,7 @@ hi def link vim9HiStartStop vim9HiTerm
 hi def link vim9HiTerm Type
 hi def link vim9Highlight vim9GenericCmd
 hi def link vim9Import Include
+hi def link vim9ImportAsFrom vim9Import
 hi def link vim9IsOption PreProc
 hi def link vim9IskSep Delimiter
 hi def link vim9LambdaArrow vim9Sep
