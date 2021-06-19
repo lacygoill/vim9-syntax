@@ -3213,7 +3213,7 @@ hi def link vim9GenericCmd Statement
 #                                    ✘
 #}}}
 if execute('hi vim9UserCmd') =~ '\<cleared$'
-    import Derive from 'Vim9SyntaxUtil.vim'
+    import Derive from 'vim9syntaxUtil.vim'
     Derive('vim9UserFuncNameCustom', 'Function', 'term=bold cterm=bold gui=bold')
     Derive('vim9UserCmd', 'vim9GenericCmd', 'term=bold cterm=bold gui=bold')
     Derive('vim9FuncHeader', 'Function', 'term=bold cterm=bold gui=bold')
