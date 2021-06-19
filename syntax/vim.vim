@@ -882,7 +882,22 @@ syn keyword vim9FTOption detect indent off on plugin contained
 
 # Operators {{{1
 
+# Why including `vim9Block` in an expression?{{{
+#
+# To support the case  of a lambda whose body is a block  of statements (and not
+# an expression), *and* is used as a value in a dictionary:
+#
+#     var d = {
+#         k: () => {
+#             eval 0
+#     }}
+#
+#     echo () => {
+#         eval 0
+#     }
+#}}}
 syn cluster vim9Expr contains=
+    \ vim9Block,
     \ vim9Bool,
     \ vim9DataTypeCast,
     \ vim9Dict,
@@ -898,6 +913,18 @@ syn cluster vim9Expr contains=
     \ vim9OperParen,
     \ vim9String
 
+# Warning: Don't include `vim9DictMayBeLiteralKey`.{{{
+#
+# It could break the highlighting of a dictionary containing a lambda:
+#
+#     eval {
+#         key: (_, v): number => 0
+#                  ^^
+#                  ✘
+#     }
+#     ^
+#     ✘
+#}}}
 syn cluster vim9OperGroup contains=
     \ @vim9Expr,
     \ vim9Comment,
@@ -1042,18 +1069,6 @@ syn match vim9OperError /)/
 # Dictionaries {{{1
 
 # Order: Must come before `vim9Block`.
-# Warning: Don't include `vim9DictMayBeLiteralKey` in `@vim9OperGroup`:{{{
-#
-# It could break the highlighting of a dictionary containing a lambda:
-#
-#     eval {
-#         key: (_, v): number => 0
-#                  ^^
-#                  ✘
-#     }
-#     ^
-#     ✘
-#}}}
 syn region vim9Dict
     \ matchgroup=vim9Sep
     \ start=/{/
