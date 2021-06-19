@@ -337,12 +337,9 @@ exe 'syn region vim9CmdTakeExpr'
 
 # Import/Export {{{3
 
-syn match vim9Export /\<export\>/
-    \ contained
-    \ nextgroup=vim9Declare
-    \ skipwhite
+syn keyword vim9Export exp[ort] contained nextgroup=vim9Declare skipwhite
 
-syn match vim9Import /\<\%(import\|from\|as\)\>/
+syn keyword vim9Import imp[ort] from as
     \ contained
     \ nextgroup=vim9ImportedItems
     \ skipwhite
@@ -363,7 +360,7 @@ syn match vim9ImportedItems /\*/ contained nextgroup=vim9Import skipwhite
 
 # `:echohl` arguments {{{3
 
-syn match vim9EchoHL /\<echohl\>/
+syn keyword vim9EchoHL echoh[l]
     \ contained
     \ nextgroup=vim9EchoHLNone,vim9Group,vim9HLGroup
     \ skipwhite
@@ -480,7 +477,7 @@ syn match vim9RangeDelimiter /[,;]/
 #     \<\%(setl\%[ocal]\|setg\%[lobal]\|se\%[t]\)\>\s\|&\%([gl]:\)\=[a-z]\{2,\}\|&t_..
 # Assignment commands {{{2
 
-syn match vim9Set /\<\%(setl\%[ocal]\|setg\%[lobal]\|se\%[t]\)\>/
+syn keyword vim9Set setl[ocal] setg[lobal] se[t]
     \ contained
     \ nextgroup=vim9MayBeOptionSet
     \ skipwhite
@@ -719,7 +716,7 @@ syn match vim9AutocmdEndOfEventList /,\%(\a\+,\)*\a\+/
 
 # :do[autocmd] [<nomodeline>] [group] {event} [fname]
 # :doautoa[ll] [<nomodeline>] [group] {event} [fname]
-syn match vim9Doautocmd /\<\%(do\%[autocmd]\|doautoa\%[ll]\)\>/
+syn keyword vim9Doautocmd do[autocmd] doautoa[ll]
     \ contained
     \ skipwhite
     \ nextgroup=
@@ -1246,7 +1243,7 @@ syn match vim9SpecFileMod /\%(:[phtreS]\)\+/ contained
 # User Commands {{{1
 # :command {{{2
 
-syn match vim9UserCmdDef /\<com\%[mand]\>/
+syn keyword vim9UserCmdDef com[mand]
     \ contained
     \ nextgroup=@vim9UserCmdAttrbContains,vim9UserCmdBang
     \ skipwhite
@@ -2099,7 +2096,7 @@ exe 'syn match vim9UserCmdExe '
 #     :com CompilerSet
 #     No user-defined commands found˜
 #}}}
-syn match vim9Set /\<CompilerSet\>/
+syn keyword vim9Set CompilerSet
     \ contained
     \ nextgroup=vim9MayBeOptionSet
     \ skipwhite
@@ -2264,7 +2261,7 @@ syn region vim9RepeatForVar
     \ contained
     \ nextgroup=vim9RepeatForIn
     \ skipwhite
-syn match vim9RepeatForIn /\<in\>/ contained
+syn keyword vim9RepeatForIn in contained
 
 # :while
 syn keyword vim9Repeat wh[ile] contained skipwhite nextgroup=@vim9ExprContains
@@ -2298,8 +2295,7 @@ syn match vim9TryCatchPatternDelim +/+ contained
 
 # `:*do` {{{1
 
-syn match vim9DoCmds
-    \ /\<\%(arg\|buf\|cf\=\|lf\=\|tab\|win\)do\>/
+syn keyword vim9DoCmds argdo bufdo cdo cfdo ld[o] lfdo tabd[o] windo
     \ contained
     \ skipwhite
     \ nextgroup=@vim9CanBeAtStartOfLine
@@ -2307,7 +2303,7 @@ syn match vim9DoCmds
 
 # Norm {{{1
 
-syn match vim9Norm /\<norm\%[al]\>/ nextgroup=vim9NormCmds contained skipwhite
+syn keyword vim9Norm norm[al] nextgroup=vim9NormCmds contained skipwhite
 syn match vim9Norm /\<norm\%[al]\>!/he=e-1 nextgroup=vim9NormCmds contained skipwhite
 
 # in a mapping, stop before the `<cr>` which executes `:norm`
@@ -2342,7 +2338,7 @@ syn match vim9SynContains /\<contain\%(s\|edin\)=/
 syn match vim9SynKeyContainedin /\<containedin=/ contained nextgroup=vim9GroupList
 syn match vim9SynNextgroup /nextgroup=/ contained nextgroup=vim9GroupList
 
-syn match vim9Syntax /\<sy\%[ntax]\>/
+syn keyword vim9Syntax sy[ntax]
     \ contained
     \ contains=vim9GenericCmd
     \ nextgroup=vim9Comment,vim9SynType
@@ -2554,7 +2550,7 @@ syn keyword vim9SyncLinecont linecont contained nextgroup=vim9SynRegPat skipwhit
 syn match vim9SyncLines /\%(min\|max\)\=lines=/ contained nextgroup=vim9Number
 syn match vim9SyncGroupName /\h\w*/ contained nextgroup=vim9SyncKey skipwhite
 
-syn match vim9SyncKey /\<groupthere\|grouphere\>/
+syn keyword vim9SyncKey groupthere grouphere
     \ contained
     \ nextgroup=vim9SyncGroup
     \ skipwhite
@@ -2576,7 +2572,7 @@ syn cluster vim9HighlightCluster contains=
 
 syn match vim9HiCtermError /\D\i*/ contained
 
-syn match vim9Highlight /\<hi\%[ghlight]\>/
+syn keyword vim9Highlight hi[ghlight]
     \ contained
     \ nextgroup=@vim9HighlightCluster,vim9HiBang
     \ skipwhite
