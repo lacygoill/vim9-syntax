@@ -13,7 +13,7 @@ endif
 
 # Requirement: Any syntax group should be prefixed with `vim9`; not `vim`.{{{
 #
-# To avoid any  interference from the default  syntax plugin, in case  we load a
+# To avoid  any interference from  the legacy syntax plugin,  in case we  load a
 # legacy script at some point.
 #
 # In particular,  we don't want  the color choices we  make for Vim9  scripts to
@@ -84,9 +84,9 @@ endif
 # TODO: When we import variables, there should be no computation.
 # Write a  script (which we  can run on-demand)  which generates an  import file
 # where the variables have already been computed.
-# Benefit: Faster when start Vim with a Vim script file.
-# Also,  makes  debugging  easier,  as  we can  clearly  see  which  tokens  are
-# highlighted.
+# Benefit: Faster when we start Vim with a Vim script file.
+# Also, makes debugging easier, as we can clearly see which tokens our rules are
+# meant to highlight.
 
 # TODO: Try to extract as many complex regexes into importable items.
 # Look for the pattern `^exe`.
@@ -591,7 +591,7 @@ syn match vim9SetNumberValue /\d\+\_s\@=/
 # Autocmds {{{1
 # `:augroup` {{{2
 
-# The default syntax plugin wraps all the contents of an augroup inside a region.{{{
+# The legacy syntax plugin wraps all the contents of an augroup inside a region.{{{
 #
 # I think it does  that to highlight a possible error, in case  we wrote the end
 # statement without the starting one:
@@ -607,7 +607,7 @@ syn match vim9SetNumberValue /\d\+\_s\@=/
 # It creates too many issues and complexity.
 # Technically, you can write any statement between the start and end of an augroup.
 # That includes, for example, a function.
-# But the default syntax plugin wrongly handles such a situation:
+# But the legacy syntax plugin wrongly handles such a situation:
 #
 #     augroup Name | au!
 #         def Func()
@@ -617,7 +617,7 @@ syn match vim9SetNumberValue /\d\+\_s\@=/
 #     augroup END
 #
 # That's because the region doesn't include the right syntax group(s).
-# Finding and writing the right ones is cumbersome is brittle.
+# Finding and writing the right ones is cumbersome and brittle.
 #
 # Besides, the  gain is dubious; I  can't remember the  last time we did  such a
 # mistake.
@@ -1222,14 +1222,16 @@ syn match vim9SpecFileMod /\%(:[phtreS]\)\+/ contained
 # User Commands {{{1
 # :command {{{2
 
-syn keyword vim9UserCmdDef com[mand]
+# Warning: Do not turn `:syn match` into `:syn keyword`.
+# It would break the highlighting of a possible following bang.
+syn match vim9UserCmdDef /\<com\%[mand]\>/
     \ contained
-    \ nextgroup=@vim9UserCmdAttrbContains,vim9UserCmdBang
+    \ nextgroup=@vim9UserCmdAttrbContains
     \ skipwhite
 
 syn match vim9UserCmdDef /\<com\%[mand]\>!/he=e-1
     \ contained
-    \ nextgroup=@vim9UserCmdAttrbContains,vim9UserCmdBang
+    \ nextgroup=@vim9UserCmdAttrbContains
     \ skipwhite
 
 # error handling {{{2
@@ -2217,7 +2219,9 @@ syn keyword vim9DoCmds argdo bufdo cdo cfdo ld[o] lfdo tabd[o] windo
 
 # Norm {{{1
 
-syn keyword vim9Norm norm[al] nextgroup=vim9NormCmds contained skipwhite
+# Warning: Do not turn `:syn match` into `:syn keyword`.
+# It would break the highlighting of a possible following bang.
+syn match vim9Norm /\<norm\%[al]\>/ nextgroup=vim9NormCmds contained skipwhite
 syn match vim9Norm /\<norm\%[al]\>!/he=e-1 nextgroup=vim9NormCmds contained skipwhite
 
 # in a mapping, stop before the `<cr>` which executes `:norm`
