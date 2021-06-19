@@ -491,18 +491,15 @@ export const option: string = Option()
 # option_terminal {{{3
 
 # terminal options with only word characters
-export const option_terminal: string = (
+export const option_terminal: string =
     getcompletion('t_', 'option')
         ->filter((_, v: string): bool => v =~ '^t_\w\w$')
-        # `getcompletion()` can miss some terminal options during startup.
-        # That's notably the case of `'t_PE'` and `'t_PS'`.
-        + ['t_PE', 't_PS']
-    )->join()
+        ->join()
 
-# option_terminal_special {{{3
+    # option_terminal_special {{{3
 
-# terminal options with at least 1 non-word character
-export const option_terminal_special: string =
-    getcompletion('t_', 'option')
-        ->filter((_, v: string): bool => v =~ '\W')
-        ->join('\|')
+    # terminal options with at least 1 non-word character
+    export const option_terminal_special: string =
+        getcompletion('t_', 'option')
+            ->filter((_, v: string): bool => v =~ '\W')
+            ->join('\|')
