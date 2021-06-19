@@ -106,7 +106,9 @@ const MAPPING_CMDS: list<string> =<< trim END
     xmapclear
 END
 
+#     :helpgrep ^:\%({command}\|{cmd}\)
 const MODIFIER_CMDS: list<string> =<< trim END
+    aboveleft
     belowright
     botright
     browse
