@@ -243,6 +243,7 @@ const CONTROL_FLOW_CMDS: list<string> =<< trim END
     endwhile
     try
     catch
+    finally
     throw
     endtry
     return
@@ -357,20 +358,6 @@ def CommandName(): string
           ->filter((_, v: string): bool => v =~ '^[a-z]')
     for cmd in DEPRECATED_CMDS
       + MODIFIER_CMDS
-      # This one is special.{{{
-      #
-      #     :fina   = :finally
-      #     :final  = :final
-      #     :finall = :finally
-      #
-      # As you can see, `:final` uses a slot which it shoudn't.
-      # If `:abc`  is the abbreviation of  `:abcdef`, then the same  is true for
-      # any command in-between; that is `:abcd` and `:abcde`.
-      #
-      # Anyway,  because of  this inconsistency,  we need  to handle  `:finally`
-      # manually.
-      #}}}
-      + ['finally']
       + SPECIAL_CMDS
         var i: number = to_abbreviate->index(cmd)
         if i == -1
@@ -381,12 +368,8 @@ def CommandName(): string
 
     var abbreviated: list<string> = to_abbreviate->Abbreviate()
 
-    abbreviated += [
-        # this one is missing from `getcompletion()`
-        'addd',
-        # as said earlier, this one needs to be handled manually
-        'fina[lly]'
-    ]
+    # this one is missing from `getcompletion()`
+    abbreviated += ['addd']
 
     return abbreviated->join()
 enddef

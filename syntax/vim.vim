@@ -178,10 +178,6 @@ import option_terminal_special from 'vim9syntax.vim'
 
 # Assert where builtin Ex commands can match. {{{1
 
-# TODO: Whenever you  use this cluster, make  sure it does not  contain too many
-# syntax  groups in  the  current  context.  If  necessary,  create (a)  smaller
-# cluster(s).
-
 # TODO: Add more groups  in this "mega" cluster.  It should  contain all special
 # commands which can't  be matched by the generic `syn  keyword` rule.  That is,
 # all  commands that  expect  special  arguments which  need  to be  highlighted
@@ -2285,7 +2281,10 @@ syn match vim9Repeat /\<\%(endfor\=\|endw\%[hile]\)\>/ contained skipwhite
 # :throw
 # :finally
 # :endtry
-syn match vim9TryCatch /\<\%(try\|endtry\|finally\)\>/ contained
+# ---
+# NOTE: We can't  write `:fina\%[lly]`, because  it would break  `:final`, which
+# has a different meaning.
+syn match vim9TryCatch /\<\%(try\|endtry\|fina\|finall\|finally\)\>/ contained
 syn match vim9TryCatch /\<throw\>/ contained nextgroup=@vim9ExprContains skipwhite
 syn match vim9TryCatch -\<catch\>\%(\s\+/[^/]*/\)\=- contained contains=vim9TryCatchPattern
 
