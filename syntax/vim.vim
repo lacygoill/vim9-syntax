@@ -492,9 +492,6 @@ syn match vim9RangeDelimiter /[,;]/
     \ contained
 
 # Options {{{1
-# TODO: Check whether all options are correctly highlighted.
-#
-#     \<\%(setl\%[ocal]\|setg\%[lobal]\|se\%[t]\)\>\s\zs\|&\%([gl]:\)\=[a-z]\{2,\}\|&t_..
 # Assignment commands {{{2
 
 syn keyword vim9Set setl[ocal] setg[lobal] se[t]
