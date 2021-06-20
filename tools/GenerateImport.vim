@@ -228,7 +228,8 @@ def AppendSection(what: string, match_rule = false) #{{{2
             + eval(what)
                 ->mapnew((_, v: string): string => '    ' .. v)
             + ['END', '']
-            + ['export const ' .. what .. ': string = ' .. what .. '_list->join(' .. (match_rule ? '"\\|"' : '') .. ')']
+            + ['export const ' .. what .. ': string = '
+                .. what .. '_list->join(' .. (match_rule ? '"\\|"' : '') .. ')']
     else
         lines += ['export const ' .. what .. ': string = ' .. eval(what)->string()]
     endif
@@ -308,7 +309,7 @@ const command_can_be_before: string =
     #     put = 1 + 2
     #}}}
     .. '\%('
-    ..     '\s*\%([-+*/%]=\|=\s\|\.\.=\)'
+    ..     '\s*\%([-+*/%]=\|=\s\|=<\|\.\.=\)'
     .. '\|'
     ..     '\_s*\%('
     ..     '->'

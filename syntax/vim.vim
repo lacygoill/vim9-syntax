@@ -2069,11 +2069,12 @@ exe 'syn match vim9UserFuncNameUser '
 
 syn match vim9UserCmdExe /\u\w*/ contained nextgroup=vim9SpaceExtraAfterFuncname
 
-# `:h :CompilerSet`{{{
-# This lets Vim highlight the name of an option and its value, when we set it with `:CompilerSet`.
+# This lets Vim highlight the name of an option and its value, when we set it with `:CompilerSet`.{{{
 #
 #     CompilerSet mp=pandoc
 #                 ^-------^
+#
+# See: `:h :CompilerSet`
 #}}}
 # But it breaks the highlighting of `:CompilerSet`.  It should be highlighted as a *user* command!{{{
 #
@@ -2084,10 +2085,7 @@ syn match vim9UserCmdExe /\u\w*/ contained nextgroup=vim9SpaceExtraAfterFuncname
 #     :com CompilerSet
 #     No user-defined commands found˜
 #}}}
-syn keyword vim9Set CompilerSet
-    \ contained
-    \ nextgroup=vim9MayBeOptionSet
-    \ skipwhite
+syn keyword vim9Set CompilerSet contained nextgroup=vim9MayBeOptionSet skipwhite
 
 # Data Types {{{1
 
