@@ -2319,7 +2319,13 @@ syn region vim9NormCmds start=/./ end=/$\|\ze<cr>/ contained oneline
 #     syn clear Foobar
 #               ^----^
 #}}}
-syn match vim9GroupList /@\=[^ \t,]\+/
+# Must exclude the bar for this to work:{{{
+#
+#     syn clear | eval 0
+#               ^
+#               not part of a group name
+#}}}
+syn match vim9GroupList /@\=[^ \t,|]\+/
     \ contained
     \ contains=vim9GroupSpecial,vim9PatSep
 
@@ -2328,7 +2334,9 @@ syn match vim9GroupList /@\=[^ \t,]*,/
     \ contains=vim9GroupSpecial,vim9PatSep
     \ nextgroup=vim9GroupList
 
-syn keyword vim9GroupSpecial ALL ALLBUT CONTAINED TOP contained
+# Warning: Do not turn `:syn match` into `:syn keyword`.
+# It would fail to match `CONTAINED`.
+syn match vim9GroupSpecial /\%(ALL\|ALLBUT\|CONTAINED\|TOP\)/ contained
 syn match vim9SynError /\i\+/ contained
 syn match vim9SynError /\i\+=/ contained nextgroup=vim9GroupList
 
