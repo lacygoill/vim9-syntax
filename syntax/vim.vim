@@ -1262,7 +1262,12 @@ syn match vim9SpecFile /<\%([acs]file\|amatch\|abuf\)>/
 # practice, so let's not try to fix it.
 #}}}
 syn match vim9SpecFile /\s%:/ms=s+1,me=e-1 nextgroup=vim9SpecFileMod
-syn match vim9SpecFile /\s%$/ms=s+1 nextgroup=vim9SpecFileMod
+# `%` can be followed by a bar, or `<bar>`:{{{
+#
+#     source % | eval 0
+#              ^
+#}}}
+syn match vim9SpecFile /\s%\%($\|\s*[|<]\)\@=/ms=s+1 nextgroup=vim9SpecFileMod
 syn match vim9SpecFile /\s%</ms=s+1,me=e-1 nextgroup=vim9SpecFileMod
 syn match vim9SpecFile /#\d\+\|[#%]<\>/ nextgroup=vim9SpecFileMod
 syn match vim9SpecFileMod /\%(:[phtreS]\)\+/ contained
@@ -1758,7 +1763,6 @@ syn match vim9Global
         \ nextgroup=vim9GlobalPat
         \ contained
 
-
 syn region vim9GlobalPat
     \ matchgroup=vim9SubstDelim
     \ start=/\z([^[:alnum:] \t\"#|]\@=.\)/rs=s+1
@@ -1983,7 +1987,7 @@ syn region vim9MapCmd
     \ start=/\s*\c<cmd>/
     \ end=/\c<cr>/
     \ contained
-    \ contains=@vim9Expr,vim9Notation,vim9MapCmdBar
+    \ contains=@vim9Expr,vim9MapCmdBar,vim9Notation,vim9SpecFile
     \ keepend
     \ oneline
 
@@ -1991,7 +1995,7 @@ syn region vim9MapInsertExpr
     \ start=/\s*\c<c-r>=\@=/
     \ end=/\c<cr>/
     \ contained
-    \ contains=@vim9Expr,vim9Notation,vim9EvalExpr
+    \ contains=@vim9Expr,vim9EvalExpr,vim9Notation
     \ keepend
     \ oneline
 syn match vim9EvalExpr /\%(<c-r>\)\@6<==/ contained

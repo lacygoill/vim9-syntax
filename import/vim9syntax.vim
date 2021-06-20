@@ -296,10 +296,15 @@ export const command_can_be_before: string =
     .. '\%('
     ..     '\s*\%([-+*/%]=\|=\s\|\.\.=\)'
     .. '\|'
-    # Matching a space at the end is necessary.{{{
+    ..     '\_s*\%('
+    ..     '->'
+    .. '\|'
+    ..     '[-+*/%]'
+    # Need to match at least 1 space to avoid breaking the highlighting of a pattern passed as argument to a command.{{{
     #
-    # It makes sure  we don't break the  highlighting of a pattern  passed as an
-    # argument to a command (e.g. `:catch /pattern/`).
+    # Example:
+    #
+    #     catch /pattern/
     #
     # This does mean that  the pattern can't start with a space,  but IMO it's a
     # corner case which doesn't warrant a fix  (at least for now).  We can still
@@ -317,7 +322,10 @@ export const command_can_be_before: string =
     #     catch /\%x20pattern/
     #            ^---^
     #}}}
-    ..     '\_s*\%(->\|[-+*/%]\s\)'
+    ..     '\%(\s\+\)\@>'
+    # necessary to be able to match `source` in `source % | eval 0` or `source % <bar> eval 0`
+    ..     '[^|<]'
+    .. '\)'
     .. '\)\@!'
 
 # option_can_be_after {{{3
