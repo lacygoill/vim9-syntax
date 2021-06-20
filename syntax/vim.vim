@@ -1705,68 +1705,59 @@ syn match vim9SubstFlags /[&cegiIlnpr#]\+/ contained
 
 # g/pat/cmd
 syn match vim9Global
-    \ /\<g\%[lobal]\>!\=\ze\([^[:alnum:] \t\"#|]\@=.\).\{-}\1/
+    \ /\<g\%[lobal]\>!\=\ze\([^:[:alnum:] \t\"#|]\@=.\).\{-}\1/
     \ nextgroup=vim9GlobalPat
     \ contained
+
+    # :g:pat:cmd{{{
+    #
+    # This is a special case.  See `:h vim9-gotchas`.
+    #}}}
+    syn match vim9Global
+        \ /:\@1<=g!\=\ze:.\{-}:/
+        \ nextgroup=vim9GlobalPat
+        \ contained
+
+    # global:pat:cmd
+    syn match vim9Global
+        \ /\<gl\%[obal]!\=\ze:.\{-}:/
+        \ nextgroup=vim9GlobalPat
+        \ contained
+    # We don't support a very special case:{{{
+    #
+    #     g:a+b:command
+    #        ^
+    #
+    # This  is a  valid global  command, because  there is  no ambiguity  with a
+    # global variable; thanks to `+` which is a non word character.
+    # But watch this:
+    #
+    #     g:name = {key: 'value'}
+    #       ^---------^
+    #       this is not a pattern
+    #
+    # I don't think it's possible for a  simple regex to determine the nature of
+    # what follows `g:`: a pattern vs a variable name.
+    #}}}
 
 # v/pat/cmd
 syn match vim9Global
-    \ /\<v\%[global]\>\ze\([^[:alnum:] \t\"#|]\@=.\).\{-}\1/
+    \ /\<v\%[global]\>\ze\([^:[:alnum:] \t\"#|]\@=.\).\{-}\1/
     \ nextgroup=vim9GlobalPat
     \ contained
 
-# `g:pattern:command` is an error.{{{
-#
-# This is a special case.  From `:h vim9-gotchas`:
-#
-#    > Some Ex commands can be confused with assignments in Vim9 script: >
-#    >         g:name = value    # assignment
-#    >         g:pattern:cmd     # invalid command - ERROR
-#    >         :g:pattern:cmd    # :global command
-#
-# Vim  can't distinguish  the  global scope  `g:` from  the  global command  `g`
-# followed by the delimiter `:`.  It was not an issue in legacy, because there
-# you had to write `:let` to assign a value to a global variable; it was enough
-# to remove any ambiguity.  But in Vim9, there is no need for `:let` anymore:
-#
-#     g:name = 'value'
-#
-# Anyway, there are 4 solutions to this pitfall.
-#
-# You can prepend a colon  in front of `g` so that Vim knows  you refer to an Ex
-# *command*, and not to a global *variable*:
-#
-#     :g:pattern:command
-#     ^
-#     ✔
-#
-# You can choose a different delimiter:
-#
-#      ✘       ✘
-#      v       v
-#     g:pattern:command
-#     g/pattern/command
-#      ^       ^
-#      ✔       ✔
-#
-# You can write a longer version of the command:
-#
-#     ✘
-#     v
-#     g:pattern:command
-#     global:pattern:command
-#     ^----^
-#       ✔
-#
-# You can tweak the pattern so that it includes a non-word character:
-#
-#     g:pat\%x74ern:command
-#          ^---^
-#          hexadecimal representation of 't' character,
-#          which includes 2 non-word characters: \ and %
-#}}}
-syn match vim9GlobalError /\<g!\=:\w*:/ contained
-syn match vim9GlobalError /\<v\=:\w*:/ contained
+    # :v:pat:cmd
+    syn match vim9Global
+        \ /:\@1<=v\ze:.\{-}:/
+        \ nextgroup=vim9GlobalPat
+        \ contained
+
+    # vglobal:pat:cmd
+    syn match vim9Global
+        \ /\<vg\%[lobal]\ze:.\{-}:/
+        \ nextgroup=vim9GlobalPat
+        \ contained
+
 
 syn region vim9GlobalPat
     \ matchgroup=vim9SubstDelim
