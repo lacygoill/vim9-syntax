@@ -81,13 +81,6 @@ endif
 #     ~/.vim/pack/mine/opt/doc/autoload/doc/mapping.vim
 #}}}
 
-# TODO: When we import variables, there should be no computation.
-# Write a  script (which we  can run on-demand)  which generates an  import file
-# where the variables have already been computed.
-# Benefit: Faster when we start Vim with a Vim script file.
-# Also, makes debugging easier, as we can clearly see which tokens our rules are
-# meant to highlight.
-
 # TODO: Try to extract as many complex regexes into importable items.
 # Look for the pattern `^exe`.
 
