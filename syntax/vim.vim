@@ -239,7 +239,10 @@ syn match vim9RangeIntroducer /\%(^\|\s\):\S\@=/
 #     ^
 #}}}
 # Order: Must come after `vim9RangeIntroducer`.
-syn match vim9UnambiguousColon /\s\=:[a-z]\@=/ contained nextgroup=@vim9CanBeAtStartOfLine skipwhite
+syn match vim9UnambiguousColon /\s\=:[a-z]\@=/
+    \ contained
+    \ nextgroup=@vim9CanBeAtStartOfLine
+    \ skipwhite
 
 syn cluster vim9RangeAfterSpecifier contains=
     \ @vim9CanBeAtStartOfLine,
@@ -1813,6 +1816,15 @@ syn region vim9LegacyFuncBody
     \ matchgroup=vim9DefKey
     \ end=/^\s*\<endf\%[unction]/
     \ contained
+    \ contains=vim9LegacyComment
+
+syn region vim9LegacyComment
+    \ matchgroup=vim9Comment
+    \ start=/^\s*".*/
+    \ end=/$/
+    \ contained
+    \ oneline
+    \ keepend
 
 syn keyword vim9DefKey def fu[nction]
     \ contained
@@ -1906,6 +1918,31 @@ exe 'syn match vim9FuncNameBuiltin '
     .. '/'
     .. ' contained'
 #}}}1
+# Declarations {{{1
+
+syn keyword vim9Declare cons[t] final unl[et] var
+    \ contained
+    \ skipwhite
+    \ nextgroup=vim9ListUnpackDeclaration,vim9ReservedNames
+
+# NOTE: In the legacy syntax plugin, `vimLetHereDoc` contains `vimComment` and `vim9Comment`.{{{
+#
+# That's wrong.
+#
+# It causes  any text  following a double  quote at  the start of  a line  to be
+# highlighted as a Vim comment.  But that's  not a comment; that's a part of the
+# heredoc; i.e. a string.
+#
+# Besides, we apply various styles inside comments, such as bold or italics.
+# It would be unexpected and distracting to see those styles in a heredoc.
+#}}}
+syn region vim9HereDoc
+    \ matchgroup=vim9Declare
+    \ start=/\s\@1<==<<\s\+\%(trim\>\)\=\s*\z(\L\S*\)/
+    \ end=/^\s*\z1$/
+
+syn match vim9EnvVar /\$[A-Z_][A-Z0-9_]*/
+
 # Data Types {{{1
 # Booleans / null / v:none {{{2
 
@@ -2398,31 +2435,6 @@ syn region vim9OperParen
     \     vim9SpaceMissingBetweenArgs
 
 syn match vim9OperError /)/
-
-# Declarations {{{1
-
-syn keyword vim9Declare cons[t] final unl[et] var
-    \ contained
-    \ skipwhite
-    \ nextgroup=vim9ListUnpackDeclaration,vim9ReservedNames
-
-# NOTE: In the legacy syntax plugin, `vimLetHereDoc` contains `vimComment` and `vim9Comment`.{{{
-#
-# That's wrong.
-#
-# It causes  any text  following a double  quote at  the start of  a line  to be
-# highlighted as a Vim comment.  But that's  not a comment; that's a part of the
-# heredoc; i.e. a string.
-#
-# Besides, we apply various styles inside comments, such as bold or italics.
-# It would be unexpected and distracting to see those styles in a heredoc.
-#}}}
-syn region vim9HereDoc
-    \ matchgroup=vim9Declare
-    \ start=/\s\@1<==<<\s\+\%(trim\>\)\=\s*\z(\L\S*\)/
-    \ end=/^\s*\z1$/
-
-syn match vim9EnvVar /\$[A-Z_][A-Z0-9_]*/
 
 # Options {{{1
 # Assignment commands {{{2
