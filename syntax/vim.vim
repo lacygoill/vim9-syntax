@@ -494,7 +494,7 @@ syn match vim9RangeDelimiter /[,;]/
 # Options {{{1
 # TODO: Check whether all options are correctly highlighted.
 #
-#     \<\%(setl\%[ocal]\|setg\%[lobal]\|se\%[t]\)\>\s\|&\%([gl]:\)\=[a-z]\{2,\}\|&t_..
+#     \<\%(setl\%[ocal]\|setg\%[lobal]\|se\%[t]\)\>\s\zs\|&\%([gl]:\)\=[a-z]\{2,\}\|&t_..
 # Assignment commands {{{2
 
 syn keyword vim9Set setl[ocal] setg[lobal] se[t]
@@ -1542,7 +1542,7 @@ syn match vim9Number /-\d\+\%(\.\d\+\%([eE][+-]\=\d\+\)\=\)\=\>/
 
 syn match vim9Number /\<0[xX]\x\+\>/ nextgroup=vim9Comment skipwhite
 syn match vim9Number /\%(^\|\A\)\zs#\x\{6}\>/ nextgroup=vim9Comment skipwhite
-syn match vim9Number /\<0[zZ][a-zA-Z0-9.]\+\>/ nextgroup=vim9Comment skipwhite
+syn match vim9Number /\<0[zZ][a-fA-F0-9.]\+\>/ nextgroup=vim9Comment skipwhite
 syn match vim9Number /\<0o[0-7]\+\>/ nextgroup=vim9Comment skipwhite
 syn match vim9Number /\<0b[01]\+\>/ nextgroup=vim9Comment skipwhite
 
@@ -2198,7 +2198,8 @@ exe 'syn match vim9ValidSubType'
     # highlighted
     .. '\|d\@1<=ict<\|f\@1<=unc(\|)\|l\@1<=ist<'
     .. '/'
-    .. ' display contained'
+    .. ' display'
+    .. ' contained'
 
 # support `:h type-casting` for simple types
 exe 'syn match vim9DataTypeCast /'
