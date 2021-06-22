@@ -46,16 +46,16 @@ endif
 # Known limitation: The plugin does not highlight legacy functions.{{{
 #
 # Only the `fu` and `endfu` keywords, as well as legacy comments inside.
-# We  could  support  more; we  would  need  to  allow  all the  groups  in  the
-# `@vim9FuncBodyContains` cluster to start from the `vim9LegacyFuncBody` region:
+# We could support more; we would  need to allow `vim9StartOfLine` to start from
+# the `vim9LegacyFuncBody` region:
 #
 #     syn region vim9LegacyFuncBody
 #         \ start=/\ze\s*(/
-#         \ matchgroup=vim9GenericCmd
-#         \ end=/\<endf\%[unction]/
+#         \ matchgroup=vim9DefKey
+#         \ end=/^\s*\<endf\%[unction]/
 #         \ contained
-#         \ contains=@vim9FuncBodyContains
-#           ^----------------------------^
+#         \ contains=vim9LegacyComment,vim9StartOfLine
+#                                      ^-------------^
 #
 # But we don't do it, because there would be many subtle issues to handle, which
 # would make the overall plugin too complex (e.g. literal dictionaries).
