@@ -1405,11 +1405,11 @@ syn match vim9SubstFlags /[&cegiIlnpr#]\+/ contained
 #               ^
 #               not part of a group name
 #}}}
-syn match vim9GroupList /@\=[^ \t,|]\+/
+syn match vim9GroupList /@\=[^ \t,|']\+/
     \ contained
     \ contains=vim9GroupSpecial,vim9PatSep
 
-syn match vim9GroupList /@\=[^ \t,]*,/
+syn match vim9GroupList /@\=[^ \t,']*,/
     \ contained
     \ contains=vim9GroupSpecial,vim9PatSep
     \ nextgroup=vim9GroupList
@@ -1557,8 +1557,8 @@ syn cluster vim9SynRegGroup contains=
     \ vim9SynContains,
     \ vim9SynMtchGrp,
     \ vim9SynNextgroup,
-    \ vim9SynReg,
-    \ vim9SynRegOpt
+    \ vim9SynRegOpt,
+    \ vim9SynRegStartSkipEnd
 
 syn keyword vim9SynType region contained nextgroup=vim9SynRegion skipwhite
 
@@ -1582,11 +1582,13 @@ exe 'syn match vim9SynRegOpt '
     .. '/'
     .. ' contained'
 
-syn match vim9SynReg /\%(start\|skip\|end\)=/he=e-1
+syn match vim9SynRegStartSkipEnd /\%(start\|skip\|end\)=\@=/
     \ contained
-    \ nextgroup=vim9SynRegPat
+    \ nextgroup=vim9SynEqualRegion
+syn match vim9SynEqualRegion /=/ contained nextgroup=vim9SynRegPat
 
-syn match vim9SynMtchGrp /matchgroup=/ contained nextgroup=vim9Group,vim9HLGroup
+syn match vim9SynMtchGrp /matchgroup/ contained nextgroup=vim9SynEqualMtchGrp
+syn match vim9SynEqualMtchGrp /=/ contained nextgroup=vim9Group,vim9HLGroup
 
 syn region vim9SynRegPat
     \ start=/\z([-`~!@#$%^&*_=+;:'",./?|]\)/
@@ -1595,7 +1597,7 @@ syn region vim9SynRegPat
     \ contained
     \ contains=@vim9SynRegPatGroup
     \ extend
-    \ nextgroup=vim9SynPatMod,vim9SynReg
+    \ nextgroup=vim9SynPatMod,vim9SynRegStartSkipEnd
     \ skipwhite
 
 syn match vim9SynPatMod
@@ -1628,7 +1630,7 @@ syn keyword vim9SynType sync
 syn match vim9SyncError /\i\+/ contained
 syn keyword vim9SyncC ccomment clear fromstart contained
 syn keyword vim9SyncMatch match contained nextgroup=vim9SyncGroupName skipwhite
-syn keyword vim9SyncRegion region contained nextgroup=vim9SynReg skipwhite
+syn keyword vim9SyncRegion region contained nextgroup=vim9SynRegStartSkipEnd skipwhite
 
 syn match vim9SyncLinebreak /\<linebreaks=/
     \ contained
@@ -2100,21 +2102,39 @@ syn region vim9String
     \ keepend
     \ oneline
 
-# Order: Must come before `vim9Number`.
-# We must not allow a digit to match after the ending quote.{{{
-#
-#     end=/'\d\@!/
-#           ^---^
-#
-# Otherwise, it  would break  the highlighting  of a  big number  which contains
-# quotes to be more readable:
-#
-#     const BIGNUMBER: number = 1'000'000
-#                                ^---^
-#                                this would be wrongly highlighted as a string,
-#                                instead of a number
-#}}}
-syn region vim9String start=/[^a-zA-Z>!\\@]\@1<='/ end=/'\d\@!/ keepend oneline
+# In a  syntax file, we  often build  syntax rules with  strings concatenations,
+# which we then `:execute`.  Highlight the tokens inside the strings.
+if expand('%:p:h:t') == 'syntax'
+    syn region vim9String
+        \ start=/[^a-zA-Z>!\\@]\@1<='/
+        \ end=/'/
+        \ contains=@vim9SynRegGroup,vim9SynExeCmd
+        \ keepend
+        \ oneline
+    syn match vim9SynExeCmd /\<sy\%[ntax]\>/  contained nextgroup=vim9SynExeType skipwhite
+    syn keyword vim9SynExeType match region contained nextgroup=vim9SynExeGroupName skipwhite
+    syn match vim9SynExeGroupName /\S\+/ contained
+else
+    # Order: Must come before `vim9Number`.
+    # We must not allow a digit to match after the ending quote.{{{
+    #
+    #     end=/'\d\@!/
+    #           ^---^
+    #
+    # Otherwise, it  would break  the highlighting  of a  big number  which contains
+    # quotes to be more readable:
+    #
+    #     const BIGNUMBER: number = 1'000'000
+    #                                ^---^
+    #                                this would be wrongly highlighted as a string,
+    #                                instead of a number
+    #}}}
+    syn region vim9String
+        \ start=/[^a-zA-Z>!\\@]\@1<='/
+        \ end=/'\d\@!/
+        \ keepend
+        \ oneline
+endif
 
 syn region vim9String
     \ start=/=\@1<=!/
@@ -2723,8 +2743,8 @@ syn match vim9Continuation /^\s*\\/
     \     vim9SynContinuePattern,
     \     vim9SynMtchGrp,
     \     vim9SynNextgroup,
-    \     vim9SynReg,
-    \     vim9SynRegOpt
+    \     vim9SynRegOpt,
+    \     vim9SynRegStartSkipEnd
 
 syn match vim9SynContinuePattern =\s\+/[^/]*/= contained
 
@@ -3340,6 +3360,11 @@ hi def link vim9SynCase Type
 hi def link vim9SynContains vim9SynOption
 hi def link vim9SynContinuePattern String
 hi def link vim9SynEqual vim9OperAssign
+hi def link vim9SynEqualMtchGrp vim9OperAssign
+hi def link vim9SynEqualRegion vim9OperAssign
+hi def link vim9SynExeCmd vim9GenericCmd
+hi def link vim9SynExeGroupName vim9GroupName
+hi def link vim9SynExeType vim9SynType
 hi def link vim9SynKeyContainedin vim9SynContains
 hi def link vim9SynKeyOpt vim9SynOption
 hi def link vim9SynMtchGrp vim9SynOption
@@ -3348,9 +3373,9 @@ hi def link vim9SynNextgroup vim9SynOption
 hi def link vim9SynNotPatRange vim9SynRegPat
 hi def link vim9SynOption Special
 hi def link vim9SynPatRange vim9String
-hi def link vim9SynReg Type
 hi def link vim9SynRegOpt vim9SynOption
 hi def link vim9SynRegPat vim9String
+hi def link vim9SynRegStartSkipEnd Type
 hi def link vim9SynType vim9Special
 hi def link vim9SyncC Type
 hi def link vim9SyncGroup vim9GroupName
