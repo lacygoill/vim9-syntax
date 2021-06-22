@@ -400,7 +400,7 @@ syn match vim9CmdSep /|/ skipwhite nextgroup=@vim9CanBeAtStartOfLine
 
 # Generic {{{2
 
-exe 'syn keyword vim9GenericCmd ' .. command_name .. ' contained'
+exe 'syn keyword vim9GenericCmd' .. ' ' .. command_name .. ' contained'
 
 syn match vim9GenericCmd /\<z[-+^.=]\=\>/ contained
 
@@ -529,14 +529,14 @@ syn match vim9AutocmdMod /++\%(nested\|once\)/
 
 # TODO: Hide the bad case error behind an option.
 syn case ignore
-exe 'syn keyword vim9AutocmdEventBadCase ' .. event
+exe 'syn keyword vim9AutocmdEventBadCase' .. ' ' .. event
     .. ' contained'
     .. ' nextgroup=vim9AutocmdPat,vim9AutocmdEndOfEventList'
     .. ' skipwhite'
 syn case match
 
 # Order: Must come after `vim9AutocmdEventBadCase`.
-exe 'syn keyword vim9AutocmdEventGoodCase ' .. event
+exe 'syn keyword vim9AutocmdEventGoodCase' .. ' ' .. event
     .. ' contained'
     .. ' nextgroup=vim9AutocmdPat,vim9AutocmdEndOfEventList'
     .. ' skipwhite'
@@ -778,8 +778,8 @@ syn match vim9UserCmdAttrbName /-addr\>/
     \ contained
     \ nextgroup=vim9UserCmdAttrbAddress,vim9UserCmdAttrbErrorValue
 
-exe 'syn match vim9UserCmdAttrbAddress '
-    .. '/=\%(' .. command_address_type .. '\)\>/'
+exe 'syn match vim9UserCmdAttrbAddress'
+    .. ' /=\%(' .. command_address_type .. '\)\>/'
     .. ' contained'
     .. ' contains=vim9UserCmdAttrbEqual'
     .. ' nextgroup=@vim9UserCmdAttrb'
@@ -794,8 +794,8 @@ syn match vim9UserCmdAttrbName /-complete\>/
 # -complete=arglist
 # -complete=buffer
 # -complete=...
-exe 'syn match vim9UserCmdAttrbComplete '
-    .. '/'
+exe 'syn match vim9UserCmdAttrbComplete'
+    .. ' /'
     ..     '=\%(' .. command_complete_type .. '\)'
     .. '/'
     .. ' contained'
@@ -1168,8 +1168,8 @@ syn match vim9MapLhsExpr /\S\+/
 
 syn match vim9MapBang /!/ contained nextgroup=@vim9MapLhs,@vim9MapMod skipwhite
 
-exe 'syn match vim9MapMod '
-    .. '/'
+exe 'syn match vim9MapMod'
+    .. ' /'
     .. '\%#=1\c'
     .. '\%(<\%('
     ..         'buffer\|\%(local\)\=leader\|nowait'
@@ -1181,8 +1181,8 @@ exe 'syn match vim9MapMod '
     .. ' nextgroup=vim9MapLhs'
     .. ' skipwhite'
 
-exe 'syn match vim9MapModExpr '
-    .. '/'
+exe 'syn match vim9MapModExpr'
+    .. ' /'
     .. '\%#=1\c'
     .. '\%(<\%('
     ..         'buffer\|\%(local\)\=leader\|nowait'
@@ -1375,7 +1375,7 @@ syn region vim9Collection
 
 syn match vim9CollationClassErr /\[:.\{-\}:\]/ contained
 
-exe 'syn match vim9CollationClass '
+exe 'syn match vim9CollationClass'
     .. ' /\%#=1\[:'
     .. '\%(' .. collation_class .. '\)'
     .. ':\]/'
@@ -1522,8 +1522,8 @@ syn region vim9SynMatchRegion
     \ contains=@vim9SynMtchGroup
     \ keepend
 
-exe 'syn match vim9SynMtchOpt '
-    .. '/'
+exe 'syn match vim9SynMtchOpt'
+    .. ' /'
     .. '\%#=1'
     .. '\<\%('
     ..         'conceal\|transparent\|contained\|excludenl\|keepend\|skipempty'
@@ -1569,8 +1569,8 @@ syn region vim9SynRegion
     \ contains=@vim9SynRegGroup
     \ keepend
 
-exe 'syn match vim9SynRegOpt '
-    .. '/'
+exe 'syn match vim9SynRegOpt'
+    .. ' /'
     .. '\%#=1'
     .. '\<\%('
     ..         'conceal\%(ends\)\=\|transparent\|contained\|excludenl'
@@ -1735,8 +1735,8 @@ syn region vim9FuncSignature
     \     vim9FuncArgs,
     \     vim9OperAssign
 
-exe 'syn match vim9FuncArgs '
-    .. '/'
+exe 'syn match vim9FuncArgs'
+    .. ' /'
     # named argument followed by a type or an optional value
     ..     '\.\@1<!\<\h[a-zA-Z0-9_]*\%(:\s\|\s\+=\s\)\@='
     .. '\|'
@@ -1784,8 +1784,8 @@ syn region vim9LegacyComment
 # User Call {{{2
 
 # call to any kind of function (builtin + user)
-exe 'syn match vim9FuncCall '
-    .. '/\<'
+exe 'syn match vim9FuncCall'
+    .. ' /\<'
     .. '\%('
     # with an explicit scope, the name can start with and contain any word character
     ..     '[gs]:\w\+'
@@ -2577,7 +2577,7 @@ syn case match
 # Default highlighting groups {{{1
 
 syn case ignore
-exe 'syn keyword vim9HLGroup contained ' .. default_highlighting_group
+exe 'syn keyword vim9HLGroup contained' .. ' ' .. default_highlighting_group
 
 # Warning: Do *not* turn this `match` into  a `keyword` rule; `conceal` would be
 # wrongly interpreted as an argument to `:syntax`.
