@@ -1704,48 +1704,6 @@ syn match vim9FilterLastShellCmd /\\\@1<!!/ display contained
 # User Definition {{{2
 # Vim9 {{{3
 
-# The legacy script includes `vimSynType` inside `@vimFuncBodyList`.  Don't do the same.{{{
-#
-#     ✘
-#     syn cluster vim9FuncBodyContains add=vim9SynType
-#
-# Otherwise a  list type (like  `list<any>`) would not be  correctly highlighted
-# when used as the return type of a `:def` function.
-# That's because the `vim9FuncBody`  region contains the `@vim9FuncBodyContains`
-# cluster.
-#
-# Besides, it's just wrong.  There is no reason nor need for this.
-# Indeed, the `vim9Syntax` group  definition specifies that `vim9SynType` should
-# be tried  for a match right  after any `:syntax` command,  via the `nextgroup`
-# argument:
-#
-#     syn match vim9Syntax /\<sy\%[ntax]\>/
-#         \ ...
-#         \ nextgroup=vim9SynType,...
-#            ^------------------^
-#         \ ...
-#
-# ---
-#
-# BTW, in case you wonder what `vim9SynType` is, it's the list of valid keywords
-# which can appear after `:syntax` (e.g. `match`, `cluster`, `include`, ...).
-#}}}
-syn cluster vim9FuncBodyContains contains=
-    \ @vim9DataTypeCluster,
-    \ @vim9Expr,
-    \ vim9CmdSep,
-    \ vim9Comment,
-    \ vim9CtrlChar,
-    \ vim9FuncHeader,
-    \ vim9HereDoc,
-    \ vim9Notation,
-    \ vim9OperAssign,
-    \ vim9StartOfLine,
-    \
-    \ vim9BacktickExpansion,
-    \ vim9BacktickExpansionVimExpr,
-    \ vim9SpecFile
-
 exe 'syn match vim9FuncHeader'
     .. ' /'
     .. '\<def!\='
@@ -1777,27 +1735,6 @@ syn region vim9FuncSignature
     \     vim9Comment,
     \     vim9FuncArgs,
     \     vim9OperAssign
-    \ nextgroup=
-    \     vim9CommentAfterFuncSignature,
-    \     vim9FuncBody,
-    \     vim9FuncBodyEmpty,
-    \     vim9FuncReturnType
-    \ skipnl
-    \ skipwhite
-
-syn match vim9FuncReturnType /:.*/
-    \ contained
-    \ contains=@vim9DataTypeCluster,vim9CommentAfterFuncSignature
-    \ nextgroup=vim9FuncBody,vim9FuncBodyEmpty
-    \ skipnl
-
-# We want  `vim9Comment` to  be at the  top of  the stack when  we reach  a fold
-# marker.  So that our library function can conceal it.
-syn match vim9CommentAfterFuncSignature /\s#.*/
-    \ contained
-    \ contains=vim9Comment
-    \ nextgroup=vim9FuncBody,vim9FuncBodyEmpty
-    \ skipnl
 
 exe 'syn match vim9FuncArgs '
     .. '/'
@@ -1815,21 +1752,8 @@ exe 'syn match vim9FuncArgs '
     .. '/'
     .. ' contained'
 
-# Do not use `keepend`.{{{
-#
-# If there is a  heredoc in your function, and it contains  an `enddef` line, it
-# would wrongly end there.  If you need  `keepend`, then, try to use `extend` in
-# the rule handling the heredocs.
-#}}}
-syn region vim9FuncBody
-    \ start=/^/
-    \ matchgroup=vim9DefKey
-    \ end=/^\s*enddef$/
-    \ contains=@vim9FuncBodyContains
-    \ contained
-
-# special case which can't be covered by the previous region
-syn match vim9FuncBodyEmpty /^\s*enddef$/ contained
+syn match vim9FuncEnd /^\s*enddef$/
+hi def link vim9FuncEnd vim9DefKey
 
 # Legacy {{{3
 
@@ -2110,7 +2034,8 @@ syn region vim9OperParen
     \     vim9SpaceExtraBetweenArgs,
     \     vim9SpaceMissingBetweenArgs
 
-syn match vim9OperError /[)\]}]\|>=\@!/
+# Don't add `>`.  It's often used as a comparison operator (thus unbalanced).
+syn match vim9OperError /[)\]}]/
 
 # Data Types {{{1
 # Booleans / null / v:none {{{2
@@ -2552,7 +2477,6 @@ syn region vim9Block
     \ matchgroup=Statement
     \ start=/^\s*{$/
     \ end=/^\s*}/
-    \ contains=@vim9FuncBodyContains
 
 # In a lambda, a dictionary must be surrounded by parens.{{{
 #
@@ -2589,7 +2513,6 @@ syn region vim9Block
     \ matchgroup=Statement
     \ start=/\%((\s*\)\@<!{$/
     \ end=/^\s*}/
-    \ contains=@vim9FuncBodyContains
     \ contained
 
 # Highlight commonly used Groupnames {{{1
@@ -3330,7 +3253,6 @@ hi def link vim9FilterLastShellCmd Special
 hi def link vim9FilterShellCmd vim9ShellCmd
 hi def link vim9Finish vim9Return
 hi def link vim9FuncArgs Identifier
-hi def link vim9FuncBodyEmpty vim9DefKey
 hi def link vim9FuncNameBuiltin Function
 hi def link vim9Global vim9GenericCmd
 hi def link vim9GlobalPat vim9String
