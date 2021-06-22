@@ -373,7 +373,8 @@ syn match vim9MayBeCmd /\%(\<\h\w*\>\)\@=/
 
     # General case
     # Order: Must come after the previous rule handling the special case.
-    exe 'syn match vim9MayBeCmd /\%(\<\h\w*\>' .. command_can_be_before .. '\)\@=/'
+    exe 'syn match vim9MayBeCmd'
+        .. ' /\%(\<\h\w*\>' .. command_can_be_before .. '\)\@=/'
         .. ' contained'
         .. ' nextgroup=@vim9IsCmd'
 
@@ -696,9 +697,8 @@ exe 'syn region vim9CmdTakeExpr'
 
 # Modifier {{{3
 
-exe 'syn match vim9CmdModifier /'
-    ..     '\<\%(' .. command_modifier .. '\)\>'
-    .. '/'
+exe 'syn match vim9CmdModifier'
+    .. ' /\<\%(' .. command_modifier .. '\)\>/'
     .. ' contained'
     .. ' nextgroup=@vim9CanBeAtStartOfLine,vim9CmdBang'
     .. ' skipwhite'
@@ -779,9 +779,7 @@ syn match vim9UserCmdAttrbName /-addr\>/
     \ nextgroup=vim9UserCmdAttrbAddress,vim9UserCmdAttrbErrorValue
 
 exe 'syn match vim9UserCmdAttrbAddress '
-    .. '/'
-    .. '=\%(' .. command_address_type .. '\)\>'
-    .. '/'
+    .. '/=\%(' .. command_address_type .. '\)\>/'
     .. ' contained'
     .. ' contains=vim9UserCmdAttrbEqual'
     .. ' nextgroup=@vim9UserCmdAttrb'
@@ -1813,9 +1811,9 @@ exe 'syn match vim9FuncCall '
     .. ' contains=vim9FuncNameBuiltin,vim9UserFuncNameUser'
 
 # name of user function in function call
-exe 'syn match vim9UserFuncNameUser '
-    .. '/\<'
-    .. '\%('
+exe 'syn match vim9UserFuncNameUser'
+    .. ' /'
+    .. '\<\%('
     ..     '[gs]:\w\+'
     .. '\|'
     # without an explicit scope, the name of the function must not start with a lowercase
@@ -1844,14 +1842,12 @@ exe 'syn match vim9UserFuncNameUser '
 # NOTE: We  don't  want to  assert  the  paren  for  *all* function  names;  the
 # necessary regex would be too costly.
 #}}}
-exe 'syn keyword vim9FuncNameBuiltin '
-    .. builtin_func
+exe 'syn keyword vim9FuncNameBuiltin'
+    .. ' ' .. builtin_func
     .. ' contained'
 
-exe 'syn match vim9FuncNameBuiltin '
-    .. '/\<\%(' .. builtin_func_ambiguous .. '\)'
-    .. '(\@='
-    .. '/'
+exe 'syn match vim9FuncNameBuiltin'
+    .. ' /\<\%(' .. builtin_func_ambiguous .. '\)(\@=/'
     .. ' contained'
 #}}}1
 # Operators {{{1
@@ -2112,8 +2108,8 @@ if expand('%:p:h:t') == 'syntax'
         \ keepend
         \ oneline
     syn match vim9SynExeCmd /\<sy\%[ntax]\>/  contained nextgroup=vim9SynExeType skipwhite
-    syn keyword vim9SynExeType match region contained nextgroup=vim9SynExeGroupName skipwhite
-    syn match vim9SynExeGroupName /\S\+/ contained
+    syn keyword vim9SynExeType keyword match region contained nextgroup=vim9SynExeGroupName skipwhite
+    syn match vim9SynExeGroupName /[^' \t]\+/ contained
 else
     # Order: Must come before `vim9Number`.
     # We must not allow a digit to match after the ending quote.{{{
@@ -2296,7 +2292,8 @@ syn cluster vim9DataTypeCluster contains=
 #     (arg: type) => expr
 #     (): type => expr
 #}}}
-exe 'syn match vim9DataType /'
+exe 'syn match vim9DataType'
+    .. ' /'
     .. '\%(' .. ':\s\+' .. '\)'
     .. '\%('
                # match simple types
@@ -2358,8 +2355,8 @@ exe 'syn match vim9ValidSubType'
     .. ' contained'
 
 # support `:h type-casting` for simple types
-exe 'syn match vim9DataTypeCast /'
-    .. '<\%('
+exe 'syn match vim9DataTypeCast'
+    .. ' /<\%('
     ..         'any\|blob\|bool\|channel\|float\|func\|job\|number\|string\|void'
     .. '\)>'
     .. '\%([bgtw]:\)\@='
@@ -2395,8 +2392,8 @@ syn keyword vim9Set setl[ocal] setg[lobal] se[t]
 #     &guioptions = 'M'
 #     ^---------^
 #}}}
-exe 'syn match vim9MayBeOptionScoped '
-    .. '/'
+exe 'syn match vim9MayBeOptionScoped'
+    .. ' /'
     ..     option_can_be_after
     ..     option_sigil
     ..     option_valid
@@ -2406,8 +2403,8 @@ exe 'syn match vim9MayBeOptionScoped '
     # `vim9SetEqual` would be wrong here; we need spaces around `=`
     .. ' nextgroup=vim9OperAssign'
 
-exe 'syn match vim9MayBeOptionSet '
-    .. '/'
+exe 'syn match vim9MayBeOptionSet'
+    .. ' /'
     ..     option_can_be_after
     ..     option_valid
     .. '/'
@@ -2419,18 +2416,18 @@ exe 'syn match vim9MayBeOptionSet '
 
 syn match vim9OptionSigil /&\%([gl]:\)\=/ contained
 
-exe 'syn keyword vim9IsOption '
-    .. option
+exe 'syn keyword vim9IsOption'
+    .. ' ' .. option
     .. ' contained'
     .. ' nextgroup=vim9MayBeOptionScoped,vim9SetEqual'
     .. ' skipwhite'
 
-exe 'syn keyword vim9IsOption '
-    .. option_terminal
+exe 'syn keyword vim9IsOption'
+    .. ' ' .. option_terminal
     .. ' nextgroup=vim9MayBeOptionScoped,vim9SetEqual'
 
-exe 'syn match vim9IsOption '
-    .. '/\V'
+exe 'syn match vim9IsOption'
+    .. ' /\V'
     .. option_terminal_special
     .. '/'
     .. ' nextgroup=vim9MayBeOptionScoped,vim9SetEqual'
@@ -2665,8 +2662,8 @@ syn match vim9Notation /<cmd>/
     \ contains=vim9Bracket
     \ nextgroup=@vim9CanBeAtStartOfLine,@vim9Range
 
-exe 'syn match vim9Notation '
-    .. '/'
+exe 'syn match vim9Notation'
+    .. ' /'
     .. '\%#=1\%(\\\|<lt>\)\='
     .. '<'
     .. '\%([scam2-4]-\)\{0,4}'
@@ -2686,8 +2683,8 @@ syn match vim9Notation /<bar>/ contains=vim9Bracket skipwhite
 syn match vim9Notation /\%(\\\|<lt>\)\=<c-r>[0-9a-z"%#:.\-=]\@=/
     \ contains=vim9Bracket
 
-exe 'syn match vim9Notation '
-    .. '/'
+exe 'syn match vim9Notation'
+    .. ' /'
     .. '\%#=1\%(\\\|<lt>\)\='
     .. '<'
     .. '\%(q-\)\='
