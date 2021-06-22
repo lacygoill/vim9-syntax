@@ -2587,7 +2587,7 @@ syn match vim9LambdaDictMissingParen /{/ contained
 
 syn region vim9Block
     \ matchgroup=Statement
-    \ start=/{$/
+    \ start=/\%((\s*\)\@<!{$/
     \ end=/^\s*}/
     \ contains=@vim9FuncBodyContains
     \ contained
