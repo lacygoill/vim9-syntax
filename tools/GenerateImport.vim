@@ -163,6 +163,7 @@ const VARIOUS_SPECIAL_CMDS: list<string> =<< trim END
     export
     filetype
     global
+    vglobal
     highlight
     import
     lua
@@ -175,6 +176,10 @@ const VARIOUS_SPECIAL_CMDS: list<string> =<< trim END
     setlocal
     substitute
     syntax
+    vimgrep
+    vimgrepadd
+    lvimgrep
+    lvimgrepadd
     z
 END
 

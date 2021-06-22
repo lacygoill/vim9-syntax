@@ -465,6 +465,7 @@ const builtin_func_list: list<string> =<< trim END
     test_garbagecollect_now
     test_garbagecollect_soon
     test_getvalue
+    test_gui_mouse_event
     test_ignore_error
     test_null_blob
     test_null_channel
@@ -872,8 +873,6 @@ const command_name_list: list<string> =<< trim END
     lt[ag]
     luad[o]
     luaf[ile]
-    lv[imgrep]
-    lvimgrepa[dd]
     lw[indow]
     mak[e]
     map
@@ -1070,11 +1069,8 @@ const command_name_list: list<string> =<< trim END
     unme[nu]
     up[date]
     ve[rsion]
-    v[global]
     vie[w]
     vim9s[cript]
-    vim[grep]
-    vimgrepa[dd]
     vi[sual]
     viu[sage]
     vme[nu]
