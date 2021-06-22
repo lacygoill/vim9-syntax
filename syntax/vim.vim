@@ -2477,6 +2477,7 @@ syn region vim9Block
     \ matchgroup=Statement
     \ start=/^\s*{$/
     \ end=/^\s*}/
+    \ contains=vim9StartOfLine
 
 # In a lambda, a dictionary must be surrounded by parens.{{{
 #
@@ -2514,6 +2515,7 @@ syn region vim9Block
     \ start=/\%((\s*\)\@<!{$/
     \ end=/^\s*}/
     \ contained
+    \ contains=vim9StartOfLine
 
 # Highlight commonly used Groupnames {{{1
 
