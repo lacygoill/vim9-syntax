@@ -7,6 +7,10 @@ vim9script
 
 export const command_can_be_before: string = '\%(!\=[ \t\n]\@=\|<\%(bar\|cr\)>\)\%(\s*\%([-+*/%]=\|=\s\|=<\|\.\.=\)\|\_s*\%(->\|[-+*/%]\%(\s\+\)\@>[^|<]\)\)\@!'
 
+# pattern_delimiter {{{1
+
+export const pattern_delimiter: string = '[^-:[:alnum:] \t\"#|]\@=.'
+
 # option_can_be_after {{{1
 
 export const option_can_be_after: string = '\%(^\|[-+ \t!([]\)\@1<='

@@ -348,6 +348,92 @@ const command_can_be_before: string =
     .. '\)'
     .. '\)\@!'
 
+# pattern_delimiter {{{3
+
+# `:h pattern-delimiter`
+# In Vim9, `"` is still not a valid delimiter:{{{
+#
+#     vim9script
+#     ['aba bab']->repeat(3)->setline(1)
+#     sil! s/nowhere//
+#     :% s"b"B"g
+#     E486: Pattern not found: nowhere˜
+#
+# `#` seems to work,  but let's be consistent; if in  legacy, the comment leader
+# doesn't work, that should remain true in Vim9.
+#}}}
+# We don't support the `:` and `-` delimiters.  They are too problematic.{{{
+#
+# Suppose you have a variable named `g`, to which you apply a method call:
+#
+#     this is not the global command
+#     ✘
+#     v
+#     g->substitute('-', '', '')
+#      ^             ^
+#      ✘             ✘
+#      those are not delimiters around a pattern
+#
+# `g` would be confused with the  global command, and the dashes with delimiters
+# around its pattern.
+#
+# You could handle this case with an extra rule which disallows `>` at the start
+# of the pattern:
+#
+#     syn match vim9Global
+#         \ /\<g\%[lobal]\>!\=\s*\ze->\@!.\{-}-/
+#         \ contained
+#         \ nextgroup=vim9GlobalPat
+#
+# But it would still not support the case where the pattern starts with `>`.
+# And you would  need to install similar  rules for all commands  which expect a
+# pattern as argument (e.g. `:filter`, `:vimgrep`).  It's not worth the trouble.
+#
+# Let's make things simple and consistent.
+# We don't recognize `-` as a delimiter.  Most of the time, you'll use `/` anyway.
+# For  the few  cases where  `/`  is not  desired,  there are  more than  enough
+# alternative characters in the ascii table: `;`, `,`, `backtick`, ...
+#
+# ---
+#
+# As  for the  colon,  it would  cause  Vim  to conflate  `g:`  with the  global
+# namespace.  See `:h vim9-gotchas`.
+#
+# You could handle it with 2 extra rules:
+#
+#     # :g:pat:cmd
+#     syn match vim9Global
+#         \ /:\@1<=g!\=\ze\s*:.\{-}:/
+#         \ contained
+#         \ nextgroup=vim9GlobalPat
+#
+#     # global:pat:cmd
+#     syn match vim9Global
+#         \ /\<gl\%[obal]!\=\ze\s*:.\{-}:/
+#         \ contained
+#         \ nextgroup=vim9GlobalPat
+#
+# But again, you would need to do the same for `:v` and `:s`.
+# That's too much code.
+# Besides, there would be still one very special case that would
+# not be supported:
+#
+#     g:a+b:command
+#        ^
+#
+# This is a  valid global command, because  there is no ambiguity  with a global
+# variable; thanks to `+` which is a non word character.
+# But watch this:
+#
+#     g:name = {key: 'value'}
+#       ^---------^
+#       this is not a pattern
+#
+# I don't think it's possible for a simple regex to determine the nature of what
+# follows `g:`: a pattern vs a variable name.
+#}}}
+const pattern_delimiter: string = '[^-:[:alnum:] \t\"#|]\@=.'
+
 # option_can_be_after {{{3
 # This regex should make sure that we're  in a position where a Vim option could
 # appear right after.
@@ -534,6 +620,8 @@ AppendSection('command_can_be_before')
 AppendSection('option_can_be_after')
 AppendSection('option_sigil')
 AppendSection('option_valid')
+AppendSection('pattern_delimiter')
+
 AppendSection('builtin_func')
 AppendSection('builtin_func_ambiguous', true)
 AppendSection('collation_class', true)

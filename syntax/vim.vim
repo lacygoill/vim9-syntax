@@ -159,6 +159,7 @@ import command_can_be_before from 'vim9syntax.vim'
 import option_can_be_after from 'vim9syntax.vim'
 import option_sigil from 'vim9syntax.vim'
 import option_valid from 'vim9syntax.vim'
+import pattern_delimiter from 'vim9syntax.vim'
 
 import builtin_func from 'vim9syntax.vim'
 import builtin_func_ambiguous from 'vim9syntax.vim'
@@ -344,7 +345,8 @@ syn cluster vim9IsCmd contains=
     \ vim9Syntax,
     \ vim9Unmap,
     \ vim9UserCmdDef,
-    \ vim9UserCmdExe
+    \ vim9UserCmdExe,
+    \ vim9VimGrep
 
 # Problem: a token might look like a command, but be something else.{{{
 #
@@ -924,97 +926,27 @@ syn keyword vim9FTOption detect indent off on plugin contained
 # :global {{{3
 
 # g/pat/cmd
-# We don't support the `:` and `-` delimiters.  They are too problematic.{{{
-#
-# Suppose you have a variable named `g`, to which you apply a method call:
-#
-#     this is not the global command
-#     ✘
-#     v
-#     g->substitute('-', '', '')
-#      ^             ^
-#      ✘             ✘
-#      those are not delimiters around a pattern
-#
-# `g` would be confused with the  global command, and the dashes with delimiters
-# around its pattern.
-#
-# You could handle this case with an extra rule which disallows `>` at the start
-# of the pattern:
-#
-#     syn match vim9Global
-#         \ /\<g\%[lobal]\>!\=\s*\ze->\@!.\{-}-/
-#         \ contained
-#         \ nextgroup=vim9GlobalPat
-#
-# But it would still not support the case where the pattern starts with `>`.
-# And you would  need to install similar  rules for all commands  which expect a
-# pattern as argument (e.g. `:filter`, `:vimgrep`).  It's not worth the trouble.
-#
-# Let's make things simple and consistent.
-# We don't recognize `-` as a delimiter.  Most of the time, you'll use `/` anyway.
-# For  the few  cases where  `/`  is not  desired,  there are  more than  enough
-# alternative characters in the ascii table: `;`, `,`, `backtick`, ...
-#
-# ---
-#
-# As  for the  colon,  it would  cause  Vim  to conflate  `g:`  with the  global
-# namespace.  See `:h vim9-gotchas`.
-#
-# You could handle it with 2 extra rules:
-#
-#     # :g:pat:cmd
-#     syn match vim9Global
-#         \ /:\@1<=g!\=\ze\s*:.\{-}:/
-#         \ contained
-#         \ nextgroup=vim9GlobalPat
-#
-#     # global:pat:cmd
-#     syn match vim9Global
-#         \ /\<gl\%[obal]!\=\ze\s*:.\{-}:/
-#         \ contained
-#         \ nextgroup=vim9GlobalPat
-#
-# But again, you would need to do the same for `:v` and `:s`.
-# That's too much code.
-# Besides, there would be still one very special case that would
-# not be supported:
-#
-#     g:a+b:command
-#        ^
-#
-# This is a  valid global command, because  there is no ambiguity  with a global
-# variable; thanks to `+` which is a non word character.
-# But watch this:
-#
-#     g:name = {key: 'value'}
-#       ^---------^
-#       this is not a pattern
-#
-# I don't think it's possible for a simple regex to determine the nature of what
-# follows `g:`: a pattern vs a variable name.
-#}}}
-syn match vim9Global
-    \ /\<g\%[lobal]\>!\=\ze\s*\([^-:[:alnum:] \t\"#|]\@=.\).\{-}\1/
-    \ contained
-    \ nextgroup=vim9GlobalPat
-    \ skipwhite
+exe 'syn match vim9Global'
+    .. ' /\<g\%[lobal]\>!\=\ze\s*\(' .. pattern_delimiter .. '\).\{-}\1/'
+    .. ' contained'
+    .. ' nextgroup=vim9GlobalPat'
+    .. ' skipwhite'
 
 # v/pat/cmd
-syn match vim9Global
-    \ /\<v\%[global]\>\ze\s*\([^-:[:alnum:] \t\"#|]\@=.\).\{-}\1/
-    \ contained
-    \ nextgroup=vim9GlobalPat
+exe 'syn match vim9Global'
+    .. ' /\<v\%[global]\>\ze\s*\(' .. pattern_delimiter .. '\).\{-}\1/'
+    .. ' contained'
+    .. ' nextgroup=vim9GlobalPat'
 
-syn region vim9GlobalPat
-    \ matchgroup=vim9SubstDelim
-    \ start=/\z([^[:alnum:] \t\"#|]\@=.\)/rs=s+1
-    \ skip=/\\\\\|\\\z1/
-    \ end=/\z1/
-    \ contained
-    \ contains=@vim9SubstList
-    \ nextgroup=@vim9CanBeAtStartOfLine
-    \ oneline
+exe 'syn region vim9GlobalPat'
+    .. ' matchgroup=vim9SubstDelim'
+    .. ' start=/\z(' .. pattern_delimiter .. '\)/rs=s+1'
+    .. ' skip=/\\\\\|\\\z1/'
+    .. ' end=/\z1/'
+    .. ' contained'
+    .. ' contains=@vim9SubstList'
+    .. ' nextgroup=@vim9CanBeAtStartOfLine'
+    .. ' oneline'
 
 # :highlight {arguments} {{{3
 # :highlight {{{4
@@ -1372,19 +1304,6 @@ syn cluster vim9SubstRepList contains=
     \ vim9SubstSubstr,
     \ vim9SubstTwoBS
 
-# `:h pattern-delimiter`
-
-# In Vim9, `"` is still not a valid delimiter:{{{
-#
-#     vim9script
-#     ['aba bab']->repeat(3)->setline(1)
-#     sil! s/nowhere//
-#     :% s"b"B"g
-#     E486: Pattern not found: nowhere˜
-#
-# `#` seems to work,  but let's be consistent; if in  legacy, the comment leader
-# doesn't work, that should remain true in Vim9.
-#}}}
 # Warning: Do *not* use `display` here.{{{
 #
 # It could break some subsequent highlighting.
@@ -1408,20 +1327,20 @@ syn cluster vim9SubstRepList contains=
 #    - `Foo()` is folded (hence, not displayed)
 #    - `vim9Subst` is defined with `display`
 #}}}
-syn match vim9Subst
-    \ /\<s\%[ubstitute]\>\s*\ze\([^-:[:alnum:] \t\"#|]\@=.\).\{-}\1.\{-}\1/
-    \ contained
-    \ nextgroup=vim9SubstPat
+exe 'syn match vim9Subst'
+    .. ' /\<s\%[ubstitute]\>\s*\ze\(' .. pattern_delimiter .. '\).\{-}\1.\{-}\1/'
+    .. ' contained'
+    .. ' nextgroup=vim9SubstPat'
 
-syn region vim9SubstPat
-    \ matchgroup=vim9SubstDelim
-    \ start=/\z([^[:alnum:] \t\"#|]\@=.\)/rs=s+1
-    \ skip=/\\\\\|\\\z1/
-    \ end=/\z1/re=e-1,me=e-1
-    \ contained
-    \ contains=@vim9SubstList
-    \ nextgroup=vim9SubstRep
-    \ oneline
+exe 'syn region vim9SubstPat'
+    .. ' matchgroup=vim9SubstDelim'
+    .. ' start=/\z(' .. pattern_delimiter .. '\)/rs=s+1'
+    .. ' skip=/\\\\\|\\\z1/'
+    .. ' end=/\z1/re=e-1,me=e-1'
+    .. ' contained'
+    .. ' contains=@vim9SubstList'
+    .. ' nextgroup=vim9SubstRep'
+    .. ' oneline'
 
 syn region vim9SubstRep
     \ matchgroup=vim9SubstDelim
@@ -1736,10 +1655,20 @@ syn keyword vim9SyncNone NONE contained
 #}}}3
 # :vimgrep {{{3
 
-# syn match vim9VimGrep
-#     \ /\<vim\%[grep]\ze\([^-[:alnum:] \t\"#|]\@=.\).\{-}\1/
-#     \ nextgroup=vim9VimGrepPat
-#     \ contained
+exe 'syn match vim9VimGrep'
+    .. ' /\<vim\%[grep]\ze\s*\(' .. pattern_delimiter .. '\).\{-}\1/'
+    .. ' nextgroup=vim9VimGrepPat'
+    .. ' contained'
+    .. ' skipwhite'
+
+exe 'syn region vim9VimGrepPat'
+    .. ' matchgroup=vim9SubstDelim'
+    .. ' start=/\z(' .. pattern_delimiter .. '\)/rs=s+1'
+    .. ' skip=/\\\\\|\\\z1/'
+    .. ' end=/\z1/'
+    .. ' contained'
+    .. ' contains=@vim9SubstList'
+    .. ' oneline'
 
 # :{range}!{filter} {{{3
 # `:h :range!`
@@ -3523,6 +3452,8 @@ hi def link vim9UserCmdAttrbRange vim9String
 hi def link vim9UserCmdDef Statement
 hi def link vim9UserCmdLhs vim9UserCmdExe
 hi def link vim9ValidSubType vim9DataType
+hi def link vim9VimGrep vim9GenericCmd
+hi def link vim9VimGrepPat vim9String
 #}}}1
 
 b:current_syntax = 'vim9'
