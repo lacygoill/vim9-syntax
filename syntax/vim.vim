@@ -1420,12 +1420,11 @@ syn match vim9GroupSpecial /\%(ALL\|ALLBUT\|CONTAINED\|TOP\)/ contained
 syn match vim9SynError /\i\+/ contained
 syn match vim9SynError /\i\+=/ contained nextgroup=vim9GroupList
 
-syn match vim9SynContains /\<contain\%(s\|edin\)=/
-    \ contained
-    \ nextgroup=vim9GroupList
+syn match vim9SynContains /\<contain\%(s\|edin\)/ contained nextgroup=vim9SynEqual
+syn match vim9SynEqual /=/ contained nextgroup=vim9GroupList
 
-syn match vim9SynKeyContainedin /\<containedin=/ contained nextgroup=vim9GroupList
-syn match vim9SynNextgroup /nextgroup=/ contained nextgroup=vim9GroupList
+syn match vim9SynKeyContainedin /\<containedin/ contained nextgroup=vim9SynEqual
+syn match vim9SynNextgroup /nextgroup/ contained nextgroup=vim9SynEqual
 
 # Warning: Do not turn `:syn match` into `:syn keyword`.
 syn match vim9Syntax /\<sy\%[ntax]\>/
@@ -3340,6 +3339,7 @@ hi def link vim9SubstTwoBS vim9String
 hi def link vim9SynCase Type
 hi def link vim9SynContains vim9SynOption
 hi def link vim9SynContinuePattern String
+hi def link vim9SynEqual vim9OperAssign
 hi def link vim9SynKeyContainedin vim9SynContains
 hi def link vim9SynKeyOpt vim9SynOption
 hi def link vim9SynMtchGrp vim9SynOption
