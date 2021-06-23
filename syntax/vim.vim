@@ -949,6 +949,7 @@ syn keyword vim9EchoHL echoh[l]
 syn case ignore
 syn keyword vim9EchoHLNone none contained
 syn case match
+
 # :filetype {{{3
 
 syn match vim9Filetype /\<filet\%[ype]\%(\s\+\I\i*\)*/

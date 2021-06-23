@@ -5,7 +5,7 @@ vim9script
 
 # command_can_be_before {{{1
 
-export const command_can_be_before: string = '\%(!\=[ \t\n]\@=\|\c<\%(bar\|cr\)>\)\%(\s*\%([-+*/%]=\|=\s\|=<\|\.\.=\)\|\_s*\%(->\|[-+*/%]\%(\s\+\)\@>[^|<]\)\)\@!'
+export const command_can_be_before: string = '\%(!\=[ \t\n]\@=\|\c<\%(bar\|cr\)>\)\%(\s*\%([-+*/%]=\|=\s\|=<<\|\.\.=\)\|\_s*\%(->\|[-+*/%]\%(\s\+\)\@>[^|<]\)\)\@!'
 
 # option_can_be_after {{{1
 
