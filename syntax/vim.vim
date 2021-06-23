@@ -248,8 +248,8 @@ syn cluster vim9Range contains=
 #     g:name = 'value'
 #      ^
 syn match vim9RangeIntroducer /\%(^\|\s\):\S\@=/
-    \ nextgroup=@vim9Range,vim9RangeMissingSpecifier1
     \ contained
+    \ nextgroup=@vim9Range,vim9RangeMissingSpecifier1
 
     # Sometimes, we might want to add a colon in front of an Ex command, even if it's not necessary.{{{
     #
@@ -305,37 +305,37 @@ syn match vim9RangeMark /'[a-zA-Z0-9<>()[\]{}]/
     \ skipwhite
 
 syn match vim9RangeNumber /\d\+/
-    \ nextgroup=@vim9RangeAfterSpecifier
     \ contained
+    \ nextgroup=@vim9RangeAfterSpecifier
     \ skipwhite
 
 syn match vim9RangeOffset /[-+]\+\d*/
-    \ nextgroup=@vim9RangeAfterSpecifier
     \ contained
+    \ nextgroup=@vim9RangeAfterSpecifier
     \ skipwhite
 
 syn match vim9RangePattern +/[^/]*/+
-    \ nextgroup=@vim9RangeAfterSpecifier
     \ contained
     \ contains=vim9RangePatternFwdDelim
+    \ nextgroup=@vim9RangeAfterSpecifier
     \ skipwhite
 syn match vim9RangePatternFwdDelim +/+ contained
 
 syn match vim9RangePattern +?[^?]*?+
-    \ nextgroup=@vim9RangeAfterSpecifier
     \ contained
     \ contains=vim9RangePatternBwdDelim
+    \ nextgroup=@vim9RangeAfterSpecifier
     \ skipwhite
 syn match vim9RangePatternBwdDelim /?/ contained
 
 syn match vim9RangeSpecialSpecifier /[.$%*]/
-    \ nextgroup=@vim9RangeAfterSpecifier
     \ contained
+    \ nextgroup=@vim9RangeAfterSpecifier
     \ skipwhite
 
 syn match vim9RangeDelimiter /[,;]/
-    \ nextgroup=@vim9RangeAfterSpecifier
     \ contained
+    \ nextgroup=@vim9RangeAfterSpecifier
 
 # Ex commands {{{1
 # Assert where Ex commands can match {{{2
@@ -432,8 +432,8 @@ syn cluster vim9CanBeAtStartOfLine contains=
 # ones which  don't have a  dedicated section (i.e. start  of line, and  after a
 # bar).
 syn match vim9StartOfLine /^/
-    \ skipwhite
     \ nextgroup=@vim9CanBeAtStartOfLine
+    \ skipwhite
 
 syn match vim9CmdSep /|/ skipwhite nextgroup=@vim9CanBeAtStartOfLine
 
@@ -514,34 +514,34 @@ syn match vim9AugroupNameEnd /\h\%(\w\|-\)*/ contained
 # :au[tocmd] [group] {event} {pat} [++once] [++nested] {cmd}
 syn match vim9Autocmd /\<au\%[tocmd]\>/
     \ contained
-    \ skipwhite
     \ nextgroup=
     \     vim9AutocmdAllEvents,
     \     vim9AutocmdEventBadCase,
     \     vim9AutocmdEventGoodCase,
     \     vim9AutocmdGroup,
     \     vim9AutocmdMod
+    \ skipwhite
 
 #           v
 # :au[tocmd]! ...
 syn match vim9Autocmd /\<au\%[tocmd]\>!/he=e-1
     \ contained
-    \ skipwhite
     \ nextgroup=
     \     vim9AutocmdAllEvents,
     \     vim9AutocmdEventBadCase,
     \     vim9AutocmdEventGoodCase,
     \     vim9AutocmdGroup
+    \ skipwhite
 
 # The trailing whitespace is useful to prevent a correct but still noisy/useless
 # match when we simply clear an augroup.
 syn match vim9AutocmdGroup /\S\+\s\@=/
     \ contained
-    \ skipwhite
     \ nextgroup=
     \     vim9AutocmdAllEvents,
     \     vim9AutocmdEventBadCase,
     \     vim9AutocmdEventGoodCase
+    \ skipwhite
 
 # Special Case: A wildcard can be used for all events.{{{
 #
@@ -592,19 +592,19 @@ syn match vim9AutocmdEndOfEventList /,\%(\a\+,\)*\a\+/
 # :doautoa[ll] [<nomodeline>] [group] {event} [fname]
 syn keyword vim9Doautocmd do[autocmd] doautoa[ll]
     \ contained
-    \ skipwhite
     \ nextgroup=
     \     vim9AutocmdEventBadCase,
     \     vim9AutocmdEventGoodCase,
     \     vim9AutocmdGroup,
     \     vim9AutocmdMod
+    \ skipwhite
 
 syn match vim9AutocmdMod /<nomodeline>/
-    \ skipwhite
     \ nextgroup=
     \     vim9AutocmdEventBadCase,
     \     vim9AutocmdEventGoodCase,
     \     vim9AutocmdGroup
+    \ skipwhite
 #}}}3
 # Control Flow {{{3
 
@@ -684,8 +684,8 @@ exe 'syn region vim9TryCatchPattern'
 
 syn keyword vim9Declare cons[t] final unl[et] var
     \ contained
-    \ skipwhite
     \ nextgroup=vim9ListUnpackDeclaration,vim9ReservedNames
+    \ skipwhite
 
 # NOTE: In the legacy syntax plugin, `vimLetHereDoc` contains `vimComment` and `vim9Comment`.{{{
 #
@@ -765,10 +765,10 @@ syn match vim9UserCmdDef /\<com\%[mand]\>!/he=e-1
 # Order: should come before highlighting valid attributes.
 
 syn cluster vim9UserCmdAttrb contains=
-    \ vim9UserCmdAttrbName,
     \ vim9UserCmdAttrbEqual,
     \ vim9UserCmdAttrbError,
     \ vim9UserCmdAttrbErrorValue,
+    \ vim9UserCmdAttrbName,
     \ vim9UserCmdLhs
 
 # Order: should come before the next rule highlighting errors in attribute names
@@ -857,11 +857,11 @@ syn match vim9UserCmdAttrbComma /,/ contained
 
 syn match vim9UserCmdAttrbName /-count\>/
     \ contained
-    \ skipwhite
     \ nextgroup=
     \     @vim9UserCmdAttrb,
     \     vim9UserCmdAttrbCount,
     \     vim9UserCmdAttrbErrorValue
+    \ skipwhite
 
 syn match vim9UserCmdAttrbCount
     \ /=\d\+/
@@ -891,11 +891,11 @@ syn match vim9UserCmdAttrbNargsNumber /[01]/ contained
 # it can accept a value, *or* be used as a boolean.
 syn match vim9UserCmdAttrbName /-range\>/
     \ contained
-    \ skipwhite
     \ nextgroup=
     \     @vim9UserCmdAttrb,
     \     vim9UserCmdAttrbErrorValue,
     \     vim9UserCmdAttrbRange
+    \ skipwhite
 
 syn match vim9UserCmdAttrbRange /=\%(%\|-\=\d\+\)/
     \ contained
@@ -936,7 +936,6 @@ syn keyword vim9Set CompilerSet contained nextgroup=vim9MayBeOptionSet skipwhite
 
 syn keyword vim9DoCmds argdo bufdo cdo cfdo ld[o] lfdo tabd[o] windo
     \ contained
-    \ skipwhite
     \ nextgroup=@vim9CanBeAtStartOfLine
     \ skipwhite
 
@@ -1245,14 +1244,14 @@ syn case match
 
 syn match vim9MapRhs /.*/
     \ contained
-    \ nextgroup=vim9MapRhsExtend
-    \ skipnl
     \ contains=
     \     vim9CtrlChar,
     \     vim9MapCmd,
     \     vim9MapCmdlineExpr,
     \     vim9MapInsertExpr,
     \     vim9Notation
+    \ nextgroup=vim9MapRhsExtend
+    \ skipnl
 
 syn match vim9MapRhsExpr /.*/
     \ contained
@@ -1652,7 +1651,6 @@ syn match vim9MtchComment /#[^#]\+$/ contained
 
 syn keyword vim9SynType sync
     \ contained
-    \ skipwhite
     \ nextgroup=
     \     vim9SyncC,
     \     vim9SyncError,
@@ -1661,6 +1659,7 @@ syn keyword vim9SynType sync
     \     vim9SyncLines,
     \     vim9SyncMatch,
     \     vim9SyncRegion
+    \ skipwhite
 
 syn match vim9SyncError /\i\+/ contained
 syn keyword vim9SyncC ccomment clear fromstart contained
@@ -1817,8 +1816,8 @@ syn region vim9LegacyComment
     \ start=/^\s*".*/
     \ end=/$/
     \ contained
-    \ oneline
     \ keepend
+    \ oneline
 #}}}2
 # User Call {{{2
 
@@ -2590,41 +2589,41 @@ syn region vim9Block
 
 syn case ignore
 syn keyword vim9Group contained
-    \ Comment
-    \ Constant
-    \ String
-    \ Character
-    \ Number
     \ Boolean
-    \ Float
-    \ Identifier
-    \ Function
-    \ Statement
+    \ Character
+    \ Comment
     \ Conditional
-    \ Repeat
-    \ Label
-    \ Operator
-    \ Keyword
-    \ Exception
-    \ PreProc
-    \ Include
+    \ Constant
+    \ Debug
     \ Define
+    \ Delimiter
+    \ Error
+    \ Exception
+    \ Float
+    \ Function
+    \ Identifier
+    \ Ignore
+    \ Include
+    \ Keyword
+    \ Label
     \ Macro
+    \ Number
+    \ Operator
     \ PreCondit
-    \ Type
-    \ StorageClass
-    \ Structure
-    \ Typedef
+    \ PreProc
+    \ Repeat
     \ Special
     \ SpecialChar
-    \ Tag
-    \ Delimiter
     \ SpecialComment
-    \ Debug
-    \ Underlined
-    \ Ignore
-    \ Error
+    \ Statement
+    \ StorageClass
+    \ String
+    \ Structure
+    \ Tag
     \ Todo
+    \ Type
+    \ Typedef
+    \ Underlined
 syn case match
 
 # Default highlighting groups {{{1
@@ -2753,7 +2752,6 @@ syn match vim9CommentTitle /#\s*\u\%(\w\|[()]\)*\%(\s\+\u\w*\)*:/hs=s+1
     \ contains=@vim9CommentGroup
 
 syn match vim9Continuation /^\s*\\/
-    \ skipwhite
     \ nextgroup=
     \     vim9SynContains,
     \     vim9SynContinuePattern,
@@ -2761,6 +2759,7 @@ syn match vim9Continuation /^\s*\\/
     \     vim9SynNextgroup,
     \     vim9SynRegOpt,
     \     vim9SynRegStartSkipEnd
+    \ skipwhite
 
 syn match vim9SynContinuePattern =\s\+/[^/]*/= contained
 
