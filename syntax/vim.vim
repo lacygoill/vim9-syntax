@@ -1861,7 +1861,7 @@ exe 'syn match vim9UserFuncNameUser'
     ..     '\h\w*#\%(\w\|#\)*'
     .. '\|'
     # or a dict function
-    ..     '\h\%(\w\|\.\)*'
+    ..     '\h\w*\.\%(\w\|\.\)*'
     .. '\)'
     .. '\ze('
     .. '/'
