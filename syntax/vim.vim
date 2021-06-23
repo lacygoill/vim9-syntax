@@ -1744,7 +1744,7 @@ exe 'syn match vim9FuncHeader'
     .. ' /'
     .. '\<def!\=\s\+'
     .. '\%('
-    ..      '[gs]:\%(\w\|[#.]\)*'
+    ..      '[gs]:\%(\w\|[.]\)*'
     .. '\|' .. '\u\%(\w\|[#.]\)*'
     .. '\)'
     .. '\ze('
@@ -1858,11 +1858,8 @@ exe 'syn match vim9UserFuncNameUser'
     # without an explicit scope, the name of the function must start with a capital
     ..     '\u\w*'
     .. '\|'
-    # unless it's an autoload function
-    ..     '\h\w*#\%(\w\|#\)*'
-    .. '\|'
-    # or a dict function
-    ..     '\h\w*\.\%(\w\|\.\)*'
+    # unless it's an autoload or dict function
+    ..     '\h\w*[#.]\%(\w\|[#.]\)*'
     .. '\)'
     .. '\ze('
     .. '/'
