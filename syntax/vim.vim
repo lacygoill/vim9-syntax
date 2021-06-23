@@ -2281,7 +2281,7 @@ syn match vim9DictExprKey /\[.\{-}]\%(:\s\)\@=/
 #}}}
 syn region vim9Lambda
     \ matchgroup=vim9ParenSep
-    \ start=/(\%(\s*\%(\h\w*[,:]\|\s*\h\w*)\)\)\@=/
+    \ start=/(\ze\s*\h\w*\%([,:]\|\s*)\)/
     \ end=/)\ze\%(:.\{-}\)\=\s\+=>/
     \ contains=@vim9DataTypeCluster,vim9LambdaArgs
     \ keepend
