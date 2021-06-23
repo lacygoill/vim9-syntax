@@ -1935,8 +1935,17 @@ syn match vim9Oper "\s\@1<=\%([-+*/%!]\|\.\.\|==\|!=\|>=\|<=\|=\~\|!\~\|>\|<\)[?
     \ nextgroup=vim9Bool,vim9SpecFile,vim9String
     \ skipwhite
 
+# `nextgroup` is necessary to prevent a dictionary from being matched as a block.{{{
+#
+#     var n =
+#         {
+#             key: 123,
+#         }.key
+#}}}
 syn match vim9OperAssign #\s\@1<=\%([-+*/%]\|\.\.\)\==\_s\@=#
     \ display
+    \ nextgroup=vim9Dict
+    \ skipnl
     \ skipwhite
 
 syn match vim9Oper /\s\@1<=\%(is\|isnot\)\s\@=/
