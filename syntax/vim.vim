@@ -1742,9 +1742,11 @@ syn match vim9FilterLastShellCmd /\\\@1<!!/ display contained
 
 exe 'syn match vim9FuncHeader'
     .. ' /'
-    .. '\<def!\='
-    .. '\s\+\%([gs]:\)\='
-    .. '\%(\i\|[#.]\)*'
+    .. '\<def!\=\s\+'
+    .. '\%('
+    ..      '[gs]:\%(\w\|[#.]\)*'
+    .. '\|' .. '\u\%(\w\|[#.]\)*'
+    .. '\)'
     .. '\ze('
     .. '/'
     .. ' contains=vim9DefKey'
@@ -1825,7 +1827,7 @@ exe 'syn match vim9FuncCall'
     .. ' /\<'
     .. '\%('
     # with an explicit scope, the name can start with and contain any word character
-    ..     '[gs]:\w\+'
+    ..     '[gs]:\w\%(\w\|\.\)\+'
     .. '\|'
     # otherwise, it must start with a head of word (i.e. word character except digit);
     # afterward, it can contain any word character and `#` (for autoload functions) and `.` (for dict functions)
@@ -1851,11 +1853,10 @@ exe 'syn match vim9FuncCall'
 exe 'syn match vim9UserFuncNameUser'
     .. ' /'
     .. '\<\%('
-    ..     '[gs]:\w\+'
+    ..     '[gs]:\w\%(\w\|\.\)\+'
     .. '\|'
-    # without an explicit scope, the name of the function must not start with a lowercase
-    # (that's reserved to builtin functions)
-    ..     '[A-Z_]\w*'
+    # without an explicit scope, the name of the function must start with a capital
+    ..     '\u\w*'
     .. '\|'
     # unless it's an autoload function
     ..     '\h\w*#\%(\w\|#\)*'
