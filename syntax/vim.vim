@@ -281,7 +281,7 @@ syn match vim9RangeIntroducer /\%(^\|\s\):\S\@=/
     #     ^
     #}}}
     # Order: Must come after `vim9RangeIntroducer`.
-    syn match vim9UnambiguousColon /\s\=:[a-z]\@=/
+    syn match vim9UnambiguousColon /\s\=:[a-zA-Z]\@=/
         \ contained
         \ nextgroup=@vim9CanBeAtStartOfLine
 
