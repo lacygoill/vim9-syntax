@@ -298,7 +298,7 @@ const command_can_be_before: string =
        ..     '!\=' .. '[ \t\n]\@='
        .. '\|'
        # Special Case: An Ex command in the rhs of a mapping, right after `<cmd>` or `<bar>`.
-       ..     '<\%(bar\|cr\)>'
+       ..     '\c<\%(bar\|cr\)>'
        .. '\)'
     # but there must *not* be a binary operator
     # Warning: Try not to break the highlighting of a command whose first argument is the register `=`.{{{
