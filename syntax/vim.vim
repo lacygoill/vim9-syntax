@@ -184,15 +184,14 @@ syn match vim9Notation /\c<bar>/ contains=vim9Bracket skipwhite
 
 # This could break the highlighting of a command in a mapping (between `<cmd>` and `<cr>`).
 # Especially if `<cmd>` is preceded by some key(s).
-syn match vim9Notation /<cmd>/
+syn match vim9Notation /\c<cmd>/
     \ contains=vim9Bracket
     \ nextgroup=@vim9CanBeAtStartOfLine,@vim9Range
 
-syn case ignore
 # This could break the highlighting of an expression in a mapping between `<c-\>e` and `<cr>`.
 exe 'syn match vim9Notation'
     .. ' /'
-    .. '\%(\\\|<lt>\)\='
+    .. '\c\%(\\\|<lt>\)\='
     .. '<' .. '\%([scamd]-\)\{,3}x\='
     .. '\%('
     # TODO: Build the pattern programmatically:
@@ -214,9 +213,7 @@ exe 'syn match vim9Notation'
     .. ' contains=vim9Bracket'
 
 # This could break the highlighting of an expression in a mapping between `<c-r>=` and `<cr>`.
-syn match vim9Notation /\%(\\\|<lt>\)\=<c-r>[0-9a-z"%#:.\-=]\@=/ contains=vim9Bracket
-
-syn case match
+syn match vim9Notation /\c\%(\\\|<lt>\)\=<c-r>[0-9a-z"%#:.\-=]\@=/ contains=vim9Bracket
 
 # Comment {{{2
 
@@ -1029,7 +1026,6 @@ syn keyword vim9HiCtermColor contained
     \ darkmagenta darkred darkyellow gray green grey lightblue lightcyan
     \ lightgray lightgreen lightgrey lightmagenta lightred magenta red white
     \ yellow
-syn match vim9HiCtermColor /\<color\d\{1,3}\>/ contained
 syn case match
 
 syn match vim9HiFontname /[a-zA-Z\-*]\+/ contained
@@ -1061,15 +1057,15 @@ syn region vim9HiKeyList
     \ oneline
 
 syn match vim9HiKeyError /\i\+=/he=e-1 contained
-syn match vim9HiTerm /\cterm=/he=e-1 contained nextgroup=vim9HiAttribList
+syn match vim9HiTerm /term=/he=e-1 contained nextgroup=vim9HiAttribList
 
-syn match vim9HiStartStop /\c\%(start\|stop\)=/he=e-1
+syn match vim9HiStartStop /\%(start\|stop\)=/he=e-1
     \ contained
     \ nextgroup=vim9HiTermcap,vim9MayBeOptionScoped
 
-syn match vim9HiCTerm /\ccterm=/he=e-1 contained nextgroup=vim9HiAttribList
+syn match vim9HiCTerm /cterm=/he=e-1 contained nextgroup=vim9HiAttribList
 
-syn match vim9HiCtermFgBg /\ccterm[fb]g=/he=e-1
+syn match vim9HiCtermFgBg /cterm[fb]g=/he=e-1
     \ contained
     \ nextgroup=
     \     vim9FgBgAttrib,
@@ -1077,7 +1073,7 @@ syn match vim9HiCtermFgBg /\ccterm[fb]g=/he=e-1
     \     vim9HiCtermError,
     \     vim9HiNmbr
 
-syn match vim9HiCtermul /\cctermul=/he=e-1
+syn match vim9HiCtermul /ctermul=/he=e-1
     \ contained
     \ nextgroup=
     \     vim9FgBgAttrib,
@@ -1085,10 +1081,10 @@ syn match vim9HiCtermul /\cctermul=/he=e-1
     \     vim9HiCtermError,
     \     vim9HiNmbr
 
-syn match vim9HiGui /\cgui=/he=e-1 contained nextgroup=vim9HiAttribList
-syn match vim9HiGuiFont /\cfont=/he=e-1 contained nextgroup=vim9HiFontname
+syn match vim9HiGui /gui=/he=e-1 contained nextgroup=vim9HiAttribList
+syn match vim9HiGuiFont /font=/he=e-1 contained nextgroup=vim9HiFontname
 
-syn match vim9HiGuiFgBg /\cgui\%([fb]g\|sp\)=/he=e-1
+syn match vim9HiGuiFgBg /gui\%([fb]g\|sp\)=/he=e-1
     \ contained
     \ nextgroup=
     \     vim9FgBgAttrib,
@@ -2285,7 +2281,7 @@ syn match vim9DictExprKey /\[.\{-}]\%(:\s\)\@=/
 #}}}
 syn region vim9Lambda
     \ matchgroup=vim9ParenSep
-    \ start=/(\%(\s*\%(\h\w*,\|\s*\h\w*)\)\)\@=/
+    \ start=/(\%(\s*\%(\h\w*[,:]\|\s*\h\w*)\)\)\@=/
     \ end=/)\ze\%(:.\{-}\)\=\s\+=>/
     \ contains=@vim9DataTypeCluster,vim9LambdaArgs
     \ keepend
@@ -2677,10 +2673,9 @@ syn match vim9Comment /^\s*#.*$/ contains=@vim9CommentGroup
 
 # Angle-Bracket Notation {{{1
 
-syn case ignore
 exe 'syn match vim9Notation'
     .. ' /'
-    .. '\%(\\\|<lt>\)\='
+    .. '\c\%(\\\|<lt>\)\='
     .. '<'
     .. '\%([scam2-4]-\)\{0,4}'
     .. '\%(right\|left\|middle\)'
@@ -2691,12 +2686,12 @@ exe 'syn match vim9Notation'
     .. ' contains=vim9Bracket'
 
 syn match vim9Notation
-    \ /\%(\\\|<lt>\)\=<\%(bslash\|plug\|sid\|space\|nop\|nul\|lt\)>/
+    \ /\c\%(\\\|<lt>\)\=<\%(bslash\|plug\|sid\|space\|nop\|nul\|lt\)>/
     \ contains=vim9Bracket
 
 exe 'syn match vim9Notation'
     .. ' /'
-    .. '\%(\\\|<lt>\)\='
+    .. '\c\%(\\\|<lt>\)\='
     .. '<'
     .. '\%(q-\)\='
     .. '\%(line[12]\|count\|bang\|reg\|args\|mods\|f-args\|f-mods\|lt\)'
@@ -2705,11 +2700,10 @@ exe 'syn match vim9Notation'
     .. ' contains=vim9Bracket'
 
 syn match vim9Notation
-    \ /\%(\\\|<lt>\)\=<\%([cas]file\|abuf\|amatch\|cword\|cWORD\|client\)>/
+    \ /\c\%(\\\|<lt>\)\=<\%([cas]file\|abuf\|amatch\|cword\|cWORD\|client\)>/
     \ contains=vim9Bracket
 
 syn match vim9Bracket /[\\<>]/ contained
-syn case match
 
 # Control Characters {{{1
 
