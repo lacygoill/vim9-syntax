@@ -1828,8 +1828,8 @@ exe 'syn match vim9FuncCall'
     ..     '[gs]:\w\+'
     .. '\|'
     # otherwise, it must start with a head of word (i.e. word character except digit);
-    # afterward, it can contain any word character and `#` (for autoload functions)
-    ..     '\h\%(\w\|#\)*'
+    # afterward, it can contain any word character and `#` (for autoload functions) and `.` (for dict functions)
+    ..     '\h\%(\w\|[#.]\)*'
     .. '\)'
     # Do *not* allow whitespace between the function name and the open paren.{{{
     #
@@ -1859,6 +1859,9 @@ exe 'syn match vim9UserFuncNameUser'
     .. '\|'
     # unless it's an autoload function
     ..     '\h\w*#\%(\w\|#\)*'
+    .. '\|'
+    # or a dict function
+    ..     '\h\%(\w\|\.\)*'
     .. '\)'
     .. '\ze('
     .. '/'
