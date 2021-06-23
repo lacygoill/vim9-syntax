@@ -67,6 +67,7 @@ END
 
 #     :vim9 echo getcompletion('*map', 'command')->filter((_, v) => v =~ '^[a-z]' && v != 'loadkeymap')
 const MAPPING_CMDS: list<string> =<< trim END
+    map
     cmap
     imap
     lmap
@@ -93,7 +94,6 @@ const MAPPING_CMDS: list<string> =<< trim END
     ounmap
     sunmap
     tunmap
-    unmap
     unmap
     vunmap
     xunmap
@@ -415,8 +415,8 @@ const command_can_be_before: string =
 #
 # But again, you would need to do the same for `:v` and `:s`.
 # That's too much code.
-# Besides, there would be still one very special case that would
-# not be supported:
+# Besides,  there  would be  still  one  very special  case  that  would not  be
+# supported:
 #
 #     g:a+b:command
 #        ^

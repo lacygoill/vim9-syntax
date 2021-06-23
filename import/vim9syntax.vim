@@ -7,10 +7,6 @@ vim9script
 
 export const command_can_be_before: string = '\%(!\=[ \t\n]\@=\|<\%(bar\|cr\)>\)\%(\s*\%([-+*/%]=\|=\s\|=<\|\.\.=\)\|\_s*\%(->\|[-+*/%]\%(\s\+\)\@>[^|<]\)\)\@!'
 
-# pattern_delimiter {{{1
-
-export const pattern_delimiter: string = '[^-:[:alnum:] \t\"#|]\@=.'
-
 # option_can_be_after {{{1
 
 export const option_can_be_after: string = '\%(^\|[-+ \t!([]\)\@1<='
@@ -22,6 +18,10 @@ export const option_sigil: string = '&\%([gl]:\)\='
 # option_valid {{{1
 
 export const option_valid: string = '\%([a-z]\{2,}\>\|t_[a-zA-Z0-9#%*:@_]\{2}\)'
+
+# pattern_delimiter {{{1
+
+export const pattern_delimiter: string = '[^-:[:alnum:] \t\"#|]\@=.'
 
 # builtin_func {{{1
 
@@ -879,7 +879,6 @@ const command_name_list: list<string> =<< trim END
     luaf[ile]
     lw[indow]
     mak[e]
-    map
     ma[rk]
     marks
     mat[ch]
