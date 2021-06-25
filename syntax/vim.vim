@@ -1722,7 +1722,21 @@ syn match vim9FilterLastShellCmd /\\\@1<!!/ display contained
 #
 # Which makes sense.  They can only appear at the start of a line.
 #}}}
-syn match vim9Increment /\%(++\|--\)\h\@=/ contained
+syn match vim9Increment /\%(++\|--\)\h\@=/ contained nextgroup=vim9IncrementInvalid skipwhite
+
+# Make sure the argument is valid:{{{
+#
+#     var n = 123
+#     ++n
+#       ^
+#       ✔
+#
+#     ++Func()
+#           ^^
+#           ✘
+#}}}
+syn match vim9IncrementInvalid /[^ \t\n|]*/ contained contains=vim9IncrementValid
+syn match vim9IncrementValid /\w\+/ contained
 #}}}1
 # Functions {{{1
 # User Definition {{{2
@@ -3324,6 +3338,7 @@ hi def link vim9FuncCall vim9Error
 hi def link vim9HiAttribList vim9Error
 hi def link vim9HiCtermError vim9Error
 hi def link vim9HiKeyError vim9Error
+hi def link vim9IncrementInvalid vim9Error
 hi def link vim9LambdaDictMissingParen vim9Error
 hi def link vim9LetDeprecated vim9Error
 hi def link vim9ListUnpackDeclaration vim9Error
