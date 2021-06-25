@@ -137,22 +137,6 @@ const MODIFIER_CMDS: list<string> =<< trim END
     vim9cmd
 END
 
-const TAKE_EXPR_CMDS: list<string> =<< trim END
-    cexpr
-    lexpr
-    caddexpr
-    laddexpr
-    cgetexpr
-    lgetexpr
-    echo
-    echoconsole
-    echoerr
-    echomsg
-    echon
-    eval
-    execute
-END
-
 const VARIOUS_SPECIAL_CMDS: list<string> =<< trim END
     augroup
     autocmd
@@ -191,7 +175,6 @@ const SPECIAL_CMDS: list<string> =
     + DO_CMDS
     + MAPPING_CMDS
     + MODIFIER_CMDS
-    + TAKE_EXPR_CMDS
     + VARIOUS_SPECIAL_CMDS
 
 # Util Functions {{{1
@@ -245,9 +228,9 @@ enddef
 # Exported Variables {{{1
 # regexes {{{2
 # command_can_be_before {{{3
+
 # This regex should make sure that we're in a position where an Ex command could
 # appear right before.
-
 # Warning: Do *not* consume any token.{{{
 #
 # Only use lookarounds to assert something about the current position.
@@ -348,102 +331,190 @@ const command_can_be_before: string =
     .. '\)'
     .. '\)\@!'
 
+# logical_not {{{3
+
+# This regex should match most binary operators.
+const logical_not: string = '/'
+    # Don't highlight `!` when used after a command name:{{{
+    #
+    #     packadd!
+    #            ^
+    #
+    # Note that we still want to highlight `!` when preceded by a paren:
+    #
+    #     echo 'aaa' .. (!empty(...) ? ... : ...)
+    #                   ^^
+    # }}}
+    .. '\w\@1<!'
+    .. '!'
+    # don't break the highlighting of `~`/`=` in `!~`/`!=`
+    .. '[~=]\@!'
+    # support `!!` which can turn any type of expression into a boolean
+    .. '!*'
+    .. '/'
+
+# most_operators {{{3
+
+# This regex should match most binary operators.
+const most_operators: string = '"'
+    # there must be a space before
+    .. '\s\@1<='
+    .. '\%('
+           # arithmetic operators
+    ..     '[-+*/%]'
+           # concatenation operator
+    ..     '\|' .. '\.\.'
+           # logical operators
+    ..     '\|' .. '||\|&&'
+           # null coalescing operator
+    ..     '\|' .. '??'
+           # `?` in ternary operator
+    ..     '\|' .. '?'
+           # comparison operators
+    ..     '\|' .. '\%(' .. '[=!]=\|[<>]=\=\|[=!]\~\|is\|isnot' .. '\)'
+           # optional modifier to respect or ignore the case
+    ..     '[?#]\='
+    .. '\)'
+    # there must be a whitespace after
+    .. '\_s\@='
+    # There should be an expression after.{{{
+    #
+    # But an expression cannot start with a bar, nor with `<`.
+    # It's most probably a special argument to some command:
+    #
+    #         v
+    #     Cmd + | eval 0
+    #     nno <key> <cmd>Cmd + <bar> eval 0<cr>
+    #                        ^
+    #}}}
+    .. '\%(\s*[|<]\)\@!'
+    .. '"'
+
 # pattern_delimiter {{{3
 
-# `:h pattern-delimiter`
-# In Vim9, `"` is still not a valid delimiter:{{{
-#
-#     vim9script
-#     ['aba bab']->repeat(3)->setline(1)
-#     sil! s/nowhere//
-#     :% s"b"B"g
-#     E486: Pattern not found: nowhere˜
-#
-# `#` seems to work,  but let's be consistent; if in  legacy, the comment leader
-# doesn't work, that should remain true in Vim9.
-#}}}
-# We don't support the `:` and `-` delimiters.  They are too problematic.{{{
-#
-# Suppose you have a variable named `g`, to which you apply a method call:
-#
-#     this is not the global command
-#     ✘
-#     v
-#     g->substitute('-', '', '')
-#      ^             ^
-#      ✘             ✘
-#      those are not delimiters around a pattern
-#
-# `g` would be confused with the  global command, and the dashes with delimiters
-# around its pattern.
-#
-# You could handle this case with an extra rule which disallows `>` at the start
-# of the pattern:
-#
-#     syn match vim9Global
-#         \ /\<g\%[lobal]\>!\=\s*\ze->\@!.\{-}-/
-#         \ contained
-#         \ nextgroup=vim9GlobalPat
-#
-# But it would still not support the case where the pattern starts with `>`.
-# And you would  need to install similar  rules for all commands  which expect a
-# pattern as argument (e.g. `:filter`, `:vimgrep`).  It's not worth the trouble.
-#
-# Let's make things simple and consistent.
-# We don't recognize `-` as a delimiter.  Most of the time, you'll use `/` anyway.
-# For  the few  cases where  `/`  is not  desired,  there are  more than  enough
-# alternative characters in the ascii table: `;`, `,`, `backtick`, ...
-#
-# ---
-#
-# As  for the  colon,  it would  cause  Vim  to conflate  `g:`  with the  global
-# namespace.  See `:h vim9-gotchas`.
-#
-# You could handle it with 2 extra rules:
-#
-#     # :g:pat:cmd
-#     syn match vim9Global
-#         \ /:\@1<=g!\=\ze\s*:.\{-}:/
-#         \ contained
-#         \ nextgroup=vim9GlobalPat
-#
-#     # global:pat:cmd
-#     syn match vim9Global
-#         \ /\<gl\%[obal]!\=\ze\s*:.\{-}:/
-#         \ contained
-#         \ nextgroup=vim9GlobalPat
-#
-# But again, you would need to do the same for `:v` and `:s`.
-# That's too much code.
-# Besides,  there  would be  still  one  very special  case  that  would not  be
-# supported:
-#
-#     g:a+b:command
-#        ^
-#
-# This is a  valid global command, because  there is no ambiguity  with a global
-# variable; thanks to `+` which is a non word character.
-# But watch this:
-#
-#     g:name = {key: 'value'}
-#       ^---------^
-#       this is not a pattern
-#
-# I don't think it's possible for a simple regex to determine the nature of what
-# follows `g:`: a pattern vs a variable name.
-#}}}
-const pattern_delimiter: string = '[^-:[:alnum:] \t\"#|]\@=.'
+const pattern_delimiter: string =
+    # let's discard invalid delimiters
+    '[^'
+    # Warning: keep this part at the start, so that `-` is not parsed as in `a-z`.
+    # `-` and `:` are too problematic.{{{
+    #
+    # Suppose you have a variable named `g`, to which you apply a method call:
+    #
+    #     this is not the global command
+    #     ✘
+    #     v
+    #     g->substitute('-', '', '')
+    #      ^             ^
+    #      ✘             ✘
+    #      those are not delimiters around a pattern
+    #
+    # `g` would be confused with the  global command, and the dashes with delimiters
+    # around its pattern.
+    #
+    # You could handle this case with an extra rule which disallows `>` at the start
+    # of the pattern:
+    #
+    #     syn match vim9Global
+    #         \ /\<g\%[lobal]\>!\=\s*\ze->\@!.\{-}-/
+    #         \ contained
+    #         \ nextgroup=vim9GlobalPat
+    #
+    # But it would still not support the case where the pattern starts with `>`.
+    # And you would  need to install similar  rules for all commands  which expect a
+    # pattern as argument (e.g. `:filter`, `:vimgrep`).  It's not worth the trouble.
+    #
+    # Let's make things simple and consistent.
+    # We don't recognize `-` as a delimiter.  Most of the time, you'll use `/` anyway.
+    # For  the few  cases where  `/`  is not  desired,  there are  more than  enough
+    # alternative characters in the ascii table: `;`, `,`, `backtick`, ...
+    #
+    # ---
+    #
+    # As  for the  colon,  it would  cause  Vim  to conflate  `g:`  with the  global
+    # namespace.  See `:h vim9-gotchas`.
+    #
+    # You could handle it with 2 extra rules:
+    #
+    #     # :g:pat:cmd
+    #     syn match vim9Global
+    #         \ /:\@1<=g!\=\ze\s*:.\{-}:/
+    #         \ contained
+    #         \ nextgroup=vim9GlobalPat
+    #
+    #     # global:pat:cmd
+    #     syn match vim9Global
+    #         \ /\<gl\%[obal]!\=\ze\s*:.\{-}:/
+    #         \ contained
+    #         \ nextgroup=vim9GlobalPat
+    #
+    # But again, you would need to do the same for `:v` and `:s`.
+    # That's too much code.
+    # Besides,  there  would be  still  one  very special  case  that  would not  be
+    # supported:
+    #
+    #     g:a+b:command
+    #        ^
+    #
+    # This is a  valid global command, because  there is no ambiguity  with a global
+    # variable; thanks to `+` which is a non word character.
+    # But watch this:
+    #
+    #     g:name = {key: 'value'}
+    #       ^---------^
+    #       this is not a pattern
+    #
+    # I don't think it's possible for a simple regex to determine the nature of what
+    # follows `g:`: a pattern vs a variable name.
+    #}}}
+    .. '-:'
+    # `#` is not reliable:{{{
+    #
+    #     $ vim -Nu NONE +'vim9 g #pat# ls'
+    #     Pattern not found: pat˜
+    #     ✔
+    #
+    #     $ vim -Nu NONE +'vim9 filter #pat# ls'
+    #     E476: Invalid command: vim9 filter #pat# ls˜
+    #     ✘
+    #
+    # Besides, but let's be consistent; if in legacy, the comment leader doesn't
+    # work, that should remain true in Vim9.
+    #}}}
+    .. '#'
+    # a delimiter cannot be a whitespace (obviously)
+    .. ' \t'
+    # `:h pattern-delimiter`
+    # In Vim9, `"` is still not a valid delimiter:{{{
+    #
+    #     vim9script
+    #     ['aba bab']->repeat(3)->setline(1)
+    #     sil! s/nowhere//
+    #     :% s"b"B"g
+    #     E486: Pattern not found: nowhere˜
+    #}}}
+    .. '[:alnum:]\"|'
+    # end of assertion
+    .. ']\@='
+    # now we have the guarantee that the next character (whatever it is) is a valid delimiter
+    .. '.'
 
 # option_can_be_after {{{3
+
 # This regex should make sure that we're  in a position where a Vim option could
 # appear right after.
 
-# We  include  `-` and  `+`  in  the lookbehind  to  support  the increment  and
-# decrement operators (`--` and `++`).  Example:
-#
-#     ++&l:foldlevel
-#     ^^
-const option_can_be_after: string = '\%(^\|[-+ \t!([]\)\@1<='
+const option_can_be_after: string = '\%('
+    .. '^'
+    .. '\|' .. '['
+    # Support the increment and decrement operators (`--` and `++`). Example:{{{
+    #
+    #     ++&l:foldlevel
+    #     ^^
+    #}}}
+    ..     '-+'
+    ..     ' \t!(['
+    .. ']'
+    .. '\)\@1<='
 
 # option_sigil {{{3
 
@@ -451,9 +522,9 @@ const option_can_be_after: string = '\%(^\|[-+ \t!([]\)\@1<='
 const option_sigil: string = '&\%([gl]:\)\='
 
 # option_valid {{{3
+
 # This regex  should make sure  that we're matching  valid characters for  a Vim
 # option name.
-
 const option_valid: string = '\%('
             # name of regular option
     ..     '[a-z]\{2,}\>'
@@ -479,7 +550,7 @@ def Ambiguous(): list<string>
     return ambiguous
 enddef
 
-const ambi: list<string> = Ambiguous()
+const ambiguous: list<string> = Ambiguous()
 
 const builtin_func: list<string> = getcompletion('', 'function')
     # keep only builtin functions
@@ -487,13 +558,13 @@ const builtin_func: list<string> = getcompletion('', 'function')
     # remove noisy trailing parens
     ->map((_, v: string): string => v->substitute('()\=$', '', ''))
     # if a function name can also be parsed as an Ex command, remove it
-    ->filter((_, v: string): bool => ambi->index(v) == - 1)
+    ->filter((_, v: string): bool => ambiguous->index(v) == - 1)
 
 # builtin_func_ambiguous {{{3
+
 # Functions whose names can be confused with Ex commands.
 # E.g. `:eval` vs `eval()`.
-
-const builtin_func_ambiguous: list<string> = ambi
+const builtin_func_ambiguous: list<string> = ambiguous
 
 # collation_class {{{3
 
@@ -616,23 +687,22 @@ END
 header[-1] = header[-1]->substitute('%s', expand('<sfile>:p:t'), '')
 header->writefile(IMPORT_FILE)
 
-AppendSection('command_can_be_before')
-AppendSection('option_can_be_after')
-AppendSection('option_sigil')
-AppendSection('option_valid')
-AppendSection('pattern_delimiter')
-
 AppendSection('builtin_func')
 AppendSection('builtin_func_ambiguous', true)
 AppendSection('collation_class', true)
 AppendSection('command_address_type', true)
+AppendSection('command_can_be_before')
 AppendSection('command_complete_type', true)
 AppendSection('command_modifier', true)
 AppendSection('command_name')
 AppendSection('default_highlighting_group')
 AppendSection('event')
+AppendSection('logical_not')
+AppendSection('most_operators')
 AppendSection('option')
+AppendSection('option_can_be_after')
+AppendSection('option_sigil')
 AppendSection('option_terminal')
 AppendSection('option_terminal_special', true)
-
-qa
+AppendSection('option_valid')
+AppendSection('pattern_delimiter')

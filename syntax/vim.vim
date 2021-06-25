@@ -155,24 +155,25 @@ endif
 
 # Imports {{{1
 
-import command_can_be_before from 'vim9syntax.vim'
-import option_can_be_after from 'vim9syntax.vim'
-import option_sigil from 'vim9syntax.vim'
-import option_valid from 'vim9syntax.vim'
-import pattern_delimiter from 'vim9syntax.vim'
-
 import builtin_func from 'vim9syntax.vim'
 import builtin_func_ambiguous from 'vim9syntax.vim'
 import collation_class from 'vim9syntax.vim'
 import command_address_type from 'vim9syntax.vim'
+import command_can_be_before from 'vim9syntax.vim'
 import command_complete_type from 'vim9syntax.vim'
 import command_modifier from 'vim9syntax.vim'
 import command_name from 'vim9syntax.vim'
 import default_highlighting_group from 'vim9syntax.vim'
 import event from 'vim9syntax.vim'
+import logical_not from 'vim9syntax.vim'
+import most_operators from 'vim9syntax.vim'
 import option from 'vim9syntax.vim'
+import option_can_be_after from 'vim9syntax.vim'
+import option_sigil from 'vim9syntax.vim'
 import option_terminal from 'vim9syntax.vim'
 import option_terminal_special from 'vim9syntax.vim'
+import option_valid from 'vim9syntax.vim'
+import pattern_delimiter from 'vim9syntax.vim'
 #}}}1
 
 # Early {{{1
@@ -230,6 +231,10 @@ syn match vim9Notation /\c\%(\\\|<lt>\)\=<c-r>[0-9a-z"%#:.\-=]\@=/ contains=vim9
 # with another rule which will come later.
 #}}}
 syn match vim9Comment /\s\@1<=#.*$/ contains=@vim9CommentGroup excludenl
+# Unbalanced paren {{{2
+
+# This could break `>` when used as a comparison operator.
+syn match vim9OperError /[>)\]}]/
 #}}}1
 
 # Range {{{1
@@ -363,7 +368,6 @@ syn cluster vim9IsCmd contains=
     \ vim9Augroup,
     \ vim9Autocmd,
     \ vim9CmdModifier,
-    \ vim9CmdTakeExpr,
     \ vim9Declare,
     \ vim9DoCmds,
     \ vim9Doautocmd,
@@ -405,7 +409,7 @@ syn cluster vim9IsCmd contains=
 # parsed as a command; like the presence of a whitespace.
 #}}}
 
-# Special Case: Contrary to most Ex commands, `:g` and `:s` *can* be followed by a non-whitespace.
+# Special Case: Some commands (like `:g` and `:s`) *can* be followed by a non-whitespace.
 syn match vim9MayBeCmd /\%(\<\h\w*\>\)\@=/
     \ contained
     \ nextgroup=vim9Global,vim9Subst
@@ -420,9 +424,11 @@ syn match vim9MayBeCmd /\%(\<\h\w*\>\)\@=/
 # Now, let's build a cluster containing all groups which can appear at the start of a line.
 syn cluster vim9CanBeAtStartOfLine contains=
     \     vim9Block,
+    \     vim9Comment,
     \     vim9Continuation,
     \     vim9FuncCall,
     \     vim9FuncHeader,
+    \     vim9Increment,
     \     vim9LegacyFunction,
     \     vim9MayBeCmd,
     \     vim9RangeIntroducer,
@@ -704,36 +710,6 @@ syn region vim9HereDoc
     \ end=/^\s*\z1$/
 
 syn match vim9EnvVar /\$[A-Z_][A-Z0-9_]*/
-
-# Expect Expression {{{3
-
-exe 'syn region vim9CmdTakeExpr'
-    .. ' excludenl'
-    .. ' matchgroup=vim9GenericCmd'
-    .. ' start='
-    ..     '/\<\%('
-    ..             '[cl]\%(add\|get\)\=expr'
-    ..     '\|' .. 'echo'
-    ..     '\|' .. 'echoc\%[onsole]'
-    ..     '\|' .. 'echoerr'
-    ..     '\|' .. 'echom\%[sg]'
-    ..     '\|' .. 'echon'
-    ..     '\|' .. 'eval'
-    ..     '\|' .. 'exe\%[cute]'
-    ..     '\)\>'
-    .. '/'
-    .. ' skip=/\%(\\\\\)*\\|/'
-    .. ' matchgroup=vim9CmdSep'
-    # Make sure the end pattern does not consume a bar termination character.
-    # It could be needed by other rules.
-    .. ' end=/$\|.|\@=\|\s#\@=/'
-    # special case: `:exe` in the rhs of a mapping
-    .. ' matchgroup=vim9Notation'
-    # do *not* consume the bar; it might be needed by other rules
-    .. ' end=/\c\%(<bar>\)\@=\|<cr>/'
-    .. ' contained'
-    .. ' contains=@vim9Expr'
-    .. ' oneline'
 
 # Modifier {{{3
 
@@ -1735,6 +1711,18 @@ syn match vim9FilterShellCmd /.*/ contained contains=vim9FilterLastShellCmd
 #    > backslash is removed.
 #}}}
 syn match vim9FilterLastShellCmd /\\\@1<!!/ display contained
+
+# :++ / :-- {{{3
+
+# increment/decrement
+# The `++` and `--` operators are implemented as Ex commands:{{{
+#
+#     echo getcompletion('[-+]', 'command')
+#     ['++', '--']˜
+#
+# Which makes sense.  They can only appear at the start of a line.
+#}}}
+syn match vim9Increment /\%(++\|--\)\h\@=/ contained
 #}}}1
 # Functions {{{1
 # User Definition {{{2
@@ -1744,8 +1732,12 @@ exe 'syn match vim9FuncHeader'
     .. ' /'
     .. '\<def!\=\s\+'
     .. '\%('
-    ..      '[gs]:\%(\w\|[.]\)*'
-    .. '\|' .. '\u\%(\w\|[#.]\)*'
+               # function with explicit scope (global or script-local)
+    ..         '[gs]:\w\+'
+               # script-local function
+    .. '\|' .. '\u\w*'
+               # autoload function
+    .. '\|' .. '\h\w*#\%(\w\|#\)*'
     .. '\)'
     .. '\ze('
     .. '/'
@@ -1765,10 +1757,11 @@ syn match vim9DefBangError /!\%(\s\+g:\)\@!/ contained
 syn region vim9FuncSignature
     \ matchgroup=vim9ParenSep
     \ start=/(/
-    \ end=/)\|^\s*enddef$/
+    \ end=/)\|^\s*enddef\ze\s*\%(#.*\)\=$/
     \ contained
     \ contains=
     \     @vim9DataTypeCluster,
+    \     @vim9ErrorSpaceArgs,
     \     @vim9Expr,
     \     vim9Comment,
     \     vim9FuncArgs,
@@ -1780,7 +1773,7 @@ exe 'syn match vim9FuncArgs'
     ..     '\.\@1<!\<\h[a-zA-Z0-9_]*\%(:\s\|\s\+=\s\)\@='
     .. '\|'
     # variable arguments
-    .. '\.\.\.\h[a-zA-Z0-9_]*\%(:\s*list<\)\@='
+    .. '\.\.\.\h[a-zA-Z0-9_]*\%(:\s\+list<\)\@='
     .. '\|'
     # ignored argument
     ..     '\<_\%(,\|)\|$\)\@='
@@ -1790,8 +1783,7 @@ exe 'syn match vim9FuncArgs'
     .. '/'
     .. ' contained'
 
-syn match vim9FuncEnd /^\s*enddef$/
-hi def link vim9FuncEnd vim9DefKey
+syn match vim9FuncEnd /^\s*enddef\ze\s*\%(#.*\)\=$/
 
 # Legacy {{{3
 
@@ -1808,9 +1800,16 @@ exe 'syn match vim9LegacyFunction'
 syn region vim9LegacyFuncBody
     \ start=/\ze\s*(/
     \ matchgroup=vim9DefKey
-    \ end=/^\s*\<endf\%[unction]/
+    \ end=/^\s*\<endf\%[unction]\ze\s*\%(".*\)\=$/
     \ contained
     \ contains=vim9LegacyComment
+# TODO: Prevent a  trailing comment after `:endfunction`  from being highlighted
+# as an error if it contains a closing folding marker:
+#
+#     function Func()
+#         some code
+#     endfunction " } } }
+#                 ^-----^
 
 syn region vim9LegacyComment
     \ matchgroup=vim9Comment
@@ -1827,7 +1826,7 @@ exe 'syn match vim9FuncCall'
     .. ' /\<'
     .. '\%('
     # with an explicit scope, the name can start with and contain any word character
-    ..     '[gs]:\w\%(\w\|\.\)\+'
+    ..     '[bgstw]:\w\%(\w\|\.\)\+'
     .. '\|'
     # otherwise, it must start with a head of word (i.e. word character except digit);
     # afterward, it can contain any word character and `#` (for autoload functions) and `.` (for dict functions)
@@ -1854,7 +1853,7 @@ exe 'syn match vim9UserFuncNameUser'
     .. ' /'
     .. '\<\%('
     ..     '\%('
-    ..             '[gs]:'
+    ..             '[bgstw]:'
     ..     '\|' .. '\%(\c<sid>\)\@5<='
     ..     '\)'
     ..     '\w\%(\w\|\.\)\+'
@@ -1916,29 +1915,30 @@ syn cluster vim9OperGroup contains=
     \ vim9OperAssign,
     \ vim9OperParen
 
-# We need to make sure there is no bar at the end.{{{
+# We need to match a dict with `nextgroup`.{{{
 #
-#     \%(\s*[|<]\)\@!
-#            ^
+# To give it priority over a block:
 #
-# For this:
-#
-#     source % | eval 0
-#            ^
-#            this is not the modulo operator;
-#            this is the current filename
-#
-# Note that  in a  mapping, `|`  is often  written as  `<bar>`, hence  the angle
-# bracket:
-#
-#     \%(\s*[|<]\)\@!
-#             ^
+#     var n = 12 +
+#         {
+#             key: 34,
+#         }
+#         .key
 #}}}
-syn match vim9Oper "\s\@1<=\%([-+*/%!]\|\.\.\|==\|!=\|>=\|<=\|=\~\|!\~\|>\|<\)[?#]\=\_s\@=\%(\s*[|<]\)\@!"
-    \ display
-    \ nextgroup=vim9Bool,vim9SpecFile,vim9String
-    \ skipwhite
+exe 'syn match vim9Oper'
+    .. ' ' .. most_operators
+    .. ' display'
+    .. ' nextgroup=vim9Dict'
+    .. ' skipnl'
+    .. ' skipwhite'
 
+#   =
+#  -=
+#  +=
+#  *=
+#  /=
+#  %=
+# ..=
 # `nextgroup` is necessary to prevent a dictionary from being matched as a block.{{{
 #
 #     var d =
@@ -1952,81 +1952,10 @@ syn match vim9OperAssign #\s\@1<=\%([-+*/%]\|\.\.\)\==\_s\@=#
     \ skipnl
     \ skipwhite
 
-syn match vim9Oper /\s\@1<=\%(is\|isnot\)\s\@=/
-    \ display
-    \ nextgroup=vim9SpecFile,vim9String
-    \ skipwhite
-
-# We want to assert the presence of surrounding whitespace.{{{
-#
-# To avoid spurious highglights in legacy Vim script.
-#
-# Example:
-#
-#     /pattern/delete
-#     ^       ^
-#     these should not be highlighted as arithmetic operators
-#
-# This  does  mean that  sometimes,  an  arithmetic  operator is  not  correctly
-# highlighted:
-#
-#     eval 1+2
-#           ^
-#
-# But we don't care because:
-#
-#    - the issue is limited to legacy which we almost never read/write anymore
-#
-#    - `1+2` is ugly:
-#      it would be more readable as `1 + 2`, where `+` is correctly highlighted
-#
-# ---
-#
-# Also, in Vim9,  arithmetic operators *must* be surrounded  with whitespace; so
-# it makes sense to enforce them in the syntax highlighting too.
-#
-# ---
-#
-# Also, this fixes  an issue where the tilde character  would not be highlighted
-# in an `!~` operator.
-#}}}
-syn match vim9Oper /\s\@1<=\%(||\|&&\|??\=\)\_s\@=/
-    \ display
-    \ nextgroup=vim9SpecFile,vim9String
-    \ skipwhite
-
-# methods and increment/decrement operators
-syn match vim9Oper /->\|++\|--/
-    \ nextgroup=vim9SpecFile,vim9String
-    \ skipwhite
-
-# logical not{{{
-#
-# The negative  lookbehind is necessary to  not highlight `!` when  used after a
-# command name:
-#
-#     packadd!
-#            ^
-#
-# Note that we still want to highlight `!` when preceded by a paren:
-#
-#     echo 'aaa' .. (!empty(...) ? ... : ...)
-#                   ^^
-#
-# ---
-#
-# The  negative lookahead  is necessary  to not  break the  highlighting of  `~`
-# inside the operator `!~`.
-#
-# ---
-#
-# The `!*` quantifier  is necessary to support  a double not (`!!`),  which is a
-# syntax we sometimes use to turn any type of expression into a boolean.
-#}}}
-syn match vim9Oper /\w\@1<!![~=]\@!!*/
-    \ display
-    \ nextgroup=vim9SpecFile,vim9String
-    \ skipwhite
+# methods
+syn match vim9Oper /->\%(\_s*\h\)\@=/ skipwhite
+# logical not
+exe 'syn match vim9Oper' .. ' ' .. logical_not .. ' display skipwhite'
 
 # support `:` when used inside conditional `?:` operator
 # But we need to ignore `:` inside a slice, which is tricky.{{{
@@ -2050,23 +1979,21 @@ syn match vim9Oper /\w\@1<!![~=]\@!!*/
 #         : 3
 #         ^
 #}}}
-syn match vim9Oper /\%(?[^[]*\s\|^\s\+\)\@<=:\s\@=/
+syn match vim9Oper /\%(?[^[]*\s\|^\s\+\)\@<=:\_s\@=/
     \ display
-    \ nextgroup=vim9SpecFile,vim9String
+    \ nextgroup=vim9Dict
+    \ skipnl
     \ skipwhite
 
+# contains `@vim9ErrorSpaceArgs` to handle errors in function calls
 syn region vim9OperParen
     \ matchgroup=vim9ParenSep
     \ start=/(/
     \ end=/)/
     \ contains=
+    \     @vim9ErrorSpaceArgs,
     \     @vim9OperGroup,
-    \     vim9Block,
-    \     vim9SpaceExtraBetweenArgs,
-    \     vim9SpaceMissingBetweenArgs
-
-# Don't add `>`.  It's often used as a comparison operator (thus unbalanced).
-syn match vim9OperError /[)\]}]/
+    \     vim9Block
 
 # Data Types {{{1
 # `vim9Expr` {{{2
@@ -2292,12 +2219,25 @@ syn match vim9DictExprKey /\[.\{-}]\%(:\s\)\@=/
 #     (l1 + l2)->map((_, v) => 0)
 #                    ^
 #                    ✔
+#
+# ---
+#
+# When matching the closing paren, we can't stop immediately.
+# Otherwise, we would match this:
+#
+#     Foo(name)->Bar((v) => v)
+#        ^-------------^
+#
+# That's why we need to assert  that the arrow must follow immediately (although
+# possibly with a type in-between):
+#
+#     \%(:.\{-}\)\=\s\+=>
 #}}}
 syn region vim9Lambda
     \ matchgroup=vim9ParenSep
-    \ start=/(\ze\s*\h\w*\%([,:]\|\s*)\)/
+    \ start=/(\ze\s*\h\w*\%([,:]\|\s*)\%(:.\{-}\)\=\s\+=>\)/
     \ end=/)\ze\%(:.\{-}\)\=\s\+=>/
-    \ contains=@vim9DataTypeCluster,vim9LambdaArgs
+    \ contains=@vim9DataTypeCluster,@vim9ErrorSpaceArgs,vim9LambdaArgs
     \ keepend
     \ nextgroup=@vim9DataTypeCluster
     \ oneline
@@ -2396,13 +2336,27 @@ syn region vim9DataTypeFuncref
 
 # validate subtypes
 exe 'syn match vim9ValidSubType'
-    .. ' /'
-    .. 'any\|blob\|bool\|channel'
-    .. '\|float\|func(\@!\|job\|number\|string\|void'
+    .. ' /\<\%('
+    ..   'any'
+    .. '\|blob'
+    .. '\|bool'
+    .. '\|channel'
+    .. '\|float'
+    .. '\|func(\@!'
+    .. '\|job'
+    .. '\|number'
+    .. '\|string'
+    .. '\|void'
+    .. '\)\>'
     # the lookbehinds are  necessary to avoid breaking the nesting  of the outer
     # region;  which would  prevent some  trailing `>`  or `)`  to be  correctly
     # highlighted
-    .. '\|d\@1<=ict<\|f\@1<=unc(\|)\|l\@1<=ist<'
+    .. '\|'
+    .. '\<\%('
+    ..         'd\@1<=ict<'
+    .. '\|' .. 'l\@1<=ist<'
+    .. '\|' .. 'f\@1<=unc(\|)'
+    .. '\)'
     .. '/'
     .. ' display'
     .. ' contained'
@@ -2541,12 +2495,23 @@ syn match vim9SetMod /\%(&\%(vim\)\=\|[<?!]\)\%(\_s\||\)\@=/
 #}}}1
 # Blocks {{{1
 
-# can be defined at script-level, function-level, or inside lambda
+# at script-level or function-level
 syn region vim9Block
     \ matchgroup=Statement
     \ start=/^\s*{$/
     \ end=/^\s*}/
-    \ contains=vim9StartOfLine
+    \ contains=TOP
+# `contains=TOP` is really necessary.{{{
+#
+# You can't get away with just:
+#
+#     \ contains=vim9StartOfLine
+#
+# That would not match things like strings, which are not contained in anything:
+#
+#     exe 'cmd ' .. name
+#         ^----^
+#}}}
 
 # In a lambda, a dictionary must be surrounded by parens.{{{
 #
@@ -2579,12 +2544,22 @@ syn region vim9Block
 # Order: must come before the next `vim9Block` rule.
 syn match vim9LambdaDictMissingParen /{/ contained
 
+# in lambda
+# Warning: Checking that there is no open paren before is not enough.{{{
+#
+# For example, it would fail to ignore  this dictionary passed as an argument to
+# `Func()`:
+#
+#     Func(arg, {
+#         key: 'value',
+#     })
+#}}}
 syn region vim9Block
     \ matchgroup=Statement
-    \ start=/\%((\s*\)\@<!{$/
+    \ start=/\%(=>\s\+\)\@<={$/
     \ end=/^\s*}/
     \ contained
-    \ contains=vim9StartOfLine
+    \ contains=TOP
 
 # Highlight commonly used Groupnames {{{1
 
@@ -2644,6 +2619,27 @@ syn match vim9SpecFile /<c\%(word\|WORD\)>/ nextgroup=vim9SpecFileMod
 syn match vim9SpecFile /<\%([acs]file\|amatch\|abuf\)>/
     \ nextgroup=vim9SpecFileMod
 
+# TODO: Update these rules so that they support the Vim9 filename modifiers:
+#
+#     edit %
+#     edit %%
+#     edit %%123
+#     edit %%%
+#     edit %%<123
+#
+# You'll probably need to refactor the rules, so that they're all contained.
+# This assumes that you first recognize  all commands which accept a filename as
+# argument.
+#
+# ---
+#
+# Make sure the file name modifiers  are accepted only after "%", "%%", "%%123",
+# "<cfile>", "<sfile>", "<afile>" and "<abuf>".
+#
+# ---
+#
+# Re-read `:h cmdline-special` to make sure everything is correct.
+
 # Do *not* allow a space to match after `%`.{{{
 #
 #     \s%[: ]
@@ -2673,7 +2669,7 @@ syn match vim9SpecFile /\s%:/ms=s+1,me=e-1 nextgroup=vim9SpecFileMod
 #}}}
 syn match vim9SpecFile /\s%\%($\|\s*[|<]\)\@=/ms=s+1 nextgroup=vim9SpecFileMod
 syn match vim9SpecFile /\s%</ms=s+1,me=e-1 nextgroup=vim9SpecFileMod
-syn match vim9SpecFile /#\d\+\|[#%]<\>/ nextgroup=vim9SpecFileMod
+syn match vim9SpecFile /%%\d\+\|%<\|%%</ nextgroup=vim9SpecFileMod
 syn match vim9SpecFileMod /\%(:[phtreS]\)\+/ contained
 
 # Lower Priority Comments: after some vim commands... {{{1
@@ -2885,6 +2881,96 @@ if get(g:, 'vim9_syntax', {})
     syn match vim9DictLiteralLegacyDeprecated /#{{\@!/
 endif
 
+    # TODO: Doesn't work at the start of an indented line.
+    # Update: Who cares?  It can't appear at the start of a line in legacy...
+    syn match vim9LegacyVarargs /a:000/
+    hi def link vim9LegacyVarargs vim9Error
+    # TODO: Handle other  legacy constructs  like `a:`, `l:`,  lambdas (tricky),
+    # single dots for concatenation (tricky)...
+    # Also `...)` in a function's header.
+    # What about eval strings?
+
+    # TODO: Highlight `s:` as useless (`SpellRare`?).  But make it optional.
+    # Rationale: You probably never need it.
+    # Worse, you might  use it to try  and declare a script-local  variable in a
+    # `:def` function, which is disallowed.
+    # Update: You do need it for a user function starting with a lowercase...
+
+    # TODO: Highlight legacy comment leaders as an error.  Optional.
+
+    # TODO: Highlight missing types in function header as errors:
+    #
+    #     def Func(foo, bar)
+    #
+    # Exceptions: `_` and `..._`.
+
+    # TODO: Highlight `:call` as a useless.
+    # But not after `<cmd>` nor `<bar>`.
+    #
+    # ---
+    #
+    # Same thing for `v:` in `v:true`, `v:false`, `v:null`.
+    # Although, it's  trickier, because you must  not do that in  a mapping, and
+    # these variables can appear anywhere (contrary to `:call`).
+    # Idea: Make  the highlighting  optional, and  provide a  mapping which  can
+    # toggle the option on-demand.
+    # Update: Actually,  it  should cycle  between  different  errors, until  it
+    # highlight them all simultaneously, then none, then the cycle repeats.
+    #
+    # ---
+    #
+    # Same thing for `#` in `==#`, `!=#`, `=~#`, `!~#`.
+
+    # TODO: Highlight this as an error:
+    #
+    #     def Func(...name: job)
+
+    # TODO: Highlight this as an error:
+    #
+    #     vvv
+    #     var b:name = ...
+    #     var g:name = ...
+    #     var t:name = ...
+    #     var v:name = ...
+    #     var w:name = ...
+    #     var &name = ...
+    #     var &l:name = ...
+    #     var &g:name = ...
+    #     var $ENV = ...
+    #     ^^^
+
+    # TODO: Highlight this as an error:
+    #
+    #                v---v
+    #     def Func() abort
+    #
+    # In fact, highlight anything as an error.
+    # But  do it  early, so  that  the return  type  and an  inline comment  can
+    # override the highlighting.
+
+    # TODO: Highlight this as an error:
+    #
+    #     is#
+    #     isnot#
+    #     is?
+    #     isnot?
+
+    # TODO: Highlight these as errors:
+    #
+    #     var d = {'a' : 1, 'b' : 2, 'c' : 3}
+    #                 ^        ^    ^
+    #                 ✘        ✘    ✘
+    #
+    #     var d = {'a': 1 , 'b': 2 , 'c': 3}
+    #                    ^        ^
+    #                    ✘        ✘
+    #
+    #     var l = [1 , 2 , 3]
+    #               ^   ^
+    #               ✘   ✘
+    #
+    #     (_,v) => ...
+
 # List unpack declaration {{{2
 
 # Declaring more than one variable at a  time, using the unpack notation, is not
@@ -2985,6 +3071,10 @@ if get(g:, 'vim9_syntax', {})
     #           ✔
     syn match vim9SpaceExtraBetweenArgs /\s\@1<=,/ display contained
 
+    syn cluster vim9ErrorSpaceArgs contains=
+        \ vim9SpaceExtraBetweenArgs,
+        \ vim9SpaceMissingBetweenArgs
+
     #                   need a space before
     #                   v
     #     var name = 123# Error!
@@ -3008,7 +3098,7 @@ if get(g:, 'vim9_syntax', {})
     #}}}
     syn region vim9Comment
         \ matchgroup=vim9Error
-        \ start=/[^ \t@]\@1<=#\s/
+        \ start=/[^ \t@]\@1<=#\s\@=/
         \ end=/$/
         \ contains=@vim9CommentGroup
         \ excludenl
@@ -3290,6 +3380,7 @@ hi def link vim9FilterLastShellCmd Special
 hi def link vim9FilterShellCmd vim9ShellCmd
 hi def link vim9Finish vim9Return
 hi def link vim9FuncArgs Identifier
+hi def link vim9FuncEnd vim9DefKey
 hi def link vim9FuncNameBuiltin Function
 hi def link vim9Global vim9GenericCmd
 hi def link vim9GlobalPat vim9String
@@ -3316,6 +3407,7 @@ hi def link vim9HiTerm Type
 hi def link vim9Highlight vim9GenericCmd
 hi def link vim9Import Include
 hi def link vim9ImportAsFrom vim9Import
+hi def link vim9Increment vim9Oper
 hi def link vim9IsOption PreProc
 hi def link vim9IskSep Delimiter
 hi def link vim9LambdaArgs vim9FuncArgs
