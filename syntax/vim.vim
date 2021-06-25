@@ -821,7 +821,7 @@ exe 'syn match vim9UserCmdAttrbComplete'
 
 # -complete=custom,Func
 # -complete=customlist,Func
-syn match vim9UserCmdAttrbComplete /=custom\%(list\)\=,\%([gs]:\)\=\%(\i\|[#.]\)*/
+syn match vim9UserCmdAttrbComplete /=custom\%(list\)\=,\%([gs]:\)\=\%(\w\|[#.]\)*/
     \ contained
     \ contains=vim9UserCmdAttrbEqual,vim9UserCmdAttrbComma
     \ nextgroup=@vim9UserCmdAttrb
@@ -1791,33 +1791,36 @@ exe 'syn match vim9LegacyFunction'
     .. ' /'
     .. '\<fu\%[nction]!\='
     .. '\s\+\%([gs]:\)\='
-    .. '\%(\i\|[#.]\)*'
+    .. '\%(\w\|[#.]\)*'
     .. '\ze('
     .. '/'
     .. ' contains=vim9DefKey'
     .. ' nextgroup=vim9LegacyFuncBody'
 
-syn region vim9LegacyFuncBody
-    \ start=/\ze\s*(/
-    \ matchgroup=vim9DefKey
-    \ end=/^\s*\<endf\%[unction]\ze\s*\%(".*\)\=$/
-    \ contained
-    \ contains=vim9LegacyComment
-# TODO: Prevent a  trailing comment after `:endfunction`  from being highlighted
-# as an error if it contains a closing folding marker:
+# `vim9String` needs to be contained to prevent a string from being wrongly highlighted as a comment.
+# There might be a trailing comment after `:endfunction`.{{{
+#
+# Typically, it might be fold markers:
 #
 #     function Func()
 #         some code
 #     endfunction " } } }
 #                 ^-----^
-
-syn region vim9LegacyComment
-    \ matchgroup=vim9Comment
-    \ start=/^\s*".*/
-    \ end=/$/
+#
+# We don't want those to be highlighted as errors (because they're unbalanced).
+#}}}
+syn region vim9LegacyFuncBody
+    \ start=/\s*(/
+    \ matchgroup=vim9DefKey
+    \ end=/^\s*\<endf\%[unction]\ze\s*\%(".*\)\=$/
     \ contained
-    \ keepend
-    \ oneline
+    \ contains=vim9LegacyComment,vim9String
+    \ nextgroup=vim9LegacyComment
+    \ skipwhite
+
+# We  need to  support inline  comments (if  only for  a trailing  comment after
+# `:endfunction`), so we can't anchor the comment to the start of the line.
+syn match vim9LegacyComment /".*/ contained
 #}}}2
 # User Call {{{2
 
@@ -3412,6 +3415,7 @@ hi def link vim9IsOption PreProc
 hi def link vim9IskSep Delimiter
 hi def link vim9LambdaArgs vim9FuncArgs
 hi def link vim9LambdaArrow vim9Sep
+hi def link vim9LegacyComment vim9Comment
 hi def link vim9Map vim9GenericCmd
 hi def link vim9MapMod vim9Bracket
 hi def link vim9MapModExpr vim9MapMod
