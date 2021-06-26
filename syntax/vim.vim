@@ -165,6 +165,8 @@ import command_modifier from 'vim9syntax.vim'
 import command_name from 'vim9syntax.vim'
 import default_highlighting_group from 'vim9syntax.vim'
 import event from 'vim9syntax.vim'
+import lambda_start from 'vim9syntax.vim'
+import lambda_end from 'vim9syntax.vim'
 import logical_not from 'vim9syntax.vim'
 import most_operators from 'vim9syntax.vim'
 import option from 'vim9syntax.vim'
@@ -2221,43 +2223,14 @@ syn match vim9DictExprKey /\[.\{-}]\%(:\s\)\@=/
 
 # Lambdas {{{2
 
-# We need to assert the presence of an argument at the start of the lambda.{{{
-#
-# So that we don't start from the wrong paren:
-#
-#           ✘
-#           v
-#     l->map((_, v) => ...
-#            ^
-#            ✔
-#
-#     ✘
-#     v
-#     (l1 + l2)->map((_, v) => 0)
-#                    ^
-#                    ✔
-#
-# ---
-#
-# When matching the closing paren, we can't stop immediately.
-# Otherwise, we would match this:
-#
-#     Foo(name)->Bar((v) => v)
-#        ^-------------^
-#
-# That's why we need to assert  that the arrow must follow immediately (although
-# possibly with a type in-between):
-#
-#     \%(:.\{-}\)\=\s\+=>
-#}}}
-syn region vim9Lambda
-    \ matchgroup=vim9ParenSep
-    \ start=/(\ze\s*\h\w*\%([,:]\|\s*)\%(:.\{-}\)\=\s\+=>\)/
-    \ end=/)\ze\%(:.\{-}\)\=\s\+=>/
-    \ contains=@vim9DataTypeCluster,@vim9ErrorSpaceArgs,vim9LambdaArgs
-    \ keepend
-    \ nextgroup=@vim9DataTypeCluster
-    \ oneline
+exe 'syn region vim9Lambda'
+    .. ' matchgroup=vim9ParenSep'
+    .. ' start=/' .. lambda_start .. '/'
+    .. ' end=/' .. lambda_end .. '/'
+    .. ' contains=@vim9DataTypeCluster,@vim9ErrorSpaceArgs,vim9LambdaArgs'
+    .. ' keepend'
+    .. ' nextgroup=@vim9DataTypeCluster'
+    .. ' oneline'
 
 syn match vim9LambdaArgs /\.\.\.\h[a-zA-Z0-9_]*/ contained
 syn match vim9LambdaArgs /\%(:\s\)\@2<!\<\h[a-zA-Z0-9_]*/ contained

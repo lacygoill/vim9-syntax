@@ -331,6 +331,72 @@ const command_can_be_before: string =
     .. '\)'
     .. '\)\@!'
 
+# lambda_start, lambda_end {{{3
+
+# closing paren of arguments:
+#
+#     var Lambda = (a, b) => a + b
+#                       ^
+const lambda_end: string = ')'
+    # start a lookbehind to assert the presence of the necessary arrow
+    .. '\ze'
+    # there could be a return type before
+    .. '\%(:.\{-}\)\='
+    # the arrow
+    #     var Lambda = (a, b) => a + b
+    #                         ^^
+    .. '\s\+=>'
+
+# opening paren of arguments:
+#
+#     var Lambda = (a, b) => a + b
+#                  ^
+const lambda_start: string = '('
+    # start a lookbehind to assert the presence of arguments
+    .. '\ze'
+    # first argument
+    .. '\s*\h\w*'
+    # what follows can be complex
+    .. '\%('
+    # for now, we just say that it's not an opening paren
+    ..     '[^(]'
+    .. '\|'
+    # or if it is, it must be preceded by `func` (used as a type)
+    ..     '\%(\<func\)\@4<=('
+    .. '\)'
+    # obviously, the arguments can contain several characters;
+    # so, let's repeat this group
+    .. '*'
+    .. lambda_end
+# If you change this regex, test it against these lines:{{{
+#
+# In particular, check that the lambda doesn't start from the wrong paren:
+#
+#           ✘
+#           v
+#     l->map((_, v) => ...
+#            ^
+#            ✔
+#
+#     ✘
+#     v
+#     (l1 + l2)->map((_, v) => 0)
+#                    ^
+#                    ✔
+#
+#               ✘
+#        v-------------v
+#     Foo(name)->Bar((v) => v)
+#                    ^------^
+#                       ✔
+#
+#                   ✘
+#               v--------v
+#     substitute(a, b, (m) => '', '')
+#                      ^^^
+#                       ✔
+#}}}
+
 # logical_not {{{3
 
 # This regex should match most binary operators.
@@ -697,6 +763,8 @@ AppendSection('command_modifier', true)
 AppendSection('command_name')
 AppendSection('default_highlighting_group')
 AppendSection('event')
+AppendSection('lambda_end')
+AppendSection('lambda_start')
 AppendSection('logical_not')
 AppendSection('most_operators')
 AppendSection('option')
@@ -706,3 +774,5 @@ AppendSection('option_terminal')
 AppendSection('option_terminal_special', true)
 AppendSection('option_valid')
 AppendSection('pattern_delimiter')
+
+exe 'e ' .. IMPORT_FILE

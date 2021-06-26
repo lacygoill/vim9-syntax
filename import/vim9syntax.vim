@@ -449,6 +449,7 @@ const builtin_func_list: list<string> =<< trim END
     test_garbagecollect_now
     test_garbagecollect_soon
     test_getvalue
+    test_gui_drop_files
     test_gui_mouse_event
     test_ignore_error
     test_null_blob
@@ -1164,6 +1165,11 @@ const default_highlighting_group_list: list<string> =<< trim END
     TOhtmlProgress
     debugBreakpoint
     StatusLineTermNC
+    quickhl-faq
+    quickhl-commands
+    quickhl-contents
+    quickhl-examples
+    quickhl-variables
     User2
     User3
     User4
@@ -1292,6 +1298,14 @@ const event_list: list<string> =<< trim END
 END
 
 export const event: string = event_list->join()
+
+# lambda_end {{{1
+
+export const lambda_end: string = ')\ze\%(:.\{-}\)\=\s\+=>'
+
+# lambda_start {{{1
+
+export const lambda_start: string = '(\ze\s*\h\w*\%([^(]\|\%(\<func\)\@4<=(\)*)\ze\%(:.\{-}\)\=\s\+=>'
 
 # logical_not {{{1
 
