@@ -254,7 +254,7 @@ syn cluster vim9Range contains=
 # Make sure there is nothing before, to avoid a wrong match in sth like:
 #     g:name = 'value'
 #      ^
-syn match vim9RangeIntroducer /\%(^\|\s\):\S\@=/
+syn match vim9RangeIntroducer /\_s:\S\@=/
     \ contained
     \ nextgroup=@vim9Range,vim9RangeMissingSpecifier1
 
@@ -2159,7 +2159,7 @@ syn match vim9Number /-\d\+\%(\.\d\+\%([eE][+-]\=\d\+\)\=\)\=\>/
     \ skipwhite
 
 syn match vim9Number /\<0[xX]\x\+\>/ nextgroup=vim9Comment skipwhite
-syn match vim9Number /\%(^\|\A\)\zs#\x\{6}\>/ nextgroup=vim9Comment skipwhite
+syn match vim9Number /\_A\zs#\x\{6}\>/ nextgroup=vim9Comment skipwhite
 syn match vim9Number /\<0[zZ][a-fA-F0-9.]\+\>/ nextgroup=vim9Comment skipwhite
 syn match vim9Number /\<0o[0-7]\+\>/ nextgroup=vim9Comment skipwhite
 syn match vim9Number /\<0b[01]\+\>/ nextgroup=vim9Comment skipwhite
@@ -2206,7 +2206,7 @@ syn region vim9Dict
     \ contains=@vim9OperGroup,vim9DictExprKey,vim9DictMayBeLiteralKey
 
 # In literal dictionary, highlight unquoted key names as strings.
-syn match vim9DictMayBeLiteralKey /\%(^\|[ \t{]\)\@1<=[^ \t{('"]\+\ze\%(:\s\)\@=/
+syn match vim9DictMayBeLiteralKey /\%(\_s\|{\)\@1<=[^ \t{('"]\+\ze\%(:\s\)\@=/
     \ display
     \ contained
     \ contains=vim9DictIsLiteralKey

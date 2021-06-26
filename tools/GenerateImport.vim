@@ -424,7 +424,7 @@ const logical_not: string = '/'
 # This regex should match most binary operators.
 const most_operators: string = '"'
     # there must be a space before
-    .. '\s\@1<='
+    .. '\%(\_s\)\@1<='
     .. '\%('
            # arithmetic operators
     ..     '[-+*/%]'
