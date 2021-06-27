@@ -3,8 +3,7 @@ vim9script
 # Credits: Charles E. Campbell <NcampObell@SdrPchip.AorgM-NOSPAM>
 # Author of syntax plugin for Vim script legacy.
 
-if (
-    exists('b:current_syntax')
+if exists('b:current_syntax')
     # bail out for a file written in legacy Vim script
     || "\n" .. getline(1, 10)->join("\n") !~ '\n\s*vim9\%[script]\>'
     # Bail out if we're included from another filetype (e.g. `markdown`).{{{
@@ -14,25 +13,7 @@ if (
     # principle of least astonishment.
     #}}}
     || &filetype != 'vim'
-   )
-    # But don't bail out if we know that we're included from a Vim9 code block.{{{
-    #
-    # This requires that  the syntax plugin which includes  us, temporarily sets
-    # `b:embedded_vim9_block` to  `true`; after  recognizing that  the delimiter
-    # was `vim9` and not just `vim`:
-    #
-    #        v--v
-    #     ```vim9
-    #     some
-    #     vim9
-    #     code
-    #     ```
-    #
-    # As an example:
-    # https://github.com/lacygoill/vim-markdown/blob/5a2d290510911169c3911e8b0c9272bb252ac35d/autoload/markdown.vim#L39-L41
-    #}}}
-    && !get(b:, 'embedded_vim9_block', false)
-   finish
+    finish
 endif
 
 # Requirement: Any syntax group should be prefixed with `vim9`; not `vim`.{{{
