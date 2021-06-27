@@ -3144,7 +3144,8 @@ if get(g:, 'vim9_syntax', {})
     #      ✔
     #}}}
     # Order: Out of these 3 rules, this one must come last.
-    syn match vim9ColonForVariableScope /\<[bgstvw]:\w/ display contained
+    # Note: `b:` is a dictionary expression, thus might be followed by `->`.
+    syn match vim9ColonForVariableScope /\<[bgstvw]:\%(\w\|->\)\@=/ display contained
 endif
 
 # Octal numbers {{{2
