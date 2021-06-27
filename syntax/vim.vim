@@ -233,10 +233,38 @@ syn match vim9Notation /\c\%(\\\|<lt>\)\=<c-r>[0-9a-z"%#:.\-=]\@=/ contains=vim9
 # with another rule which will come later.
 #}}}
 syn match vim9Comment /\s\@1<=#.*$/ contains=@vim9CommentGroup excludenl
+
 # Unbalanced paren {{{2
 
 # This could break `>` when used as a comparison operator.
 syn match vim9OperError /[>)\]}]/
+
+# :++ / :-- {{{2
+# Order: Must come before `vim9AutocmdMod`, to not break `++nested` and `++once`.
+
+# increment/decrement
+# The `++` and `--` operators are implemented as Ex commands:{{{
+#
+#     echo getcompletion('[-+]', 'command')
+#     ['++', '--']˜
+#
+# Which makes sense.  They can only appear at the start of a line.
+#}}}
+syn match vim9Increment /\%(++\|--\)\h\@=/ contained nextgroup=vim9IncrementInvalid skipwhite
+
+# Make sure the argument is valid:{{{
+#
+#     var n = 123
+#     ++n
+#       ^
+#       ✔
+#
+#     ++Func()
+#           ^^
+#           ✘
+#}}}
+syn match vim9IncrementInvalid /[^ \t\n|]*/ contained contains=vim9IncrementValid
+syn match vim9IncrementValid /\w\+/ contained
 #}}}1
 
 # Range {{{1
@@ -1714,31 +1742,6 @@ syn match vim9FilterShellCmd /.*/ contained contains=vim9FilterLastShellCmd
 #}}}
 syn match vim9FilterLastShellCmd /\\\@1<!!/ display contained
 
-# :++ / :-- {{{3
-
-# increment/decrement
-# The `++` and `--` operators are implemented as Ex commands:{{{
-#
-#     echo getcompletion('[-+]', 'command')
-#     ['++', '--']˜
-#
-# Which makes sense.  They can only appear at the start of a line.
-#}}}
-syn match vim9Increment /\%(++\|--\)\h\@=/ contained nextgroup=vim9IncrementInvalid skipwhite
-
-# Make sure the argument is valid:{{{
-#
-#     var n = 123
-#     ++n
-#       ^
-#       ✔
-#
-#     ++Func()
-#           ^^
-#           ✘
-#}}}
-syn match vim9IncrementInvalid /[^ \t\n|]*/ contained contains=vim9IncrementValid
-syn match vim9IncrementValid /\w\+/ contained
 #}}}1
 # Functions {{{1
 # User Definition {{{2
