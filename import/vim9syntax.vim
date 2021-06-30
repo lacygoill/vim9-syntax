@@ -739,7 +739,6 @@ const command_name_list: list<string> =<< trim END
     comc[lear]
     comp[iler]
     cope[n]
-    co[py]
     cpf[ile]
     cp[revious]
     cq[uit]
@@ -763,7 +762,6 @@ const command_name_list: list<string> =<< trim END
     diffs[plit]
     difft[his]
     dif[fupdate]
-    dig[raphs]
     disa[ssemble]
     di[splay]
     dj[ump]
@@ -877,7 +875,6 @@ const command_name_list: list<string> =<< trim END
     luaf[ile]
     lw[indow]
     mak[e]
-    ma[rk]
     marks
     mat[ch]
     me[nu]
@@ -889,7 +886,6 @@ const command_name_list: list<string> =<< trim END
     mkvie[w]
     mkv[imrc]
     mod[e]
-    m[ove]
     mzf[ile]
     mz[scheme]
     nbc[lose]
@@ -1081,7 +1077,6 @@ const command_name_list: list<string> =<< trim END
     vunme[nu]
     wN[ext]
     wa[ll]
-    winc[md]
     winp[os]
     wi[nsize]
     wn[ext]
@@ -1305,11 +1300,15 @@ export const lambda_end: string = ')\ze\%(:.\{-}\)\=\s\+=>'
 
 # lambda_start {{{1
 
-export const lambda_start: string = '(\ze\s*\h\w*\%([^(]\|\%(\<func\)\@4<=(\)*)\ze\%(:.\{-}\)\=\s\+=>'
+export const lambda_start: string = '(\ze\s*\h\w*\%([^(]\|\%(\<func\)\@4<=(\)*)\%(:.\{-}\)\=\s\+=>'
 
 # logical_not {{{1
 
 export const logical_not: string = '/\w\@1<!![~=]\@!!*/'
+
+# maybe_dict_literal_key {{{1
+
+export const maybe_dict_literal_key: string = '/\%([{\n]\|[^ \t\n,{]\@1<!\s\)\@1<=[^ \t{(''"]\+\ze\%(:\s\)\@=/'
 
 # most_operators {{{1
 
@@ -2478,4 +2477,8 @@ export const option_valid: string = '\%([a-z]\{2,}\>\|t_[a-zA-Z0-9#%*:@_]\{2}\)'
 
 # pattern_delimiter {{{1
 
-export const pattern_delimiter: string = '[^-:# \t[:alnum:]\"|]\@=.'
+export const pattern_delimiter: string = '[^-+*/%.:# \t[:alnum:]\"|]\@=.\|\.\%(\.=\s\)\@!\|->\@!\%(=\s\)\@!\|[+*/%]\%(=\s\)\@!'
+
+# wincmd_valid {{{1
+
+export const wincmd_valid: string = '/\s\@1<=\%([-\]+:<=>FHJKLPRSTW^_bcdfhijklnopqrstvwxz}]\|gF\|gT\|g]\|gf\|gt\|g}\)\_s\@=/'

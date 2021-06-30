@@ -23,7 +23,6 @@ vim9script
 export def Derive( #{{{3
     to: string,
     from: string,
-    # TODO(Vim9): `arg_newAttributes: any` → `arg_newAttributes: string|dict<string>`
     arg_newAttributes: any,
 )
     var originalDefinition: string = Getdef(from)
@@ -50,16 +49,16 @@ export def Derive( #{{{3
     var pat: string = '^' .. originalGroup .. '\|xxx'
     var Rep: func = (m: list<string>): string => m[0] == originalGroup ? to : ''
     var newAttributes: string = Getattr(arg_newAttributes)
-    exe 'hi '
+    execute 'highlight '
         .. originalDefinition->substitute(pat, Rep, 'g')
         .. ' ' .. newAttributes
 
     # We want our derived HG to persist even after we change the color scheme at runtime.{{{
     #
-    # Indeed, all  color schemes run `:hi  clear`, which might clear  our custom
-    # HG.  So, we need to save some information to reset it when needed.
+    # Indeed, all  color schemes run  `:highlight clear`, which might  clear our
+    # custom HG.  So, we need to save some information to reset it when needed.
     #}}}
-    #   Ok, but why not saving the `:hi ...` command directly?{{{
+    #   Ok, but why not saving the `:highlight ...` command directly?{{{
     #
     # If we change the color scheme, we want to *re*-derive the HG.
     # For example, suppose we've run:
@@ -77,12 +76,12 @@ export def Derive( #{{{3
     endif
 enddef
 
-# We   can't   write   `list<dict<string>>`,   because  we   need   to   declare
+# We can't write `list<dict<string>>`, because we need to declare
 # `arg_newAttributes` with the type `any`.
 var derived_hgs: list<dict<any>>
 
-augroup ResetDerivedHgWhenColorschemeChanges | au!
-    au ColorScheme * ResetDerivedHgWhenColorschemeChanges()
+augroup ResetDerivedHgWhenColorschemeChanges | autocmd!
+    autocmd ColorScheme * ResetDerivedHgWhenColorschemeChanges()
 augroup END
 
 def ResetDerivedHgWhenColorschemeChanges()
@@ -95,16 +94,15 @@ enddef
 def Getdef(hg: string): string #{{{3
     # Why `split('\n')->filter(...)`?{{{
     #
-    # The output of `:hi ExistingHG`  can contain noise in certain circumstances
+    # The output of `:highlight ExistingHG`  can contain noise in certain circumstances
     # (e.g. `-V15/tmp/log`, `-D`, `$ sudo`...).
     # }}}
-    return execute('hi ' .. hg)
+    return execute('highlight ' .. hg)
         ->split('\n')
         ->filter((_, v: string): bool => v =~ '^' .. hg)[0]
 enddef
 
 def Getattr(arg_attr: any): string #{{{3
-    # TODO(Vim9): `arg_attr: any` → `arg_attr: string|dict<string>`
     if typename(arg_attr) == 'string'
         return arg_attr
     elseif typename(arg_attr) =~ '^dict'
@@ -114,8 +112,8 @@ def Getattr(arg_attr: any): string #{{{3
         var hg: string
         [attr, hg] = items(arg_attr)[0]
         var code: string = hlID(hg)
-        ->synIDtrans()
-        ->synIDattr(attr, mode)
+            ->synIDtrans()
+            ->synIDattr(attr, mode)
         if code =~ '^' .. (gui ? '#\x\+' : '\d\+') .. '$'
             return mode .. attr .. '=' .. code
         endif

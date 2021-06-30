@@ -65,7 +65,7 @@ const DO_CMDS: list<string> =<< trim END
     windo
 END
 
-#     :vim9 echo getcompletion('*map', 'command')->filter((_, v) => v =~ '^[a-z]' && v != 'loadkeymap')
+#     :vim9cmd echo getcompletion('*map', 'command')->filter((_, v) => v =~ '^[a-z]' && v != 'loadkeymap')
 const MAPPING_CMDS: list<string> =<< trim END
     map
     cmap
@@ -141,6 +141,8 @@ const VARIOUS_SPECIAL_CMDS: list<string> =<< trim END
     augroup
     autocmd
     command
+    copy
+    digraphs
     doautoall
     doautocmd
     echohl
@@ -151,6 +153,8 @@ const VARIOUS_SPECIAL_CMDS: list<string> =<< trim END
     highlight
     import
     lua
+    mark
+    move
     normal
     python
     python3
@@ -164,6 +168,7 @@ const VARIOUS_SPECIAL_CMDS: list<string> =<< trim END
     vimgrepadd
     lvimgrep
     lvimgrepadd
+    wincmd
     z
 END
 
@@ -249,7 +254,7 @@ enddef
 #
 # And you want `C` to match after `B`, so you define the latter like this:
 #
-#     syn ... B ... nextgroup=C
+#     syntax ... B ... nextgroup=C
 #
 # If `C` goes beyond `A`, Vim will extend the latter:
 #
@@ -274,13 +279,14 @@ enddef
 # workarounds,  but  they  come  with  their own  pitfalls,  and  add  too  much
 # complexity.
 #}}}
+
 const command_can_be_before: string =
     # after a command, we know there must be a whitespace or a newline
        '\%('
        # (possibly after a bang)
        ..     '!\=' .. '[ \t\n]\@='
        .. '\|'
-       # Special Case: An Ex command in the rhs of a mapping, right after `<cmd>` or `<bar>`.
+       # Special Case: An Ex command in the rhs of a mapping, right after `<Cmd>` or `<Bar>`.
        ..     '\c<\%(bar\|cr\)>'
        .. '\)'
     # but there must *not* be a binary operator
@@ -326,7 +332,7 @@ const command_can_be_before: string =
     #            ^---^
     #}}}
     ..     '\%(\s\+\)\@>'
-    # necessary to be able to match `source` in `source % | eval 0` or `source % <bar> eval 0`
+    # necessary to be able to match `source` in `source % | eval 0` or `source % <Bar> eval 0`
     ..     '[^|<]'
     .. '\)'
     .. '\)\@!'
@@ -337,6 +343,7 @@ const command_can_be_before: string =
 #
 #     var Lambda = (a, b) => a + b
 #                       ^
+
 const lambda_end: string = ')'
     # start a lookbehind to assert the presence of the necessary arrow
     .. '\ze'
@@ -367,7 +374,7 @@ const lambda_start: string = '('
     # obviously, the arguments can contain several characters;
     # so, let's repeat this group
     .. '*'
-    .. lambda_end
+    .. lambda_end->substitute('\\ze', '', '')
 # If you change this regex, test it against these lines:{{{
 #
 # In particular, check that the lambda doesn't start from the wrong paren:
@@ -400,6 +407,7 @@ const lambda_start: string = '('
 # logical_not {{{3
 
 # This regex should match most binary operators.
+
 const logical_not: string = '/'
     # Don't highlight `!` when used after a command name:{{{
     #
@@ -419,9 +427,64 @@ const logical_not: string = '/'
     .. '!*'
     .. '/'
 
+# maybe_dict_literal_key {{{3
+
+# This should  match a sequence  of non-whitespace which  could be written where
+# a literal key in a dictionary is expected.
+# It should not match a valid key, because we want to highlight possible errors.
+
+const maybe_dict_literal_key: string = '/'
+    # Start of positive lookbehind.{{{
+    #
+    # Actually, it's not entirely correct.  This would be simpler and better:
+    #
+    #     \%([\n{,]\s*\)\@<=
+    #
+    # But it would also be more expensive (10x last time I checked).
+    # Which doesn't  seem like a  big deal, because the  regex is not  used that
+    # often; but still, for the moment, let's try an optimized regex.
+    #
+    # ---
+    #
+    # As an example, this lookbehind prevents the highlighting of `2` here:
+    #
+    #     var d = {
+    #         key: 1 ? 2: 3
+    #     }
+    #
+    # But not here:
+    #
+    #     var d = {
+    #         key: 1 ?  2: 3
+    #     }
+    #
+    # Note that both of these snippets are wrong, because `:` should be preceded
+    # by a space.  Still, this is a common temporary mistake; when it occurs, it
+    # might be distracting to see a token (like a number) wrongly highlighted as
+    # a string.
+    #}}}
+    .. '\%('
+    # there must be the start of a line or the start of a dictionary before a key
+    ..    '[{\n]'
+    .. '\|'
+    # Or there must be some space.{{{
+    #
+    # But if there is, it should not preceded by a non-whitespace, unless it's a
+    # comma (separating items) or a curly brace (start of dictionary).
+    #
+    #}}}
+    ..    '[^ \t\n,{]\@1<!' .. '\s'
+    .. '\)\@1<='
+    # the key itself
+    .. '[^ \t{(''"]\+'
+    # There must be a colon and a space afterward for this to have any chance of being a key.
+    .. '\ze\%(:\s\)\@='
+    .. '/'
+
 # most_operators {{{3
 
 # This regex should match most binary operators.
+
 const most_operators: string = '"'
     # there must be a space before
     .. '\%(\_s\)\@1<='
@@ -450,8 +513,8 @@ const most_operators: string = '"'
     #
     #         v
     #     Cmd + | eval 0
-    #     nno <key> <cmd>Cmd + <bar> eval 0<cr>
-    #                        ^
+    #     nnoremap <key> <Cmd>Cmd + <Bar> eval 0<CR>
+    #                             ^
     #}}}
     .. '\%(\s*[|<]\)\@!'
     .. '"'
@@ -462,7 +525,7 @@ const pattern_delimiter: string =
     # let's discard invalid delimiters
     '[^'
     # Warning: keep this part at the start, so that `-` is not parsed as in `a-z`.
-    # `-` and `:` are too problematic.{{{
+    # Ambiguity with `->` method call.{{{
     #
     # Suppose you have a variable named `g`, to which you apply a method call:
     #
@@ -476,47 +539,46 @@ const pattern_delimiter: string =
     #
     # `g` would be confused with the  global command, and the dashes with delimiters
     # around its pattern.
+    #}}}
+    .. '-'
+    # Ambiguity with assignment operators.{{{
     #
-    # You could handle this case with an extra rule which disallows `>` at the start
-    # of the pattern:
+    # Example:
     #
-    #     syn match vim9Global
-    #         \ /\<g\%[lobal]\>!\=\s*\ze->\@!.\{-}-/
-    #         \ contained
-    #         \ nextgroup=vim9GlobalPat
+    #     var s: number = 40
     #
-    # But it would still not support the case where the pattern starts with `>`.
-    # And you would  need to install similar  rules for all commands  which expect a
-    # pattern as argument (e.g. `:filter`, `:vimgrep`).  It's not worth the trouble.
+    #         pat  rep flags
+    #        v---v vvv vv
+    #     s /= 20 / 2 / 2
+    #       ^     ^   ^
+    #       delimiters
     #
-    # Let's make things simple and consistent.
-    # We don't recognize `-` as a delimiter.  Most of the time, you'll use `/` anyway.
-    # For  the few  cases where  `/`  is not  desired,  there are  more than  enough
-    # alternative characters in the ascii table: `;`, `,`, `backtick`, ...
+    # The last line could be wrongly highlighted as a substitution command.
+    # In reality, it's a number assignment which does this:
     #
-    # ---
+    #     s /= 20 / 2 / 2
+    #     ⇔
+    #     s /= 10 / 2
+    #     ⇔
+    #     s /= 5
+    #     ⇔
+    #     s = s / 5
+    #     ⇔
+    #     s = 40 / 5
+    #     ⇔
+    #     s = 8
+    #}}}
+    .. '+*/%.'
+    # Ambiguity with `:` used as separator between namespace and variable name.{{{
     #
-    # As  for the  colon,  it would  cause  Vim  to conflate  `g:`  with the  global
-    # namespace.  See `:h vim9-gotchas`.
+    #     g:pattern:command
+    #     g:variable
     #
-    # You could handle it with 2 extra rules:
+    # See `:help vim9-gotchas`.
     #
-    #     # :g:pat:cmd
-    #     syn match vim9Global
-    #         \ /:\@1<=g!\=\ze\s*:.\{-}:/
-    #         \ contained
-    #         \ nextgroup=vim9GlobalPat
-    #
-    #     # global:pat:cmd
-    #     syn match vim9Global
-    #         \ /\<gl\%[obal]!\=\ze\s*:.\{-}:/
-    #         \ contained
-    #         \ nextgroup=vim9GlobalPat
-    #
-    # But again, you would need to do the same for `:v` and `:s`.
-    # That's too much code.
-    # Besides,  there  would be  still  one  very special  case  that  would not  be
-    # supported:
+    # Don't try to be smart and find a fix for this.
+    # It's trickier than it seems.
+    # For example:
     #
     #     g:a+b:command
     #        ^
@@ -532,29 +594,29 @@ const pattern_delimiter: string =
     # I don't think it's possible for a simple regex to determine the nature of what
     # follows `g:`: a pattern vs a variable name.
     #}}}
-    .. '-:'
-    # `#` is not reliable:{{{
+    .. ':'
+    # Not reliable:{{{
     #
-    #     $ vim -Nu NONE +'vim9 g #pat# ls'
+    #     $ vim -Nu NONE +'vim9cmd g #pat# ls'
     #     Pattern not found: pat˜
     #     ✔
     #
-    #     $ vim -Nu NONE +'vim9 filter #pat# ls'
+    #     $ vim -Nu NONE +'vim9cmd filter #pat# ls'
     #     E476: Invalid command: vim9 filter #pat# ls˜
     #     ✘
     #
-    # Besides, but let's be consistent; if in legacy, the comment leader doesn't
+    # Besides, let's  be consistent;  if in legacy,  the comment  leader doesn't
     # work, that should remain true in Vim9.
     #}}}
     .. '#'
     # a delimiter cannot be a whitespace (obviously)
     .. ' \t'
-    # `:h pattern-delimiter`
+    # `:help pattern-delimiter`
     # In Vim9, `"` is still not a valid delimiter:{{{
     #
     #     vim9script
     #     ['aba bab']->repeat(3)->setline(1)
-    #     sil! s/nowhere//
+    #     silent! substitute/nowhere//
     #     :% s"b"B"g
     #     E486: Pattern not found: nowhere˜
     #}}}
@@ -563,6 +625,15 @@ const pattern_delimiter: string =
     .. ']\@='
     # now we have the guarantee that the next character (whatever it is) is a valid delimiter
     .. '.'
+    # We still want to support a few delimiters (especially the popular `/`).{{{
+    #
+    # But for these,  we need to make  sure that the start of  the pattern won't
+    # cause any  trouble.  Mainly, we need  to assert that it  can't be confused
+    # with an assignment operator (nor a method call).
+    #}}}
+    .. '\|' .. '\.\%(\.=\s\)\@!'
+    .. '\|' .. '->\@!\%(=\s\)\@!'
+    .. '\|' .. '[+*/%]\%(=\s\)\@!'
 
 # option_can_be_after {{{3
 
@@ -585,12 +656,14 @@ const option_can_be_after: string = '\%('
 # option_sigil {{{3
 
 # sigil to refer to option value
+
 const option_sigil: string = '&\%([gl]:\)\='
 
 # option_valid {{{3
 
 # This regex  should make sure  that we're matching  valid characters for  a Vim
 # option name.
+
 const option_valid: string = '\%('
             # name of regular option
     ..     '[a-z]\{2,}\>'
@@ -598,6 +671,43 @@ const option_valid: string = '\%('
             # name of terminal option
     ..     't_[a-zA-Z0-9#%*:@_]\{2}'
     .. '\)'
+
+# wincmd_valid {{{3
+
+# This regex should make sure that we're giving a valid argument to `:wincmd`.
+
+def WincmdValid(): string
+    var cmds: list<string> = getcompletion('h ^w', 'cmdline')
+        ->filter((_, v) => v =~ '^CTRL-W_..\=$')
+        ->map((_, v) => v->matchstr('CTRL-W_\zs.*'))
+        ->sort()
+        ->uniq()
+
+    var one_char_cmds: list<string> = cmds
+        ->copy()
+        ->filter((_, v: string): bool => v->len() == 1)
+    var two_char_cmds: list<string> = cmds
+        ->copy()
+        ->filter((_, v: string): bool => v->len() == 2)
+
+    for problematic in ['-', ']']
+        one_char_cmds->remove(one_char_cmds->index(problematic))
+    endfor
+
+    return '/'
+        .. '\s\@1<='
+        .. '\%('
+        # when including back the valid `-` and `]` commands,
+        # we need to make sure they don't break the regex
+        ..     '[' .. '-\]' .. one_char_cmds->join('') .. ']'
+        .. '\|'
+        ..     two_char_cmds->join('\|')
+        .. '\)'
+        .. '\_s\@='
+        .. '/'
+enddef
+
+const wincmd_valid: string = WincmdValid()
 #}}}2
 # names {{{2
 # builtin_func {{{3
@@ -641,11 +751,11 @@ const collation_class: list<string> =
 
 # command_address_type {{{3
 
-const command_address_type: list<string> = getcompletion('com -addr=', 'cmdline')
+const command_address_type: list<string> = getcompletion('command -addr=', 'cmdline')
 
 # command_complete_type {{{3
 
-const command_complete_type: list<string> = getcompletion('com -complete=', 'cmdline')
+const command_complete_type: list<string> = getcompletion('command -complete=', 'cmdline')
 
 # command_modifier {{{3
 
@@ -766,6 +876,7 @@ AppendSection('event')
 AppendSection('lambda_end')
 AppendSection('lambda_start')
 AppendSection('logical_not')
+AppendSection('maybe_dict_literal_key')
 AppendSection('most_operators')
 AppendSection('option')
 AppendSection('option_can_be_after')
@@ -774,5 +885,6 @@ AppendSection('option_terminal')
 AppendSection('option_terminal_special', true)
 AppendSection('option_valid')
 AppendSection('pattern_delimiter')
+AppendSection('wincmd_valid')
 
-exe 'e ' .. IMPORT_FILE
+execute 'edit ' .. IMPORT_FILE
