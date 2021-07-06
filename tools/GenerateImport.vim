@@ -871,6 +871,9 @@ def KeyName(): list<string>
         #     <F12>
         #      ^^^
         + ['F\d\{1,2}']
+        #     <C-\>
+        #        ^
+        + ['\\']
 enddef
 
 const key_name: list<string> = KeyName()
