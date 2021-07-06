@@ -1,7 +1,12 @@
 vim9script
 
 if $MYVIMRC != ''
-    var msg: string = 'This script must be sourced without any custom configuration.'
+    var msg: list<string> =<< trim END
+        This script must be sourced without any custom configuration:
+
+            $ vim -Nu NONE -S %s
+    END
+    msg[1] = msg[1]->substitute('%s', expand('<sfile>:t'), '')
     popup_notification(msg, {pos: 'center'})
     finish
 endif
