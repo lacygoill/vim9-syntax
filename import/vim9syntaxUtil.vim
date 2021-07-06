@@ -110,7 +110,7 @@ def Getattr(arg_attr: any): string #{{{3
         var mode: string = gui ? 'gui' : 'cterm'
         var attr: string
         var hg: string
-        [attr, hg] = items(arg_attr)[0]
+        [attr, hg] = arg_attr->items()[0]
         var code: string = hlID(hg)
             ->synIDtrans()
             ->synIDattr(attr, mode)

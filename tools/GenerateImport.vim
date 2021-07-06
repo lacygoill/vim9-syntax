@@ -361,6 +361,8 @@ const lambda_end: string = ')'
 const lambda_start: string = '('
     # start a lookbehind to assert the presence of arguments
     .. '\ze'
+    # start a group to make the arguments optional
+    .. '\%('
     # first argument
     .. '\s*\h\w*'
     # what follows can be complex
@@ -374,10 +376,10 @@ const lambda_start: string = '('
     # obviously, the arguments can contain several characters;
     # so, let's repeat this group
     .. '*'
+    # all these arguments are optional; the lambda could have none
+    .. '\)\='
     .. lambda_end->substitute('\\ze', '', '')
-# If you change this regex, test it against these lines:{{{
-#
-# In particular, check that the lambda doesn't start from the wrong paren:
+# If you change this regex, make sure the lambda doesn't start from the wrong paren in these lines:{{{
 #
 #           ✘
 #           v
@@ -402,6 +404,15 @@ const lambda_start: string = '('
 #     substitute(a, b, (m) => '', '')
 #                      ^^^
 #                       ✔
+#
+# Also:
+#
+#     echo ((): number => 0)()
+#               ^----^
+#               this should be highlighted as a data type
+#
+# This is a special case, because the  lambda has no arguments, and is contained
+# inside another syntax item (`vim9OperParen`).
 #}}}
 
 # logical_not {{{3
@@ -614,7 +625,6 @@ const pattern_delimiter: string =
     # `:help pattern-delimiter`
     # In Vim9, `"` is still not a valid delimiter:{{{
     #
-    #     vim9script
     #     ['aba bab']->repeat(3)->setline(1)
     #     silent! substitute/nowhere//
     #     :% s"b"B"g
@@ -678,8 +688,8 @@ const option_valid: string = '\%('
 
 def WincmdValid(): string
     var cmds: list<string> = getcompletion('h ^w', 'cmdline')
-        ->filter((_, v) => v =~ '^CTRL-W_..\=$')
-        ->map((_, v) => v->matchstr('CTRL-W_\zs.*'))
+        ->filter((_, v: string): bool => v =~ '^CTRL-W_..\=$')
+        ->map((_, v: string) => v->matchstr('CTRL-W_\zs.*'))
         ->sort()
         ->uniq()
 
@@ -689,6 +699,9 @@ def WincmdValid(): string
     var two_char_cmds: list<string> = cmds
         ->copy()
         ->filter((_, v: string): bool => v->len() == 2)
+
+    # `|` is missing
+    one_char_cmds += ['|']
 
     for problematic in ['-', ']']
         one_char_cmds->remove(one_char_cmds->index(problematic))
@@ -716,7 +729,7 @@ def Ambiguous(): list<string>
     var cmds: list<string> = getcompletion('', 'command')
         ->filter((_, v: string): bool => v =~ '^[a-z]')
     var funcs: list<string> = getcompletion('', 'function')
-        ->map((_, v: string): string => v->substitute('()\=', '', '$'))
+        ->map((_, v: string) => v->substitute('()\=', '', '$'))
     var ambiguous: list<string>
     for func in funcs
         if cmds->index(func) != -1
@@ -732,7 +745,7 @@ const builtin_func: list<string> = getcompletion('', 'function')
     # keep only builtin functions
     ->filter((_, v: string): bool => v[0] =~ '[a-z]' && v !~ '#')
     # remove noisy trailing parens
-    ->map((_, v: string): string => v->substitute('()\=$', '', ''))
+    ->map((_, v: string) => v->substitute('()\=$', '', ''))
     # if a function name can also be parsed as an Ex command, remove it
     ->filter((_, v: string): bool => ambiguous->index(v) == - 1)
 
@@ -746,8 +759,8 @@ const builtin_func_ambiguous: list<string> = ambiguous
 
 const collation_class: list<string> =
     getcompletion('[:', 'help')
-        ->filter((_, v) => v =~ '^\[:')
-        ->map((_, v) => v->trim('[]:'))
+        ->filter((_, v: string): bool => v =~ '^\[:')
+        ->map((_, v: string) => v->trim('[]:'))
 
 # command_address_type {{{3
 
@@ -788,7 +801,7 @@ const command_name: list<string> = CommandName()
 
 def DefaultHighlightingGroup(): list<string>
     var completions: list<string> = getcompletion('hl-', 'help')
-        ->map((_, v: string): string => v->substitute('^hl-', '', ''))
+        ->map((_, v: string) => v->substitute('^hl-', '', ''))
     for name in ['Ignore', 'Conceal', 'User1..9']
         var i: number = completions->index(name)
         completions->remove(i)
@@ -833,7 +846,7 @@ def Option(): list<string>
     endfor
 
     return helptags
-        ->map((_, v: string): string => v->trim("*'"))
+        ->map((_, v: string) => v->trim("*'"))
 enddef
 
 const option: list<string> = Option()

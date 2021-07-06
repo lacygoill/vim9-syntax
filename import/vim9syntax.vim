@@ -1160,6 +1160,14 @@ const default_highlighting_group_list: list<string> =<< trim END
     TOhtmlProgress
     debugBreakpoint
     StatusLineTermNC
+    OperatorSandwichAdd@en
+    OperatorSandwichAdd@ja
+    OperatorSandwichBuns@en
+    OperatorSandwichBuns@ja
+    OperatorSandwichChange@en
+    OperatorSandwichDelete@en
+    OperatorSandwichChange@ja
+    OperatorSandwichDelete@ja
     quickhl-faq
     quickhl-commands
     quickhl-contents
@@ -1300,7 +1308,7 @@ export const lambda_end: string = ')\ze\%(:.\{-}\)\=\s\+=>'
 
 # lambda_start {{{1
 
-export const lambda_start: string = '(\ze\s*\h\w*\%([^(]\|\%(\<func\)\@4<=(\)*)\%(:.\{-}\)\=\s\+=>'
+export const lambda_start: string = '(\ze\%(\s*\h\w*\%([^(]\|\%(\<func\)\@4<=(\)*\)\=)\%(:.\{-}\)\=\s\+=>'
 
 # logical_not {{{1
 
@@ -2481,4 +2489,4 @@ export const pattern_delimiter: string = '[^-+*/%.:# \t[:alnum:]\"|]\@=.\|\.\%(\
 
 # wincmd_valid {{{1
 
-export const wincmd_valid: string = '/\s\@1<=\%([-\]+:<=>FHJKLPRSTW^_bcdfhijklnopqrstvwxz}]\|gF\|gT\|g]\|gf\|gt\|g}\)\_s\@=/'
+export const wincmd_valid: string = '/\s\@1<=\%([-\]+:<=>FHJKLPRSTW^_bcdfhijklnopqrstvwxz}|]\|gF\|gT\|g]\|gf\|gt\|g}\)\_s\@=/'
