@@ -1,5 +1,11 @@
 vim9script
 
+if $MYVIMRC != ''
+    var msg: string = 'This script must be sourced without any custom configuration.'
+    popup_notification(msg, {pos: 'center'})
+    finish
+endif
+
 # Declarations {{{1
 
 const ABBREV_CMDS: list<string> =<< trim END
