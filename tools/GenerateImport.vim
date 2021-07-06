@@ -215,6 +215,28 @@ def Abbreviate( #{{{2
 enddef
 
 def AppendSection(what: string, match_rule = false) #{{{2
+# `match_rule` is on when we want the import file to join the items in a heredoc
+# with `\|`, instead of a space; which is necessary for `:syntax match` rules.
+
+    # The `:if` block decides whether we want to write a simple string or a heredoc.
+    # For some tokens, we just want to write a (possibly complex) regex:{{{
+    #
+    #     export const command_can_be_before: string = '...'
+    #}}}
+    # For other tokens, we want to write a (possibly long) list of names, via a heredoc:{{{
+    #
+    #     const builtin_func_list: list<string> =<< trim END
+    #         abs
+    #         acos
+    #         add
+    #         ...
+    #     END
+    #     export const builtin_func: string = builtin_func_list->join()
+    #
+    # A heredoc makes it  easier to review a list and  check whether it contains
+    # anything wrong.  In particular if it's sorted.
+    #}}}
+
     var lines: list<string> = ['', '# ' .. what .. ' {{' .. '{1', '']
     if what->eval()->typename() =~ '^list'
         lines += ['const ' .. what .. '_list: list<string> =<< trim END']
@@ -761,6 +783,7 @@ const collation_class: list<string> =
     getcompletion('[:', 'help')
         ->filter((_, v: string): bool => v =~ '^\[:')
         ->map((_, v: string) => v->trim('[]:'))
+        ->sort()
 
 # command_address_type {{{3
 
@@ -807,7 +830,7 @@ def DefaultHighlightingGroup(): list<string>
         completions->remove(i)
     endfor
     completions += range(2, 8)->mapnew((_, v: number): string => 'User' .. v)
-    return completions
+    return completions->sort()
 enddef
 
 const default_highlighting_group: list<string> = DefaultHighlightingGroup()
@@ -815,6 +838,42 @@ const default_highlighting_group: list<string> = DefaultHighlightingGroup()
 # event {{{3
 
 const event: list<string> = getcompletion('', 'event')
+
+# ex_special_characters {{{3
+
+# `:help cmdline-special`
+const ex_special_characters: list<string> =
+    getcompletion('help :<', 'cmdline')[1 :]
+        ->map((_, v: string) => v->trim(':<>'))
+
+# key_name {{{3
+
+def KeyName(): list<string>
+    var completions: list<string> = getcompletion('set <', 'cmdline')
+        ->map((_, v: string) => v->trim('<>'))
+        ->filter((_, v: string): bool => v !~ '^t_' && v !~ '^F\d\+$')
+
+    # `Nop` and `SID` are missing
+    completions->add('Nop')->add('SID')
+    # for some reason, `Tab` is suggested twice
+    completions->remove(completions->index('Tab'))
+    # those keys are special, and need to be handled with dedicated rules
+    completions->remove(completions->index('Bar'))
+    completions->remove(completions->index('Cmd'))
+
+    return completions->sort()
+        #     <C-A>
+        #        ^
+        + ['\a']
+        #     <C-3>
+        #        ^
+        + ['\d']
+        #     <F12>
+        #      ^^^
+        + ['F\d\{1,2}']
+enddef
+
+const key_name: list<string> = KeyName()
 
 # option {{{3
 
@@ -857,6 +916,7 @@ const option: list<string> = Option()
 const option_terminal: list<string> =
     getcompletion('t_', 'option')
         ->filter((_, v: string): bool => v =~ '^t_\w\w$')
+        ->sort()
 
 # option_terminal_special {{{3
 
@@ -886,6 +946,8 @@ AppendSection('command_modifier', true)
 AppendSection('command_name')
 AppendSection('default_highlighting_group')
 AppendSection('event')
+AppendSection('ex_special_characters', true)
+AppendSection('key_name', true)
 AppendSection('lambda_end')
 AppendSection('lambda_start')
 AppendSection('logical_not')

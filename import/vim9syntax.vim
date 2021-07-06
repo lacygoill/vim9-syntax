@@ -545,25 +545,25 @@ export const builtin_func_ambiguous: string = builtin_func_ambiguous_list->join(
 # collation_class {{{1
 
 const collation_class_list: list<string> =<< trim END
-    tab
     alnum
     alpha
+    backspace
     blank
     cntrl
     digit
+    escape
     fname
     graph
     ident
+    keyword
     lower
     print
     punct
-    space
-    upper
-    escape
     return
+    space
+    tab
+    upper
     xdigit
-    keyword
-    backspace
 END
 
 export const collation_class: string = collation_class_list->join("\\|")
@@ -1101,78 +1101,57 @@ export const command_name: string = command_name_list->join()
 # default_highlighting_group {{{1
 
 const default_highlighting_group_list: list<string> =<< trim END
-    Menu
-    Pmenu
-    Title
-    User1
-    User9
+    ColorColumn
     Cursor
-    Folded
-    LineNr
-    Normal
-    Search
-    Visual
+    CursorColumn
+    CursorIM
+    CursorLine
+    CursorLineNr
     DiffAdd
+    DiffChange
+    DiffDelete
+    DiffText
+    Directory
+    EndOfBuffer
+    ErrorMsg
+    FoldColumn
+    Folded
+    IncSearch
+    LineNr
+    LineNrAbove
+    LineNrBelow
+    MatchParen
+    Menu
     ModeMsg
     MoreMsg
     NonText
-    TabLine
-    Tooltip
-    debugPC
-    CursorIM
-    DiffText
-    ErrorMsg
-    PmenuSel
-    Question
-    SpellBad
-    SpellCap
-    Terminal
-    WildMenu
-    Directory
-    IncSearch
+    Normal
+    Pmenu
     PmenuSbar
-    Scrollbar
-    SpellRare
-    VertSplit
-    VisualNOS
-    CursorLine
-    DiffChange
-    DiffDelete
-    FoldColumn
-    MatchParen
+    PmenuSel
     PmenuThumb
+    Question
+    QuickFixLine
+    Scrollbar
+    Search
     SignColumn
     SpecialKey
+    SpellBad
+    SpellCap
     SpellLocal
+    SpellRare
     StatusLine
-    TabLineSel
-    WarningMsg
-    ColorColumn
-    EndOfBuffer
-    LineNrAbove
-    LineNrBelow
-    TabLineFill
-    CursorColumn
-    CursorLineNr
-    QuickFixLine
     StatusLineNC
     StatusLineTerm
-    TOhtmlProgress
-    debugBreakpoint
     StatusLineTermNC
-    OperatorSandwichAdd@en
-    OperatorSandwichAdd@ja
-    OperatorSandwichBuns@en
-    OperatorSandwichBuns@ja
-    OperatorSandwichChange@en
-    OperatorSandwichDelete@en
-    OperatorSandwichChange@ja
-    OperatorSandwichDelete@ja
-    quickhl-faq
-    quickhl-commands
-    quickhl-contents
-    quickhl-examples
-    quickhl-variables
+    TOhtmlProgress
+    TabLine
+    TabLineFill
+    TabLineSel
+    Terminal
+    Title
+    Tooltip
+    User1
     User2
     User3
     User4
@@ -1180,6 +1159,14 @@ const default_highlighting_group_list: list<string> =<< trim END
     User6
     User7
     User8
+    User9
+    VertSplit
+    Visual
+    VisualNOS
+    WarningMsg
+    WildMenu
+    debugBreakpoint
+    debugPC
 END
 
 export const default_highlighting_group: string = default_highlighting_group_list->join()
@@ -1301,6 +1288,141 @@ const event_list: list<string> =<< trim END
 END
 
 export const event: string = event_list->join()
+
+# ex_special_characters {{{1
+
+const ex_special_characters_list: list<string> =<< trim END
+    abuf
+    afile
+    cWORD
+    cexpr
+    cfile
+    cword
+    sfile
+    slnum
+    stack
+    amatch
+    client
+    sflnum
+END
+
+export const ex_special_characters: string = ex_special_characters_list->join("\\|")
+
+# key_name {{{1
+
+const key_name_list: list<string> =<< trim END
+    BS
+    BackSpace
+    Bslash
+    CR
+    CSI
+    CursorHold
+    DecMouse
+    Del
+    Delete
+    Down
+    Drop
+    End
+    Enter
+    Esc
+    FocusGained
+    FocusLost
+    Help
+    Home
+    Ignore
+    Ins
+    Insert
+    LF
+    Left
+    LeftDrag
+    LeftMouse
+    LeftMouseNM
+    LeftRelease
+    LeftReleaseNM
+    LineFeed
+    MiddleDrag
+    MiddleMouse
+    MiddleRelease
+    Mouse
+    MouseDown
+    MouseMove
+    MouseUp
+    NL
+    NetMouse
+    NewLine
+    Nop
+    Nul
+    PageDown
+    PageUp
+    PasteEnd
+    PasteStart
+    Plug
+    Return
+    Right
+    RightDrag
+    RightMouse
+    RightRelease
+    SID
+    SNR
+    ScrollWheelDown
+    ScrollWheelLeft
+    ScrollWheelRight
+    ScrollWheelUp
+    SgrMouse
+    SgrMouseRelease
+    Space
+    Tab
+    Undo
+    Up
+    UrxvtMouse
+    X1Drag
+    X1Mouse
+    X1Release
+    X2Drag
+    X2Mouse
+    X2Release
+    k0
+    k1
+    k2
+    k3
+    k4
+    k5
+    k6
+    k7
+    k8
+    k9
+    kDel
+    kDivide
+    kEnd
+    kEnter
+    kHome
+    kInsert
+    kMinus
+    kMultiply
+    kPageDown
+    kPageUp
+    kPlus
+    kPoint
+    lt
+    xCSI
+    xDown
+    xEnd
+    xF1
+    xF2
+    xF3
+    xF4
+    xHome
+    xLeft
+    xRight
+    xUp
+    zEnd
+    zHome
+    \a
+    \d
+    F\d\{1,2}
+END
+
+export const key_name: string = key_name_list->join("\\|")
 
 # lambda_end {{{1
 
@@ -2354,94 +2476,66 @@ export const option_sigil: string = '&\%([gl]:\)\='
 # option_terminal {{{1
 
 const option_terminal_list: list<string> =<< trim END
+    t_8b
+    t_8f
+    t_8u
     t_AB
     t_AF
-    t_AU
     t_AL
+    t_AU
+    t_BD
+    t_BE
+    t_CS
+    t_CV
+    t_Ce
+    t_Co
+    t_Cs
+    t_DL
+    t_EC
+    t_EI
+    t_F1
+    t_F2
+    t_GP
+    t_IE
+    t_IS
+    t_RB
+    t_RC
+    t_RF
+    t_RI
+    t_RS
+    t_RT
+    t_RV
+    t_Ri
+    t_SC
+    t_SH
+    t_SI
+    t_SR
+    t_ST
+    t_Sb
+    t_Sf
+    t_Si
+    t_TE
+    t_TI
+    t_Te
+    t_Ts
+    t_VS
+    t_WP
+    t_WS
+    t_ZH
+    t_ZR
     t_al
     t_bc
-    t_BE
-    t_BD
     t_cd
     t_ce
     t_cl
     t_cm
-    t_Ce
-    t_Co
-    t_CS
-    t_Cs
     t_cs
-    t_CV
     t_da
     t_db
-    t_DL
     t_dl
-    t_EC
-    t_EI
-    t_fs
     t_fd
     t_fe
-    t_GP
-    t_IE
-    t_IS
-    t_ke
-    t_ks
-    t_le
-    t_mb
-    t_md
-    t_me
-    t_mr
-    t_ms
-    t_nd
-    t_op
-    t_RF
-    t_RB
-    t_RC
-    t_RI
-    t_Ri
-    t_RS
-    t_RT
-    t_RV
-    t_Sb
-    t_SC
-    t_se
-    t_Sf
-    t_SH
-    t_SI
-    t_Si
-    t_so
-    t_SR
-    t_sr
-    t_ST
-    t_Te
-    t_te
-    t_TE
-    t_ti
-    t_TI
-    t_Ts
-    t_ts
-    t_u7
-    t_ue
-    t_us
-    t_ut
-    t_vb
-    t_ve
-    t_vi
-    t_VS
-    t_vs
-    t_WP
-    t_WS
-    t_xn
-    t_xs
-    t_ZH
-    t_ZR
-    t_8f
-    t_8b
-    t_8u
-    t_F1
-    t_F2
-    t_PE
-    t_PS
+    t_fs
     t_k1
     t_k2
     t_k3
@@ -2458,10 +2552,36 @@ const option_terminal_list: list<string> =<< trim END
     t_kP
     t_kb
     t_kd
+    t_ke
     t_kh
     t_kl
     t_kr
+    t_ks
     t_ku
+    t_le
+    t_mb
+    t_md
+    t_me
+    t_mr
+    t_ms
+    t_nd
+    t_op
+    t_se
+    t_so
+    t_sr
+    t_te
+    t_ti
+    t_ts
+    t_u7
+    t_ue
+    t_us
+    t_ut
+    t_vb
+    t_ve
+    t_vi
+    t_vs
+    t_xn
+    t_xs
 END
 
 export const option_terminal: string = option_terminal_list->join()
