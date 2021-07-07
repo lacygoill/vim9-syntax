@@ -85,7 +85,7 @@ augroup ResetDerivedHgWhenColorschemeChanges | autocmd!
 augroup END
 
 def ResetDerivedHgWhenColorschemeChanges()
-    for hg in derived_hgs
+    for hg: dict<any> in derived_hgs
         Derive(hg.to, hg.from, hg.new)
     endfor
 enddef

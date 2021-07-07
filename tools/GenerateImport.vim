@@ -200,9 +200,9 @@ def Abbreviate( #{{{2
 ): list<string>
 
     var abbreviated: list<string>
-    for cmd in to_abbreviate
+    for cmd: string in to_abbreviate
         var len: number
-        for l in strcharlen(cmd)->range()->reverse()
+        for l: number in strcharlen(cmd)->range()->reverse()
             if l == 0
                 continue
             endif
@@ -736,7 +736,7 @@ def WincmdValid(): string
     # `|` is missing
     one_char_cmds += ['|']
 
-    for problematic in ['-', ']']
+    for problematic: string in ['-', ']']
         one_char_cmds->remove(one_char_cmds->index(problematic))
     endfor
 
@@ -764,7 +764,7 @@ def Ambiguous(): list<string>
     var funcs: list<string> = getcompletion('', 'function')
         ->map((_, v: string) => v->substitute('()\=', '', '$'))
     var ambiguous: list<string>
-    for func in funcs
+    for func: string in funcs
         if cmds->index(func) != -1
             ambiguous->add(func)
         endif
@@ -813,7 +813,7 @@ const command_modifier: list<string> = MODIFIER_CMDS->Abbreviate(true)
 def CommandName(): list<string>
     var to_abbreviate: list<string> = getcompletion('', 'command')
           ->filter((_, v: string): bool => v =~ '^[a-z]')
-    for cmd in SPECIAL_CMDS
+    for cmd: string in SPECIAL_CMDS
         var i: number = to_abbreviate->index(cmd)
         if i == -1
             continue
@@ -836,7 +836,7 @@ const command_name: list<string> = CommandName()
 def DefaultHighlightingGroup(): list<string>
     var completions: list<string> = getcompletion('hl-', 'help')
         ->map((_, v: string) => v->substitute('^hl-', '', ''))
-    for name in ['Ignore', 'Conceal', 'User1..9']
+    for name: string in ['Ignore', 'Conceal', 'User1..9']
         var i: number = completions->index(name)
         completions->remove(i)
     endfor
@@ -910,7 +910,7 @@ def Option(): list<string>
         *'noconskey'*
     END
 
-    for opt in deprecated
+    for opt: string in deprecated
         var i: number = helptags->index(opt)
         if i == -1
             continue
