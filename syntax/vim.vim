@@ -2020,7 +2020,7 @@ syntax region vim9FuncSignature
     \ nextgroup=vim9LegacyFuncArgs
     \ skipwhite
 
-    syntax match vim9LegacyFuncArgs /\%(:\s*\)\=\%(abort\|closure\|dict\|range\)/
+    syntax match vim9LegacyFuncArgs /\%(:\s*\)\=\%(abort\|closure\|dict<\@!\|range\)/
         \ contained
         \ nextgroup=vim9LegacyFuncArgs
         \ skipwhite
@@ -3141,10 +3141,18 @@ endif
 
 syntax match vim9LegacyVarArgs /a:000/
 
-# TODO: Handle other  legacy constructs  like `a:`, `l:`,  lambdas (tricky),
-# single dots for concatenation (tricky)...
-# Also `...)` in a function's header.
-# What about eval strings?
+# TODO: Handle other legacy constructs like `a:`, `l:`:
+#
+#     syntax match Test /\<a:\h\@=/ containedin=@vim9Expr
+#     syntax match Test /&\@1<!\<l:\h\@=/ containedin=@vim9Expr
+#     highlight link Test vim9Error
+#
+# Also:
+#
+#    - `...)` in a function's header
+#    - eval strings
+#    - lambdas (tricky)
+#    - single dots for concatenation (tricky)
 
 # TODO: Highlight `s:` as useless (`SpellRare`?).  But make it optional.
 # Rationale: You probably never need it.
@@ -3669,7 +3677,7 @@ highlight def link vim9HiTerm Type
 highlight def link vim9Highlight vim9GenericCmd
 highlight def link vim9Import Include
 highlight def link vim9ImportAsFrom vim9Import
-highlight def link vim9Increment vim9OperAssign
+highlight def link vim9Increment vim9Oper
 highlight def link vim9IsOption PreProc
 highlight def link vim9IskSep Delimiter
 highlight def link vim9LambdaArgs vim9FuncArgs
