@@ -105,7 +105,7 @@ endif
 # TODO: The following  command will give  you the list  of all groups  for which
 # there is at least one item matching at the top level:
 #
-#     $ vim /tmp/md1.md +'syntax include @Foo syntax/vim.vim | syntax list @Foo'
+#     $ vim /tmp/md1.md +'let b:want_vim9_syntax = 1 | syntax include @Foo syntax/vim.vim | syntax list @Foo'
 #
 # Check whether those items should be contained to avoid spurious matches.
 # For example, right now, we match backtick expansions at the top level.
@@ -853,8 +853,6 @@ syntax region vim9HereDoc
     \ matchgroup=vim9Declare
     \ start=/\s\@1<==<<\s\+\%(trim\>\)\=\s*\z(\L\S*\)/
     \ end=/^\s*\z1$/
-
-syntax match vim9EnvVar /\$[A-Z_][A-Z0-9_]*/
 
 # Modifier {{{3
 
@@ -2019,6 +2017,13 @@ syntax region vim9FuncSignature
     \     vim9Comment,
     \     vim9FuncArgs,
     \     vim9OperAssign
+    \ nextgroup=vim9LegacyFuncArgs
+    \ skipwhite
+
+    syntax match vim9LegacyFuncArgs /\%(:\s*\)\=\%(abort\|closure\|dict\|range\)/
+        \ contained
+        \ nextgroup=vim9LegacyFuncArgs
+        \ skipwhite
 
 execute 'syntax match vim9FuncArgs'
     .. ' /'
@@ -2326,7 +2331,6 @@ syntax cluster vim9Expr contains=
     \ vim9Bool,
     \ vim9DataTypeCast,
     \ vim9Dict,
-    \ vim9EnvVar,
     \ vim9FuncCall,
     \ vim9Lambda,
     \ vim9LambdaArrow,
@@ -3135,95 +3139,86 @@ if get(g:, 'vim9_syntax', {})
     syntax match vim9DictLiteralLegacyDeprecated /#{{\@!/
 endif
 
-    # TODO: Doesn't work at the start of an indented line.
-    # Update: Who cares?  It can't appear at the start of a line in legacy...
-    syntax match vim9LegacyVarargs /a:000/
-    highlight def link vim9LegacyVarargs vim9Error
-    # TODO: Handle other  legacy constructs  like `a:`, `l:`,  lambdas (tricky),
-    # single dots for concatenation (tricky)...
-    # Also `...)` in a function's header.
-    # What about eval strings?
+syntax match vim9LegacyVarArgs /a:000/
 
-    # TODO: Highlight `s:` as useless (`SpellRare`?).  But make it optional.
-    # Rationale: You probably never need it.
-    # Worse, you might  use it to try  and declare a script-local  variable in a
-    # `:def` function, which is disallowed.
-    # Update: You do need it for a user function starting with a lowercase...
+# TODO: Handle other  legacy constructs  like `a:`, `l:`,  lambdas (tricky),
+# single dots for concatenation (tricky)...
+# Also `...)` in a function's header.
+# What about eval strings?
 
-    # TODO: Highlight legacy comment leaders as an error.  Optional.
+# TODO: Highlight `s:` as useless (`SpellRare`?).  But make it optional.
+# Rationale: You probably never need it.
+# Worse, you might  use it to try  and declare a script-local  variable in a
+# `:def` function, which is disallowed.
+# Update: You do need it for a user function starting with a lowercase...
 
-    # TODO: Highlight missing types in function header as errors:
-    #
-    #     def Func(foo, bar)
-    #
-    # Exceptions: `_` and `..._`.
+# TODO: Highlight legacy comment leaders as an error.  Optional.
 
-    # TODO: Highlight `:call` as useless.
-    # But not after `<Cmd>` nor `<Bar>`.
-    #
-    # ---
-    #
-    # Same thing for `v:` in `v:true`, `v:false`, `v:null`.
-    # Although, it's  trickier, because you must  not do that in  a mapping, and
-    # these variables can appear anywhere (contrary to `:call`).
-    # Idea: Make  the highlighting  optional, and  provide a  mapping which  can
-    # toggle the option on-demand.
-    # Update: Actually,  it  should cycle  between  different  errors, until  it
-    # highlight them all simultaneously, then none, then the cycle repeats.
-    #
-    # ---
-    #
-    # Same thing for `#` in `==#`, `!=#`, `=~#`, `!~#`.
+# TODO: Highlight missing types in function header as errors:
+#
+#     def Func(foo, bar)
+#
+# Exceptions: `_` and `..._`.
 
-    # TODO: Highlight this as an error:
-    #
-    #     def Func(...name: job)
+# TODO: Highlight `:call` as useless.
+# But not after `<Cmd>` nor `<Bar>`.
+#
+# ---
+#
+# Same thing for `v:` in `v:true`, `v:false`, `v:null`.
+# Although, it's  trickier, because you must  not do that in  a mapping, and
+# these variables can appear anywhere (contrary to `:call`).
+# Idea: Make  the highlighting  optional, and  provide a  mapping which  can
+# toggle the option on-demand.
+# Update: Actually,  it  should cycle  between  different  errors, until  it
+# highlight them all simultaneously, then none, then the cycle repeats.
+#
+# ---
+#
+# Same thing for `#` in `==#`, `!=#`, `=~#`, `!~#`.
 
-    # TODO: Highlight this as an error:
-    #
-    #     vvv
-    #     var b:name = ...
-    #     var g:name = ...
-    #     var t:name = ...
-    #     var v:name = ...
-    #     var w:name = ...
-    #     var &name = ...
-    #     var &l:name = ...
-    #     var &g:name = ...
-    #     var $ENV = ...
-    #     ^^^
+# TODO: Highlight this as an error:
+#
+#     def Func(...name: job)
 
-    # TODO: Highlight this as an error:
-    #
-    #                v---v
-    #     def Func() abort
-    #
-    # In fact, highlight anything as an error.
-    # But  do it  early, so  that  the return  type  and an  inline comment  can
-    # override the highlighting.
+# TODO: Highlight this as an error:
+#
+#     vvv
+#     var b:name = ...
+#     var g:name = ...
+#     var t:name = ...
+#     var v:name = ...
+#     var w:name = ...
+#     var &name = ...
+#     var &l:name = ...
+#     var &g:name = ...
+#     var $ENV = ...
+#     ^^^
 
-    # TODO: Highlight this as an error:
-    #
-    #     is#
-    #     isnot#
-    #     is?
-    #     isnot?
+# TODO: Highlight this as an error:
+#
+#     is#
+#     isnot#
+#     is?
+#     isnot?
 
-    # TODO: Highlight these as errors:
-    #
-    #     var d = {'a' : 1, 'b' : 2, 'c' : 3}
-    #                 ^        ^    ^
-    #                 ✘        ✘    ✘
-    #
-    #     var d = {'a': 1 , 'b': 2 , 'c': 3}
-    #                    ^        ^
-    #                    ✘        ✘
-    #
-    #     var l = [1 , 2 , 3]
-    #               ^   ^
-    #               ✘   ✘
-    #
-    #     (_,v) => ...
+# TODO: Highlight these as errors:
+#
+#     var d = {'a' : 1, 'b' : 2, 'c' : 3}
+#                 ^        ^    ^
+#                 ✘        ✘    ✘
+#
+#     var d = {'a': 1 , 'b': 2 , 'c': 3}
+#                    ^        ^
+#                    ✘        ✘
+#
+#     var l = [1 , 2 , 3]
+#               ^   ^
+#               ✘   ✘
+#
+#     (_,v) => ...
+#       ^
+#       ✘
 
 # List unpack declaration {{{2
 
@@ -3579,6 +3574,8 @@ highlight def link vim9HiAttribList vim9Error
 highlight def link vim9HiCtermError vim9Error
 highlight def link vim9HiKeyError vim9Error
 highlight def link vim9LambdaDictMissingParen vim9Error
+highlight def link vim9LegacyFuncArgs vim9Error
+highlight def link vim9LegacyVarArgs vim9Error
 highlight def link vim9LetDeprecated vim9Error
 highlight def link vim9ListUnpackDeclaration vim9Error
 highlight def link vim9MapModErr vim9Error

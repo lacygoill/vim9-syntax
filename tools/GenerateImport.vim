@@ -720,7 +720,7 @@ const option_valid: string = '\%('
 # This regex should make sure that we're giving a valid argument to `:wincmd`.
 
 def WincmdValid(): string
-    var cmds: list<string> = getcompletion('h ^w', 'cmdline')
+    var cmds: list<string> = getcompletion('^w', 'help')
         ->filter((_, v: string): bool => v =~ '^CTRL-W_..\=$')
         ->map((_, v: string) => v->matchstr('CTRL-W_\zs.*'))
         ->sort()
