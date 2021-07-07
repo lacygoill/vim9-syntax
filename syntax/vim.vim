@@ -3404,8 +3404,26 @@ if get(g:, 'vim9_syntax', {})
     #      ✔
     #}}}
     # Order: Out of these 3 rules, this one must come last.
-    # Note: `b:` is a dictionary expression, thus might be followed by `->`.
-    syntax match vim9ColonForVariableScope /\<[bgstvw]:\%(\w\|->\)\@=/ display contained
+    execute 'syntax match vim9ColonForVariableScope '
+        .. '/'
+        .. '\<[bgstvw]:'
+        .. '\%('
+        # There must not be an open paren right after; otherwise it might be a function name.{{{
+        #
+        # If we don't  disallow a paren, a call to  a user script-local function
+        # inside a list slice might be wrongly highlighted as an error:
+        #
+        #     echo [s:func()]
+        #             ^--^
+       #}}}
+        .. '\%(\w*\)\@>(\@!'
+        .. '\|'
+               # `b:` is a dictionary expression, thus might be followed by `->`
+        ..     '->'
+        .. '\)\@='
+        .. '/'
+        .. ' display'
+        .. ' contained'
 endif
 
 # Octal numbers {{{2
