@@ -215,6 +215,13 @@ execute 'syntax match vim9BracketNotation'
     .. '>'
     .. '/'
     .. ' contains=vim9BracketKey'
+    .. ' nextgroup=vim9SetBracketEqual'
+    #     set <Up>=^[OA
+    #             ^
+    syntax match vim9SetBracketEqual /=[[:cntrl:]]\@=/ contained nextgroup=vim9SetBracketKeycode
+    #     set <Up>=^[OA
+    #              ^--^
+    syntax match vim9SetBracketKeycode /\S\+/ contained
 
 # This could break the highlighting of a command after `<Bar>` (between `<Cmd>` and `<CR>`).
 syntax match vim9BracketNotation /\c<Bar>/ contains=vim9BracketKey skipwhite
@@ -2694,12 +2701,17 @@ execute 'syntax match vim9MayBeOptionScoped'
     # `vim9SetEqual` would be wrong here; we need spaces around `=`
     .. ' nextgroup=vim9OperAssign'
 
+# Don't use `display` here.{{{
+#
+# It  could mess  up the  buffer  when you  set  a terminal  option whose  value
+# contains an opening square bracket.  The latter could be wrongly parsed as the
+# start a list.
+#}}}
 execute 'syntax match vim9MayBeOptionSet'
     .. ' /'
     ..     option_can_be_after
     ..     option_valid
     .. '/'
-    .. ' display'
     .. ' contained'
     .. ' contains=vim9IsOption'
     .. ' nextgroup=vim9SetEqual,vim9SetEqualError,vim9MayBeOptionSet,vim9SetMod'
@@ -3735,6 +3747,8 @@ highlight def link vim9Return vim9DefKey
 highlight def link vim9ScriptDelim Comment
 highlight def link vim9Sep Delimiter
 highlight def link vim9Set vim9GenericCmd
+highlight def link vim9SetBracketEqual vim9OperAssign
+highlight def link vim9SetBracketKeycode vim9String
 highlight def link vim9SetEqual vim9OperAssign
 highlight def link vim9SetMod vim9IsOption
 highlight def link vim9SetNumberValue Number
