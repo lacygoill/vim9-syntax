@@ -854,7 +854,7 @@ const event: list<string> = getcompletion('', 'event')
 
 # `:help cmdline-special`
 const ex_special_characters: list<string> =
-    getcompletion('help :<', 'cmdline')[1 :]
+    getcompletion(':<', 'help')[1 :]
         ->map((_, v: string) => v->trim(':<>'))
 
 # key_name {{{3

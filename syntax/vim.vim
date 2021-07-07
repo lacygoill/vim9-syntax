@@ -2337,6 +2337,7 @@ syntax cluster vim9Expr contains=
     \ vim9Number,
     \ vim9Oper,
     \ vim9OperParen,
+    \ vim9Registers,
     \ vim9String
 
 # Booleans / null / v:none {{{2
@@ -2397,13 +2398,31 @@ else
         \ oneline
 endif
 
-# The contents of a register is a string, and can be referred to via `@{regname}`.
+# The contents of a register is a string, and can be referred to via `@{regname}`.{{{
+#
 # It needs to be matched by our syntax plugin to avoid issues such as:
 #
 #     @" = text->join("\n")
 #      ^
 #      that's not the start of a string
-syntax match vim9Registers /\_s\@1<=@[-"0-9a-z+.:%#/=]\_s\@=/
+#}}}
+# Don't assert anything for the surroundings.{{{
+#
+# For example,  don't assume that  an `@r` expression is  necessarily surrounded
+# with spaces:
+#
+#     Func(@r)
+#         ^  ^
+#
+#     var l = [@r]
+#             ^  ^
+#
+#     l->Func()
+#      ^
+#
+# ...
+#}}}
+syntax match vim9Registers /@[-"0-9a-z+.:%#/=]/
 
 # Numbers {{{2
 
@@ -3653,7 +3672,7 @@ highlight def link vim9HiTerm Type
 highlight def link vim9Highlight vim9GenericCmd
 highlight def link vim9Import Include
 highlight def link vim9ImportAsFrom vim9Import
-highlight def link vim9Increment vim9Oper
+highlight def link vim9Increment vim9OperAssign
 highlight def link vim9IsOption PreProc
 highlight def link vim9IskSep Delimiter
 highlight def link vim9LambdaArgs vim9FuncArgs

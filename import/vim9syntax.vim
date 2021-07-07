@@ -1126,14 +1126,6 @@ const default_highlighting_group_list: list<string> =<< trim END
     MoreMsg
     NonText
     Normal
-    OperatorSandwichAdd@en
-    OperatorSandwichAdd@ja
-    OperatorSandwichBuns@en
-    OperatorSandwichBuns@ja
-    OperatorSandwichChange@en
-    OperatorSandwichChange@ja
-    OperatorSandwichDelete@en
-    OperatorSandwichDelete@ja
     Pmenu
     PmenuSbar
     PmenuSel
@@ -1175,11 +1167,6 @@ const default_highlighting_group_list: list<string> =<< trim END
     WildMenu
     debugBreakpoint
     debugPC
-    quickhl-commands
-    quickhl-contents
-    quickhl-examples
-    quickhl-faq
-    quickhl-variables
 END
 
 export const default_highlighting_group: string = default_highlighting_group_list->join()
@@ -2512,8 +2499,6 @@ const option_terminal_list: list<string> =<< trim END
     t_GP
     t_IE
     t_IS
-    t_PE
-    t_PS
     t_RB
     t_RC
     t_RF
