@@ -928,15 +928,18 @@ const option: list<string> = Option()
 
 # terminal options with only word characters
 const option_terminal: list<string> =
-    getcompletion('t_', 'option')
+    # getting all terminal options is trickier than it seems;
+    # let's use 2 sources to cover as much ground as possible
+    (getcompletion('t_', 'option') + getcompletion('t_', 'help'))
         ->filter((_, v: string): bool => v =~ '^t_\w\w$')
         ->sort()
+        ->uniq()
 
 # option_terminal_special {{{3
 
 # terminal options with at least 1 non-word character
 const option_terminal_special: list<string> =
-    getcompletion('t_', 'option')
+    (getcompletion('t_', 'option') + getcompletion('t_', 'help'))
         ->filter((_, v: string): bool => v =~ '\W')
 #}}}1
 
