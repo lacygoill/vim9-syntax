@@ -2496,9 +2496,38 @@ const option_terminal_list: list<string> =<< trim END
     t_EI
     t_F1
     t_F2
+    t_F3
+    t_F4
+    t_F5
+    t_F6
+    t_F7
+    t_F8
+    t_F9
     t_GP
     t_IE
     t_IS
+    t_K1
+    t_K3
+    t_K4
+    t_K5
+    t_K6
+    t_K7
+    t_K8
+    t_K9
+    t_KA
+    t_KB
+    t_KC
+    t_KD
+    t_KE
+    t_KF
+    t_KG
+    t_KH
+    t_KI
+    t_KJ
+    t_KK
+    t_KL
+    t_PE
+    t_PS
     t_RB
     t_RC
     t_RF
@@ -2528,15 +2557,29 @@ const option_terminal_list: list<string> =<< trim END
     t_bc
     t_cd
     t_ce
+    t_ci
     t_cl
     t_cm
     t_cs
+    t_cv
     t_da
     t_db
     t_dl
+    t_ed
+    t_el
+    t_f1
+    t_f2
+    t_f3
+    t_f4
+    t_f5
+    t_f6
+    t_f7
+    t_f8
+    t_f9
     t_fd
     t_fe
     t_fs
+    t_il
     t_k1
     t_k2
     t_k3
@@ -2570,8 +2613,10 @@ const option_terminal_list: list<string> =<< trim END
     t_se
     t_so
     t_sr
+    t_tb
     t_te
     t_ti
+    t_tp
     t_ts
     t_u7
     t_ue
