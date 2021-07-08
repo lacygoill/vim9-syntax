@@ -941,6 +941,8 @@ const option_terminal: list<string> =
 const option_terminal_special: list<string> =
     (getcompletion('t_', 'option') + getcompletion('t_', 'help'))
         ->filter((_, v: string): bool => v =~ '\W')
+        ->sort()
+        ->uniq()
 #}}}1
 
 const IMPORT_FILE: string = expand('<sfile>:p:h:h') .. '/import/vim9syntax.vim'
