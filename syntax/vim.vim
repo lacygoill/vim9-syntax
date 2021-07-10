@@ -407,7 +407,9 @@ syntax match vim9RangeLnumNotation /\c<line[12]>/
     \ nextgroup=@vim9RangeAfterSpecifier
     \ skipwhite
 
-syntax match vim9RangeMark /'[a-zA-Z0-9<>()[\]{}'.^]/
+# TODO: We use this regex in two locations; code duplication is bad.
+# Extract it into an importable item.
+syntax match vim9RangeMark /'[a-zA-Z'[\]<>0-9"^.(){}]/
     \ contained
     \ nextgroup=@vim9RangeAfterSpecifier
     \ skipwhite
@@ -1357,7 +1359,7 @@ syntax keyword vim9MarkCmd ma[rk]
     \ skipwhite
 
 syntax match vim9MarkCmdArgInvalid /[^ \t|]\+/ contained
-syntax match vim9MarkCmdArgValid /\s\@1<=[a-zA-Z0-9<>()[\]{}'.^]\_s\@=/ contained
+syntax match vim9MarkCmdArgValid /\s\@1<=[a-zA-Z'[\]<>0-9"^.(){}]\_s\@=/ contained
 
 # :nnoremap {{{3
 
@@ -1479,7 +1481,7 @@ syntax match vim9MapRhsExpr /.*/
 syntax region vim9MapCmd
     \ start=/\c<Cmd>/
     \ matchgroup=vim9BracketNotation
-    \ end=/\c<CR>/
+    \ end=/\c<CR>\|<Enter>/
     \ contained
     \ contains=@vim9Expr,vim9BracketNotation,vim9MapCmdBar,vim9SpecFile
     \ keepend
@@ -1487,7 +1489,7 @@ syntax region vim9MapCmd
 
 syntax region vim9MapInsertExpr
     \ start=/\c<C-R>=\@=/
-    \ end=/\c<CR>/
+    \ end=/\c<CR>\|<Enter>/
     \ contained
     \ contains=@vim9Expr,vim9BracketNotation,vim9EvalExpr
     \ keepend
@@ -1498,7 +1500,7 @@ syntax region vim9MapCmdlineExpr
     \ matchgroup=vim9BracketNotation
     \ start=/\c<C-\\>e/
     \ matchgroup=NONE
-    \ end=/\c<CR>/
+    \ end=/\c<CR>\|<Enter>/
     \ contained
     \ contains=@vim9Expr,vim9BracketNotation
     \ keepend
@@ -1612,7 +1614,7 @@ syntax region vim9SubstRep
     \ skip=/\\\\\|\\\z1/
     \ end=/\z1/
     \ matchgroup=vim9BracketNotation
-    \ end=/\c<CR>/
+    \ end=/\c<CR>\|<Enter>/
     \ contained
     \ contains=@vim9SubstRepList
     \ nextgroup=vim9SubstFlagErr
@@ -1624,7 +1626,7 @@ syntax region vim9SubstRepExpr
     \ skip=/\\\\\|\\\z1/
     \ end=/\z1/
     \ matchgroup=vim9BracketNotation
-    \ end=/\c<CR>/
+    \ end=/\c<CR>\|<Enter>/
     \ contained
     \ contains=@vim9Expr,vim9EvalExpr
     \ nextgroup=vim9SubstFlagErr
@@ -2716,13 +2718,16 @@ execute 'syntax match vim9MayBeOptionSet'
     .. ' contains=vim9IsOption'
     .. ' nextgroup=vim9SetEqual,vim9SetEqualError,vim9MayBeOptionSet,vim9SetMod'
     .. ' skipwhite'
-    #                    ✘
-    #                    vv
-    # setlocal foldmethod = 'expr'
-    # setlocal foldmethod=expr
-    #                    ^
-    #                    ✔
-    syntax match vim9SetEqualError / =/ contained
+    # White space is disallowed around the assignment operator:{{{
+    #
+    #                        ✘
+    #                        vv
+    #     setlocal foldmethod = 'expr'
+    #     setlocal foldmethod=expr
+    #                        ^
+    #                        ✔
+    #}}}
+    syntax match vim9SetEqualError / [-+^]\==/ contained
 
 syntax match vim9OptionSigil /&\%([gl]:\)\=/ contained
 

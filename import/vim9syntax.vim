@@ -2637,7 +2637,9 @@ export const option_terminal: string = option_terminal_list->join()
 const option_terminal_special_list: list<string> =<< trim END
     t_#2
     t_#4
+    t_%1
     t_%i
+    t_&8
     t_*7
     t_@7
     t_k;

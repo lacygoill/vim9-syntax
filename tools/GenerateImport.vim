@@ -940,6 +940,7 @@ const option_terminal: list<string> =
 # terminal options with at least 1 non-word character
 const option_terminal_special: list<string> =
     (getcompletion('t_', 'option') + getcompletion('t_', 'help'))
+        ->map((_, v: string) => v->trim("'"))
         ->filter((_, v: string): bool => v =~ '\W')
         ->sort()
         ->uniq()
