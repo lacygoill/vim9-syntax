@@ -5,25 +5,26 @@ vim9script
 
 # Purpose:{{{
 #
-# Derive a  new syntax group  (`to`) from  an existing one  (`from`), overriding
-# some attributes (`newAttributes`).
+# Derive  a  new syntax  group  (`new_group`)  from  an existing  one  (`from`),
+# overriding some attributes (`new_attrs`).
 #}}}
 # Usage Examples:{{{
 #
-#     # create `CommentUnderlined` from `Comment`; override the `term`, `cterm`, and `gui` attributes
+# To define `CommentUnderlined` with the same attributes as `Comment`, resetting
+# the `term`, `cterm`, and `gui` attributes with the value `underline`:
 #
-#         Derive('CommentUnderlined', 'Comment', 'term=underline cterm=underline gui=underline')
+#     Derive('CommentUnderlined', 'Comment', 'term=underline cterm=underline gui=underline')
 #
-#     # create `PopupSign` from `WarningMsg`; override the `guibg` or `ctermbg` attribute,
-#     # using the colors of the `Normal` HG
+# To define `PopupSign` with the  same attributes as `WarningMsg`, resetting the
+# `guibg` or `ctermbg` attributes with the colors of the `Normal` HG:
 #
-#         Derive('PopupSign', 'WarningMsg', {bg: 'Normal'})
+#     Derive('PopupSign', 'WarningMsg', {bg: 'Normal'})
 #}}}
 
 export def Derive( #{{{3
-    to: string,
+    new_group: string,
     from: string,
-    arg_newAttributes: any,
+    new_attrs: any,
 )
     var originalDefinition: string = Getdef(from)
     if originalDefinition =~ '\<cleared\>'
@@ -47,11 +48,10 @@ export def Derive( #{{{3
         originalGroup = from
     endif
     var pat: string = '^' .. originalGroup .. '\|xxx'
-    var Rep: func = (m: list<string>): string => m[0] == originalGroup ? to : ''
-    var newAttributes: string = Getattr(arg_newAttributes)
+    var Rep: func = (m: list<string>): string => m[0] == originalGroup ? new_group : ''
     execute 'highlight '
         .. originalDefinition->substitute(pat, Rep, 'g')
-        .. ' ' .. newAttributes
+        .. ' ' .. Getattr(new_attrs)
 
     # We want our derived HG to persist even after we change the color scheme at runtime.{{{
     #
@@ -70,14 +70,14 @@ export def Derive( #{{{3
     # exact same command as  we did for the previous one.   We need to re-invoke
     # `Derive()` with the same arguments.
     #}}}
-    var hg: dict<any> = {to: to, from: from, new: arg_newAttributes}
+    var hg: dict<any> = {new_group: new_group, from: from, new: new_attrs}
     if index(derived_hgs, hg) == -1
         derived_hgs += [hg]
     endif
 enddef
 
-# We can't write `list<dict<string>>`, because we need to declare
-# `arg_newAttributes` with the type `any`.
+# We can't  write `list<dict<string>>`, because  we need to  declare `new_attrs`
+# with the type `any`.
 var derived_hgs: list<dict<any>>
 
 augroup ResetDerivedHgWhenColorschemeChanges | autocmd!
@@ -86,7 +86,7 @@ augroup END
 
 def ResetDerivedHgWhenColorschemeChanges()
     for hg: dict<any> in derived_hgs
-        Derive(hg.to, hg.from, hg.new)
+        Derive(hg.new_group, hg.from, hg.new)
     endfor
 enddef
 #}}}2

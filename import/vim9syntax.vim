@@ -1437,6 +1437,10 @@ export const lambda_start: string = '(\ze\%(\s*\h\w*\%([^(]\|\%(\<func\)\@4<=(\)
 
 export const logical_not: string = '/\w\@1<!![~=]\@!!*/'
 
+# mark_valid {{{1
+
+export const mark_valid: string = '[a-zA-Z''[\]<>0-9"^.(){}]'
+
 # maybe_dict_literal_key {{{1
 
 export const maybe_dict_literal_key: string = '/\%([{\n]\|[^ \t\n,{]\@1<!\s\)\@1<=[^ \t{(''"]\+\ze\%(:\s\)\@=/'

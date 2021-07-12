@@ -471,6 +471,13 @@ const logical_not: string = '/'
     .. '!*'
     .. '/'
 
+# mark_valid {{{3
+
+# This regex should match the names of all valid local marks (without the `'` prefix).
+# See `:help mark-motions`; the whole section, down to `:help jump-motions`.
+
+const mark_valid: string = '[a-zA-Z''[\]<>0-9"^.(){}]'
+
 # maybe_dict_literal_key {{{3
 
 # This should  match a sequence  of non-whitespace which  could be written where
@@ -971,6 +978,7 @@ AppendSection('key_name', true)
 AppendSection('lambda_end')
 AppendSection('lambda_start')
 AppendSection('logical_not')
+AppendSection('mark_valid')
 AppendSection('maybe_dict_literal_key')
 AppendSection('most_operators')
 AppendSection('option')

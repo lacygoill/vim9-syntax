@@ -186,6 +186,7 @@ import key_name from 'vim9syntax.vim'
 import lambda_start from 'vim9syntax.vim'
 import lambda_end from 'vim9syntax.vim'
 import logical_not from 'vim9syntax.vim'
+import mark_valid from 'vim9syntax.vim'
 import maybe_dict_literal_key from 'vim9syntax.vim'
 import most_operators from 'vim9syntax.vim'
 import option from 'vim9syntax.vim'
@@ -228,7 +229,7 @@ syntax match vim9BracketNotation /\c<Bar>/ contains=vim9BracketKey skipwhite
 
 # This could break the highlighting of a command in a mapping (between `<Cmd>` and `<CR>`).
 # Especially if `<Cmd>` is preceded by some key(s).
-syntax match vim9BracketNotation /\c<Cmd>/
+syntax match vim9BracketNotation /\c<Cmd>/hs=s+1
     \ contains=vim9BracketKey
     \ nextgroup=@vim9CanBeAtStartOfLine,@vim9Range,vim9RangeIntroducer2
     \ skipwhite
@@ -407,12 +408,10 @@ syntax match vim9RangeLnumNotation /\c<line[12]>/
     \ nextgroup=@vim9RangeAfterSpecifier
     \ skipwhite
 
-# TODO: We use this regex in two locations; code duplication is bad.
-# Extract it into an importable item.
-syntax match vim9RangeMark /'[a-zA-Z'[\]<>0-9"^.(){}]/
-    \ contained
-    \ nextgroup=@vim9RangeAfterSpecifier
-    \ skipwhite
+execute 'syntax match vim9RangeMark /' .. "'" .. mark_valid .. '/'
+    .. ' contained'
+    .. ' nextgroup=@vim9RangeAfterSpecifier'
+    .. ' skipwhite'
 
 syntax match vim9RangeNumber /\d\+/
     \ contained
@@ -1359,7 +1358,7 @@ syntax keyword vim9MarkCmd ma[rk]
     \ skipwhite
 
 syntax match vim9MarkCmdArgInvalid /[^ \t|]\+/ contained
-syntax match vim9MarkCmdArgValid /\s\@1<=[a-zA-Z'[\]<>0-9"^.(){}]\_s\@=/ contained
+execute 'syntax match vim9MarkCmdArgValid /\s\@1<=' .. mark_valid .. '\_s\@=/ contained'
 
 # :nnoremap {{{3
 
@@ -1842,7 +1841,7 @@ execute 'syntax match vim9SynRegOpt'
     ..         'conceal\%(ends\)\=\|transparent\|contained\|excludenl'
     .. '\|' .. 'skipempty\|skipwhite\|display\|keepend\|oneline\|extend\|skipnl'
     .. '\|' .. 'fold'
-    .. '\)\>'
+    .. '\)\>\_s\@='
     .. '/'
     .. ' contained'
 
