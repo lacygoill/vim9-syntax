@@ -1477,14 +1477,21 @@ syntax match vim9MapRhsExpr /.*/
 #}}}
 # TODO: Are there other regions where we should make sure to prevent a contained
 # match in its start/end?
+# We don't add `oneline` because it's convenient to break a rhs on multiple lines.{{{
+#
+#     nnoremap <key> <Cmd>call Foo(
+#       \ arg1,
+#       \ arg2,
+#       \ arg3,
+#       \ )
+#}}}
 syntax region vim9MapCmd
     \ start=/\c<Cmd>/
     \ matchgroup=vim9BracketNotation
-    \ end=/\c<CR>\|<Enter>/
+    \ end=/\c<CR>\|<Enter>\|^\s*$/
     \ contained
     \ contains=@vim9Expr,vim9BracketNotation,vim9MapCmdBar,vim9SpecFile
     \ keepend
-    \ oneline
 
 syntax region vim9MapInsertExpr
     \ start=/\c<C-R>=\@=/

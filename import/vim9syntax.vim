@@ -2657,7 +2657,7 @@ export const option_valid: string = '\%([a-z]\{2,}\>\|t_[a-zA-Z0-9#%*:@_]\{2}\)'
 
 # pattern_delimiter {{{1
 
-export const pattern_delimiter: string = '[^-+*/%.:# \t[:alnum:]\"|]\@=.\|\.\%(\.=\s\)\@!\|->\@!\%(=\s\)\@!\|[+*/%]\%(=\s\)\@!'
+export const pattern_delimiter: string = '[^-+*/%.:# \t[:alnum:]\"|]\@=.\|->\@!\%(=\s\)\@!\|[+*/%]\%(=\s\)\@!'
 
 # wincmd_valid {{{1
 

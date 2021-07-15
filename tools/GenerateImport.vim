@@ -681,7 +681,18 @@ const pattern_delimiter: string =
     # cause any  trouble.  Mainly, we need  to assert that it  can't be confused
     # with an assignment operator (nor a method call).
     #}}}
-    .. '\|' .. '\.\%(\.=\s\)\@!'
+    #   We could support `.`, but we don't, because it's too tricky.{{{
+    #
+    #     .. '\|' .. '\.\%(\.=\s\)\@!'
+    #
+    # Test against this:
+    #
+    #     s.key ..= 'xxx'
+    #      ^    ^^
+    #
+    # `s` would be wrongly matched as `:substitute`, and the dots as its pattern delimiters.
+    # In reality, `s` is a dictionary.
+    #}}}
     .. '\|' .. '->\@!\%(=\s\)\@!'
     .. '\|' .. '[+*/%]\%(=\s\)\@!'
 
