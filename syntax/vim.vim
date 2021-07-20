@@ -359,7 +359,12 @@ syntax match vim9RangeIntroducer /\%(^\|\s\):\S\@=/
     #     to get a column of colons
     #
     # Or  maybe  to   remove  an  ambiguity  where  the  next   token  could  be
-    # misinterpreted as something else than an Ex command.
+    # misinterpreted as something else than an Ex command:
+    #
+    #     :!shellCmd
+    #     ^
+    #
+    # Here, `:` asserts that `!` is an Ex command, and not the logical operator NOT.
     #
     # ---
     #
@@ -378,14 +383,13 @@ syntax match vim9RangeIntroducer /\%(^\|\s\):\S\@=/
     #     ^
     #}}}
     # Order: Must come after `vim9RangeIntroducer`.
-    syntax match vim9UnambiguousColon /\s\=:[a-zA-Z]\@=/
+    syntax match vim9UnambiguousColon /\s\=:[a-zA-Z!]\@=/
         \ contained
         \ nextgroup=@vim9CanBeAtStartOfLine
 
 syntax cluster vim9RangeAfterSpecifier contains=
     \ @vim9CanBeAtStartOfLine,
     \ @vim9Range,
-    \ vim9Filter,
     \ vim9RangeMissingSpace
 
 #                     v-----v v-----v
@@ -520,6 +524,7 @@ syntax match vim9MayBeCmd /\%(\<\h\w*\>\)\@=/
 
 # Now, let's build a cluster containing all groups which can appear at the start of a line.
 syntax cluster vim9CanBeAtStartOfLine contains=
+    \     vim9BangCmd,
     \     vim9Block,
     \     vim9Comment,
     \     vim9FuncCall,
@@ -2005,26 +2010,22 @@ syntax keyword vim9Wincmd winc[md]
 syntax match vim9WincmdArgInvalid /\S\+/ contained
 execute 'syntax match vim9WincmdArg ' .. wincmd_valid .. ' contained'
 
-# :{range}!{filter} {{{3
-# `:help :range!`
+# :! {{{3
 
-# We only support `:!` when used to filter some lines in the buffer.{{{
+# We do not support `:!` without a colon.{{{
 #
-# IOW, we only recognize it when it comes right after a range, which itself must
-# be introduced with a colon.
+# First, it would be too tricky to distinguish it from the logical NOT operator.
+#
+# Second, it's easy to add a colon to clearly lift the ambiguity.
+#
+# Third, `:terminal`  is a better  command; it's  more readable, and  provides a
+# regular buffer in which you can leverage all of your commands.
 #}}}
-# We do not support `:!` to run an external command which needs a controlling terminal.{{{
-#
-# First, it would be  too tricky to distinguish this bang  command from the bang
-# logical NOT operator.
-#
-# Second, `:terminal` is a better mechanism anyway; in your code, use it instead.
-#}}}
-syntax match vim9Filter /!/ contained nextgroup=vim9FilterShellCmd
-syntax match vim9FilterShellCmd /.*/ contained contains=vim9FilterLastShellCmd
+syntax match vim9BangCmd /!/ contained nextgroup=vim9BangShellCmd
+syntax match vim9BangShellCmd /.*/ contained contains=vim9BangLastShellCmd
 # TODO: Support special filenames like `%:p`, `%%`, ...
 
-# Inside a filter command, an unescaped `!` has a special meaning:{{{
+# Inside a bang command, an unescaped `!` has a special meaning:{{{
 #
 # From `:help :!`:
 #
@@ -2033,8 +2034,7 @@ syntax match vim9FilterShellCmd /.*/ contained contains=vim9FilterLastShellCmd
 #    > there is a backslash before the '!', then that
 #    > backslash is removed.
 #}}}
-syntax match vim9FilterLastShellCmd /\\\@1<!!/ display contained
-
+syntax match vim9BangLastShellCmd /\\\@1<!!/ display contained
 #}}}1
 # Continuation {{{1
 
@@ -3772,6 +3772,9 @@ highlight default link vim9AutocmdGroup vim9AugroupNameEnd
 highlight default link vim9AutocmdMod Special
 highlight default link vim9AutocmdPat vim9String
 highlight default link vim9BacktickExpansion vim9ShellCmd
+highlight default link vim9BangCmd vim9GenericCmd
+highlight default link vim9BangLastShellCmd Special
+highlight default link vim9BangShellCmd vim9ShellCmd
 highlight default link vim9Bool Boolean
 highlight default link vim9BracketKey Delimiter
 highlight default link vim9BracketNotation Special
@@ -3804,9 +3807,6 @@ highlight default link vim9Export vim9Import
 highlight default link vim9FTCmd vim9GenericCmd
 highlight default link vim9FTOption vim9SynType
 highlight default link vim9FgBgAttrib vim9HiAttrib
-highlight default link vim9Filter vim9GenericCmd
-highlight default link vim9FilterLastShellCmd Special
-highlight default link vim9FilterShellCmd vim9ShellCmd
 highlight default link vim9Finish vim9Return
 highlight default link vim9FuncArgs Identifier
 highlight default link vim9FuncEnd vim9DefKey
