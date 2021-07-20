@@ -314,18 +314,6 @@ syntax match vim9OperError /-\@1<!>/
 #     ++&l:shiftwidth
 #}}}
 syntax match vim9Increment /\%(++\|--\)\h\@=/ contained
-
-# Make sure the argument is valid:{{{
-#
-#     var n = 123
-#     ++n
-#       ^
-#       ✔
-#
-#     ++Func()
-#           ^^
-#           ✘
-#}}}
 #}}}1
 
 # Range {{{1
