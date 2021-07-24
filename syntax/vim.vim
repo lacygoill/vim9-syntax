@@ -463,6 +463,7 @@ syntax cluster vim9IsCmd contains=
     \ vim9AbbrevCmd,
     \ vim9Augroup,
     \ vim9Autocmd,
+    \ vim9BangCmd,
     \ vim9CmdModifier,
     \ vim9CopyMove,
     \ vim9Declare,
@@ -524,7 +525,6 @@ syntax match vim9MayBeCmd /\%(\<\h\w*\>\)\@=/
 
 # Now, let's build a cluster containing all groups which can appear at the start of a line.
 syntax cluster vim9CanBeAtStartOfLine contains=
-    \     vim9BangCmd,
     \     vim9Block,
     \     vim9Comment,
     \     vim9FuncCall,
@@ -2019,7 +2019,7 @@ execute 'syntax match vim9WincmdArg ' .. wincmd_valid .. ' contained'
 # Second, it's easy to add a colon to clearly lift the ambiguity.
 #
 # Third, `:terminal`  is a better  command; it's  more readable, and  provides a
-# regular buffer in which you can leverage all of your commands.
+# regular buffer in which you can leverage all of your usual commands.
 #}}}
 syntax match vim9BangCmd /!/ contained nextgroup=vim9BangShellCmd
 syntax match vim9BangShellCmd /.*/ contained contains=vim9BangLastShellCmd
