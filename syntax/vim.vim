@@ -1043,8 +1043,9 @@ syntax match vim9UserCmdLhs /\u\w*/
     \ contained
     \ nextgroup=
     \     @vim9CanBeAtStartOfLine,
-    \     vim9Line12MissingColon,
-    \     vim9ContinuationBeforeCmd
+    \     vim9BlockUserCmd,
+    \     vim9ContinuationBeforeCmd,
+    \     vim9Line12MissingColon
     \ skipnl
     \ skipwhite
 
@@ -2971,6 +2972,13 @@ syntax match vim9LambdaDictMissingParen /{/ contained
 syntax region vim9Block
     \ matchgroup=Statement
     \ start=/\%(=>\s\+\)\@<={$/
+    \ end=/^\s*}/
+    \ contained
+    \ contains=TOP
+
+syntax region vim9BlockUserCmd
+    \ matchgroup=Statement
+    \ start=/{$/
     \ end=/^\s*}/
     \ contained
     \ contains=TOP

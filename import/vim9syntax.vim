@@ -92,6 +92,10 @@ const builtin_func_list: list<string> =<< trim END
     did_filetype
     diff_filler
     diff_hlID
+    digraph_get
+    digraph_getlist
+    digraph_set
+    digraph_setlist
     echoraw
     empty
     environ
@@ -145,8 +149,6 @@ const builtin_func_list: list<string> =<< trim END
     getcurpos
     getcursorcharpos
     getcwd
-    getdigraph
-    getdigraphlist
     getenv
     getfontname
     getfperm
@@ -348,8 +350,6 @@ const builtin_func_list: list<string> =<< trim END
     setcharsearch
     setcmdpos
     setcursorcharpos
-    setdigraph
-    setdigraphlist
     setenv
     setfperm
     setline
