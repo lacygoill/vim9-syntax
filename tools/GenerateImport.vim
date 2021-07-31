@@ -370,6 +370,52 @@ const command_can_be_before: string =
     .. '\)'
     .. '\)\@!'
 
+# increment_invalid {{{3
+
+# This regex should match an increment/decrement operator used with an invalid expression.{{{
+#
+# For example:
+#
+#     ++Func()
+#       ^----^
+#         ✘
+#}}}
+
+const increment_invalid: string = '\%(++\|--\)'
+    # let's assert what should *not* be matched
+    .. '\%('
+    # from now on, we must describe what *is* valid
+    ..     '\%('
+    # a simple variable identifier (`++name`)
+    ..         '\h\w*'
+    # or an option name (`++&shiftwidth`)
+    ..         '\|'
+    ..         '&\%([lg]:\)\=[a-z]\{2,}'
+    ..     '\)'
+    # it must be at the end of a line, or followed by a bar
+    ..     '\s*[|\n]'
+    ..     '\|'
+    # Tricky Special Cases:{{{
+    #
+    #     var l = [1, 2, 3]
+    #        v
+    #     ++l[0]
+    #       ^--^
+    #        ✔
+    #
+    #     var d = {key: 123}
+    #        v
+    #     ++d.key
+    #       ^---^
+    #         ✔
+    #
+    # We don't try to describe what follows the bracket or dot, because it seems
+    # too complex.   IOW, our regex  is not perfect,  but should be  good enough
+    # most of the time.
+    #}}}
+    ..     '\h\w*[[.]'
+    .. '\)\@!'
+
 # lambda_start, lambda_end {{{3
 
 # closing paren of arguments:
@@ -985,6 +1031,7 @@ AppendSection('command_name')
 AppendSection('default_highlighting_group')
 AppendSection('event')
 AppendSection('ex_special_characters', true)
+AppendSection('increment_invalid')
 AppendSection('key_name', true)
 AppendSection('lambda_end')
 AppendSection('lambda_start')

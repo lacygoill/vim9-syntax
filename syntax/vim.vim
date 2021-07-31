@@ -182,6 +182,7 @@ import command_name from 'vim9syntax.vim'
 import default_highlighting_group from 'vim9syntax.vim'
 import event from 'vim9syntax.vim'
 import ex_special_characters from 'vim9syntax.vim'
+import increment_invalid from 'vim9syntax.vim'
 import key_name from 'vim9syntax.vim'
 import lambda_start from 'vim9syntax.vim'
 import lambda_end from 'vim9syntax.vim'
@@ -291,29 +292,11 @@ syntax match vim9OperError /-\@1<!>/
 #
 # Which makes sense.  They can only appear at the start of a line.
 #}}}
-# Don't try to validate the argument.{{{
-#
-# It seems too tricky.
-#
-# For example, this is not valid:
-#
-#     ++Func()
-#
-# But this is valid:
-#
-#     var l = [1, 2, 3]
-#     ++l[0]
-#
-# And this too:
-#
-#     var d = {key: 123}
-#     ++d.key
-#
-# And this too:
-#
-#     ++&l:shiftwidth
-#}}}
-syntax match vim9Increment /\%(++\|--\)\h\@=/ contained
+syntax match vim9Increment /\%(++\|--\)\%(\h\|&\)\@=/ contained
+
+execute 'syntax match vim9IncrementError'
+    .. ' /' .. increment_invalid .. '/'
+    .. ' contained'
 #}}}1
 
 # Range {{{1
@@ -467,6 +450,7 @@ syntax cluster vim9IsCmd contains=
     \ vim9CmdModifier,
     \ vim9CopyMove,
     \ vim9Declare,
+    \ vim9DeclareError,
     \ vim9DigraphsCmd,
     \ vim9DoCmds,
     \ vim9Doautocmd,
@@ -477,7 +461,7 @@ syntax cluster vim9IsCmd contains=
     \ vim9Global,
     \ vim9Highlight,
     \ vim9Import,
-    \ vim9LetDeprecated,
+    \ vim9DeprecatedLet,
     \ vim9LuaRegion,
     \ vim9Map,
     \ vim9MarkCmd,
@@ -530,6 +514,7 @@ syntax cluster vim9CanBeAtStartOfLine contains=
     \     vim9FuncCall,
     \     vim9FuncHeader,
     \     vim9Increment,
+    \     vim9IncrementError,
     \     vim9LegacyFunction,
     \     vim9MayBeCmd,
     \     vim9RangeIntroducer,
@@ -836,10 +821,52 @@ execute 'syntax region vim9TryCatchPattern'
 
 # Declaration {{{3
 
-syntax keyword vim9Declare cons[t] final unl[et] var
+# Don't rewrite this rule with `:help syn-keyword`.
+# The `vim9DeclareError` rule needs to be able to override `vim9Declare`.
+# But it uses a match, and thus can only win against another match/region.
+syntax match vim9Declare /\<\%(const\=\|final\|unl\%[et]\|var\)\>/
     \ contained
     \ nextgroup=vim9ListUnpackDeclaration,vim9ReservedNames
     \ skipwhite
+    # "Public" variables cannot be declared:{{{
+    #
+    #      ✘
+    #     vvv
+    #     var b:name = ...
+    #     var g:name = ...
+    #     var t:name = ...
+    #     var v:name = ...
+    #     var w:name = ...
+    #     ^^^
+    #      ✘
+    #
+    # Same thing for environment variables, Vim options, and Vim registers:
+    #
+    #      ✘
+    #     vvv
+    #     var $ENV = ...
+    #     var &g:name = ...
+    #     var &l:name = ...
+    #     var &name = ...
+    #     var @r = ...
+    #     ^^^
+    #      ✘
+    #}}}
+    syntax match vim9DeclareError /\<var\ze\s\+\%([bgtvw]:\h\|[$&@]\)/
+        \ contained
+    syntax match vim9DeclareError /\<\%(const\=\|final\)\ze\s\+[$&@]/
+        \ contained
+    # `:unlet` cannot delete a Vim option/register:{{{
+    #
+    #     unlet &shiftwidth
+    #     ^---^
+    #       ✘
+    #
+    #     unlet @r
+    #     ^---^
+    #       ✘
+    #}}}
+    syntax match vim9DeclareError /\<unlet\ze\s\+[&@]/ contained
 
 # NOTE: In the legacy syntax plugin, `vimLetHereDoc` contains `vimComment` and `vim9Comment`.{{{
 #
@@ -875,22 +902,22 @@ syntax match vim9CmdBang /!/ contained nextgroup=@vim9CanBeAtStartOfLine skipwhi
 # It would break the highlighting of a possible following bang.
 syntax match vim9UserCmdDef /\<com\%[mand]\>/
     \ contained
-    \ nextgroup=@vim9UserCmdAttrb
+    \ nextgroup=@vim9UserCmdAttr
     \ skipwhite
 
 syntax match vim9UserCmdDef /\<com\%[mand]\>!/he=e-1
     \ contained
-    \ nextgroup=@vim9UserCmdAttrb
+    \ nextgroup=@vim9UserCmdAttr
     \ skipwhite
 
 # error handling {{{5
 # Order: should come before highlighting valid attributes.
 
-syntax cluster vim9UserCmdAttrb contains=
-    \ vim9UserCmdAttrbEqual,
-    \ vim9UserCmdAttrbError,
-    \ vim9UserCmdAttrbErrorValue,
-    \ vim9UserCmdAttrbName,
+syntax cluster vim9UserCmdAttr contains=
+    \ vim9UserCmdAttrEqual,
+    \ vim9UserCmdAttrError,
+    \ vim9UserCmdAttrErrorValue,
+    \ vim9UserCmdAttrName,
     \ vim9UserCmdLhs
 
 # Order: should come before the next rule highlighting errors in attribute names
@@ -910,130 +937,130 @@ syntax cluster vim9UserCmdAttrb contains=
 #                     ✘  highlighting should still work, in spite of the previous error
 #                     error
 #}}}
-syntax match vim9UserCmdAttrbErrorValue /\S\+/
+syntax match vim9UserCmdAttrErrorValue /\S\+/
     \ contained
-    \ nextgroup=vim9UserCmdAttrbName
+    \ nextgroup=vim9UserCmdAttrName
     \ skipwhite
 
 # an invalid attribute name is an error
-syntax match vim9UserCmdAttrbError /-[^ \t=]\+/
+syntax match vim9UserCmdAttrError /-[^ \t=]\+/
     \ contained
-    \ contains=vim9UserCmdAttrbName
-    \ nextgroup=@vim9UserCmdAttrb,vim9ContinuationBeforeUserCmd
+    \ contains=vim9UserCmdAttrName
+    \ nextgroup=@vim9UserCmdAttr,vim9ContinuationBeforeUserCmd
     \ skipnl
     \ skipwhite
 
 # boolean attributes {{{5
 
-syntax match vim9UserCmdAttrbName /-\%(bang\|bar\|buffer\|register\)\>/
+syntax match vim9UserCmdAttrName /-\%(bang\|bar\|buffer\|register\)\>/
     \ contained
-    \ nextgroup=@vim9UserCmdAttrb,vim9ContinuationBeforeUserCmd
+    \ nextgroup=@vim9UserCmdAttr,vim9ContinuationBeforeUserCmd
     \ skipnl
     \ skipwhite
 
 # attributes with values {{{5
 # = {{{6
 
-syntax match vim9UserCmdAttrbEqual /=/ contained
+syntax match vim9UserCmdAttrEqual /=/ contained
 
 # -addr {{{6
 
-syntax match vim9UserCmdAttrbName /-addr\>/
+syntax match vim9UserCmdAttrName /-addr\>/
     \ contained
-    \ nextgroup=vim9UserCmdAttrbAddress,vim9UserCmdAttrbErrorValue
+    \ nextgroup=vim9UserCmdAttrAddress,vim9UserCmdAttrErrorValue
 
-execute 'syntax match vim9UserCmdAttrbAddress'
+execute 'syntax match vim9UserCmdAttrAddress'
     .. ' /=\%(' .. command_address_type .. '\)\>/'
     .. ' contained'
-    .. ' contains=vim9UserCmdAttrbEqual'
-    .. ' nextgroup=@vim9UserCmdAttrb,vim9ContinuationBeforeUserCmd'
+    .. ' contains=vim9UserCmdAttrEqual'
+    .. ' nextgroup=@vim9UserCmdAttr,vim9ContinuationBeforeUserCmd'
     .. ' skipnl'
     .. ' skipwhite'
 
 # -complete {{{6
 
-syntax match vim9UserCmdAttrbName /-complete\>/
+syntax match vim9UserCmdAttrName /-complete\>/
     \ contained
-    \ nextgroup=vim9UserCmdAttrbComplete,vim9UserCmdAttrbErrorValue
+    \ nextgroup=vim9UserCmdAttrComplete,vim9UserCmdAttrErrorValue
 
 # -complete=arglist
 # -complete=buffer
 # -complete=...
-execute 'syntax match vim9UserCmdAttrbComplete'
+execute 'syntax match vim9UserCmdAttrComplete'
     .. ' /'
     ..     '=\%(' .. command_complete_type .. '\)'
     .. '/'
     .. ' contained'
-    .. ' contains=vim9UserCmdAttrbEqual'
-    .. ' nextgroup=@vim9UserCmdAttrb,vim9ContinuationBeforeUserCmd'
+    .. ' contains=vim9UserCmdAttrEqual'
+    .. ' nextgroup=@vim9UserCmdAttr,vim9ContinuationBeforeUserCmd'
     .. ' skipnl'
     .. ' skipwhite'
 
 # -complete=custom,Func
 # -complete=customlist,Func
-syntax match vim9UserCmdAttrbComplete /=custom\%(list\)\=,\%([gs]:\)\=\%(\w\|[#.]\)*/
+syntax match vim9UserCmdAttrComplete /=custom\%(list\)\=,\%([gs]:\)\=\%(\w\|[#.]\)*/
     \ contained
-    \ contains=vim9UserCmdAttrbEqual,vim9UserCmdAttrbComma
-    \ nextgroup=@vim9UserCmdAttrb,vim9ContinuationBeforeUserCmd
+    \ contains=vim9UserCmdAttrEqual,vim9UserCmdAttrComma
+    \ nextgroup=@vim9UserCmdAttr,vim9ContinuationBeforeUserCmd
     \ skipnl
     \ skipwhite
 
-syntax match vim9UserCmdAttrbComma /,/ contained
+syntax match vim9UserCmdAttrComma /,/ contained
 
 # -count {{{6
 
-syntax match vim9UserCmdAttrbName /-count\>/
+syntax match vim9UserCmdAttrName /-count\>/
     \ contained
     \ nextgroup=
-    \     @vim9UserCmdAttrb,
-    \     vim9UserCmdAttrbCount,
-    \     vim9UserCmdAttrbErrorValue,
+    \     @vim9UserCmdAttr,
+    \     vim9UserCmdAttrCount,
+    \     vim9UserCmdAttrErrorValue,
     \     vim9ContinuationBeforeUserCmd
     \ skipnl
     \ skipwhite
 
-syntax match vim9UserCmdAttrbCount
+syntax match vim9UserCmdAttrCount
     \ /=\d\+/
     \ contained
-    \ contains=vim9Number,vim9UserCmdAttrbEqual
-    \ nextgroup=@vim9UserCmdAttrb,vim9ContinuationBeforeUserCmd
+    \ contains=vim9Number,vim9UserCmdAttrEqual
+    \ nextgroup=@vim9UserCmdAttr,vim9ContinuationBeforeUserCmd
     \ skipnl
     \ skipwhite
 
 # -nargs {{{6
 
-syntax match vim9UserCmdAttrbName /-nargs\>/
+syntax match vim9UserCmdAttrName /-nargs\>/
     \ contained
-    \ nextgroup=vim9UserCmdAttrbNargs,vim9UserCmdAttrbErrorValue
+    \ nextgroup=vim9UserCmdAttrNargs,vim9UserCmdAttrErrorValue
 
-syntax match vim9UserCmdAttrbNargs
+syntax match vim9UserCmdAttrNargs
     \ /=[01*?+]/
     \ contained
-    \ contains=vim9UserCmdAttrbEqual,vim9UserCmdAttrbNargsNumber
-    \ nextgroup=@vim9UserCmdAttrb,vim9ContinuationBeforeUserCmd
+    \ contains=vim9UserCmdAttrEqual,vim9UserCmdAttrNargsNumber
+    \ nextgroup=@vim9UserCmdAttr,vim9ContinuationBeforeUserCmd
     \ skipnl
     \ skipwhite
 
-syntax match vim9UserCmdAttrbNargsNumber /[01]/ contained
+syntax match vim9UserCmdAttrNargsNumber /[01]/ contained
 
 # -range {{{6
 
 # `-range` is a special case:
 # it can accept a value, *or* be used as a boolean.
-syntax match vim9UserCmdAttrbName /-range\>/
+syntax match vim9UserCmdAttrName /-range\>/
     \ contained
     \ nextgroup=
-    \     @vim9UserCmdAttrb,
-    \     vim9UserCmdAttrbErrorValue,
-    \     vim9UserCmdAttrbRange,
+    \     @vim9UserCmdAttr,
+    \     vim9UserCmdAttrErrorValue,
+    \     vim9UserCmdAttrRange,
     \     vim9ContinuationBeforeUserCmd
     \ skipnl
     \ skipwhite
 
-syntax match vim9UserCmdAttrbRange /=\%(%\|-\=\d\+\)/
+syntax match vim9UserCmdAttrRange /=\%(%\|-\=\d\+\)/
     \ contained
-    \ contains=vim9Number,vim9UserCmdAttrbEqual
-    \ nextgroup=@vim9UserCmdAttrb,vim9ContinuationBeforeUserCmd
+    \ contains=vim9Number,vim9UserCmdAttrEqual
+    \ nextgroup=@vim9UserCmdAttr,vim9ContinuationBeforeUserCmd
     \ skipnl
     \ skipwhite
 #}}}5
@@ -1200,39 +1227,106 @@ execute 'syntax region vim9GlobalPat'
     .. ' oneline'
     .. ' skipwhite'
 
-# :highlight {arguments} {{{3
-# :highlight {{{4
+# :highlight {{{3
+# TODO: Review all the rules related to `:highlight`.
+# command {{{4
 
-syntax cluster vim9HighlightCluster contains=
-    \ vim9Comment,
+syntax cluster vim9HiCluster contains=
     \ vim9HiClear,
-    \ vim9HiKeyList,
+    \ vim9HiDefault,
+    \ vim9HiGroup,
     \ vim9HiLink
-
-syntax match vim9HiCtermError /\D\i*/ contained
 
 syntax keyword vim9Highlight hi[ghlight]
     \ contained
-    \ nextgroup=@vim9HighlightCluster,vim9HiBang
+    \ nextgroup=@vim9HiCluster,vim9HiBang
     \ skipwhite
 
-syntax match vim9HiBang /!/ contained nextgroup=@vim9HighlightCluster skipwhite
+syntax match vim9HiBang /!/ contained nextgroup=@vim9HiCluster skipwhite
 
-syntax match vim9HiGroup /\i\+/ contained
+# Group name {{{4
+
+syntax match vim9HiGroup /\w\+/
+    \ contained
+    \ nextgroup=
+    \     vim9HiCterm,
+    \     vim9HiCtermFgBg,
+    \     vim9HiGroup,
+    \     vim9HiGui,
+    \     vim9HiGuiFgBg,
+    \     vim9HiStartStop,
+    \     vim9HiTerm
+    \ skipwhite
+
+# :highlight clear {{{4
+
+syntax keyword vim9HiClear clear contained nextgroup=vim9HiGroup skipwhite
+
+# :highlight default/link {{{4
+
+syntax keyword vim9HiDefault def[ault] contained nextgroup=vim9HiGroup,vim9HiLink skipwhite
+syntax keyword vim9HiLink link contained nextgroup=vim9HiGroup skipwhite
+
+# :highlight group key=arg ... {{{4
+
+syntax match vim9HiEqual /=/
+    \ contained
+    \ nextgroup=
+    \     vim9HiAttr,
+    \     vim9HiCtermColor,
+    \     vim9HiFgBgAttr,
+    \     vim9HiFontname,
+    \     vim9HiGroup,
+    \     vim9HiGuiFontname,
+    \     vim9HiGuiRgb,
+    \     vim9HiNumber
+
+syntax keyword vim9HiTerm term contained nextgroup=vim9HiEqual
+syntax keyword vim9HiCterm cterm contained nextgroup=vim9HiEqual
+syntax keyword vim9HiCtermFgBg ctermfg ctermbg
+    \ contained
+    \ nextgroup=vim9HiEqual
+syntax keyword vim9HiGui gui contained nextgroup=vim9HiEqual
+syntax keyword vim9HiGuiFgBg guibg guifg guisp
+    \ contained
+    \ nextgroup=vim9HiEqual
+
+syntax match vim9HiStartStop /\%(start\|stop\)=/he=e-1
+    \ contained
+    \ nextgroup=vim9HiTermcap,vim9MayBeOptionScoped
+
+syntax match vim9HiGuiFont /font/ contained nextgroup=vim9HiEqual
+
+syntax match vim9HiCtermul /ctermul=/he=e-1
+    \ contained
+    \ nextgroup=
+    \     vim9HiCtermColor,
+    \     vim9HiFgBgAttr,
+    \     vim9HiNumber
+
+syntax match vim9HiTermcap /\S\+/ contained contains=vim9BracketNotation
+syntax match vim9HiNumber /\d\+/ contained nextgroup=vim9HiCterm,vim9HiCtermFgBg skipwhite
+
+# attributes {{{4
 
 syntax case ignore
-syntax keyword vim9HiAttrib contained
+syntax keyword vim9HiAttr
     \ none bold inverse italic nocombine reverse standout strikethrough
     \ underline undercurl
-syntax keyword vim9FgBgAttrib none bg background fg foreground contained
-syntax case match
-
-syntax match vim9HiAttribList /\i\+/ contained contains=vim9HiAttrib
-
-syntax match vim9HiAttribList /\i\+,/he=e-1
     \ contained
-    \ contains=vim9HiAttrib
-    \ nextgroup=vim9HiAttribList
+    \ nextgroup=
+    \     vim9HiAttrComma,
+    \     vim9HiCterm,
+    \     vim9HiCtermFgBg,
+    \     vim9HiGui
+    \ skipwhite
+syntax match vim9HiAttrComma /,/ contained nextgroup=vim9HiAttr
+
+syntax keyword vim9HiFgBgAttr none bg background fg foreground
+    \ contained
+    \ nextgroup=vim9HiCterm,vim9HiGui,vim9HiGuiFgBg,vim9HiCtermFgBg
+    \ skipwhite
+syntax case match
 
 syntax case ignore
 syntax keyword vim9HiCtermColor contained
@@ -1240,92 +1334,13 @@ syntax keyword vim9HiCtermColor contained
     \ darkmagenta darkred darkyellow gray green grey lightblue lightcyan
     \ lightgray lightgreen lightgrey lightmagenta lightred magenta red white
     \ yellow
+    \ nextgroup=vim9HiCterm,vim9HiCtermFgBg
+    \ skipwhite
 syntax case match
 
 syntax match vim9HiFontname /[a-zA-Z\-*]\+/ contained
 syntax match vim9HiGuiFontname /'[a-zA-Z\-* ]\+'/ contained
-syntax match vim9HiGuiRgb /#\x\{6}/ contained
-
-# :highlight group key=arg ... {{{4
-
-syntax cluster vim9HiCluster contains=
-    \ vim9BracketNotation,
-    \ vim9Group,
-    \ vim9HiCTerm,
-    \ vim9HiCtermFgBg,
-    \ vim9HiCtermul,
-    \ vim9HiGroup,
-    \ vim9HiGui,
-    \ vim9HiGuiFgBg,
-    \ vim9HiGuiFont,
-    \ vim9HiKeyError,
-    \ vim9HiStartStop,
-    \ vim9HiTerm
-
-syntax region vim9HiKeyList
-    \ start=/\i\+/
-    \ skip=/\\\\\|\\|/
-    \ end=/$\||/
-    \ contained
-    \ contains=@vim9HiCluster
-    \ oneline
-
-syntax match vim9HiKeyError /\i\+=/he=e-1 contained
-syntax match vim9HiTerm /term=/he=e-1 contained nextgroup=vim9HiAttribList
-
-syntax match vim9HiStartStop /\%(start\|stop\)=/he=e-1
-    \ contained
-    \ nextgroup=vim9HiTermcap,vim9MayBeOptionScoped
-
-syntax match vim9HiCTerm /cterm=/he=e-1 contained nextgroup=vim9HiAttribList
-
-syntax match vim9HiCtermFgBg /cterm[fb]g=/he=e-1
-    \ contained
-    \ nextgroup=
-    \     vim9FgBgAttrib,
-    \     vim9HiCtermColor,
-    \     vim9HiCtermError,
-    \     vim9HiNmbr
-
-syntax match vim9HiCtermul /ctermul=/he=e-1
-    \ contained
-    \ nextgroup=
-    \     vim9FgBgAttrib,
-    \     vim9HiCtermColor,
-    \     vim9HiCtermError,
-    \     vim9HiNmbr
-
-syntax match vim9HiGui /gui=/he=e-1 contained nextgroup=vim9HiAttribList
-syntax match vim9HiGuiFont /font=/he=e-1 contained nextgroup=vim9HiFontname
-
-syntax match vim9HiGuiFgBg /gui\%([fb]g\|sp\)=/he=e-1
-    \ contained
-    \ nextgroup=
-    \     vim9FgBgAttrib,
-    \     vim9HiGroup,
-    \     vim9HiGuiFontname,
-    \     vim9HiGuiRgb
-
-syntax match vim9HiTermcap /\S\+/ contained contains=vim9BracketNotation
-syntax match vim9HiNmbr /\d\+/ contained
-
-# :highlight clear {{{4
-
-# `skipwhite` is necessary for `{group}` to be highlighted in `highlight clear {group}`.
-syntax keyword vim9HiClear clear contained nextgroup=vim9HiGroup skipwhite
-
-# :highlight link {{{4
-
-execute 'syntax region vim9HiLink'
-    .. ' matchgroup=vim9GenericCmd'
-    .. ' start=/'
-    .. '\%(\<hi\%[ghlight]\s\+\)\@<='
-    .. '\%(\%(def\%[ault]\s\+\)\=link\>\|\<def\>\)'
-    .. '/'
-    .. ' end=/$/'
-    .. ' contained'
-    .. ' contains=@vim9HiCluster'
-    .. ' oneline'
+syntax match vim9HiGuiRgb /#\x\{6}/ contained nextgroup=vim9HiGuiFgBg,vim9HiGui skipwhite
 #}}}3
 # :import / :export {{{3
 
@@ -2160,7 +2175,6 @@ execute 'syntax match vim9LegacyFunction'
     .. ' contains=vim9DefKey'
     .. ' nextgroup=vim9LegacyFuncBody'
 
-# `vim9String` needs to be contained to prevent a string from being wrongly highlighted as a comment.
 # There might be a trailing comment after `:endfunction`.{{{
 #
 # Typically, it might be fold markers:
@@ -2177,14 +2191,58 @@ syntax region vim9LegacyFuncBody
     \ matchgroup=vim9DefKey
     \ end=/^\s*\<endf\%[unction]\ze\s*\%(".*\)\=$/
     \ contained
-    \ contains=vim9LegacyComment,vim9String
+    \ contains=
+    \     vim9LegacyComment,
+    \     vim9LegacyConcatInvalid,
+    \     vim9LegacyConcatValid,
+    \     vim9LegacyDictMember,
+    \     vim9LegacyFloat,
+    \     vim9LegacyVarargsHeader,
+    \     vim9LegacyString
     \ nextgroup=vim9LegacyComment
     \ skipwhite
+
+# We need to match strings because they can contain arbitrary text, which can break other rules.
+# Order: Needs to be installed before `vim9LegacyComment`.
+syntax region vim9LegacyString start=/"/ skip=/\\\\\|\\"/ end=/"/  oneline keepend
+syntax region vim9LegacyString start=/'/ skip=/''/ end=/'/  oneline keepend
 
 # We  need to  support inline  comments (if  only for  a trailing  comment after
 # `:endfunction`), so we can't anchor the comment to the start of the line.
 syntax match vim9LegacyComment /".*/ contained
 #}}}2
+# In a Vim9 script, `.` cannot be used for a concatenation (nor `.=`).  Only `..` is valid.
+# *Even* in a legacy function.{{{
+#
+# From `:help Vim9-script`:
+#
+#    > When using `:function` in a Vim9 script file the legacy syntax is used, with
+#    > the highest |scriptversion|.
+#
+# From `:help scriptversion-2`:
+#
+#    > String concatenation with "." is not supported, use ".." instead.
+#}}}
+syntax match vim9LegacyConcatInvalid /\./ contained
+    # A dot in the `..` concatenation operator is valid.
+    syntax match vim9LegacyConcatValid /\.\./ contained
+    # A dot to access a dictionary member is valid.{{{
+    #
+    # Note that this regex is too broad, but we can't make it better.
+    # For example:
+    #
+    #     foo.bar
+    #
+    # This is correct only if `foo` evaluates to a dictionary.
+    # Unfortunately, we can't know that with a  simple regex; so we accept it no
+    # matter what it is.
+    #}}}
+    syntax match vim9LegacyDictMember /\h\w*\zs\.\ze\h\w*/ contained
+    # A dot in `...` at the end of a legacy function's header is valid.
+    syntax match vim9LegacyVarArgsHeader /\.\.\.\%(\s*)\)\@=/ contained
+    # A dot in a float is valid.
+    syntax match vim9LegacyFloat /\d\+\.\d\+/ contained
+
 # User Call {{{2
 
 # call to any kind of function (builtin + user)
@@ -2545,18 +2603,18 @@ syntax match vim9Registers /@[-"0-9a-z+.:%#/=]/
 # Numbers {{{2
 
 syntax match vim9Number /\<\d\+\%(\.\d\+\%([eE][+-]\=\d\+\)\=\)\=\>/
-    \ nextgroup=vim9Comment
+    \ nextgroup=vim9Comment,vim9StrictWhitespace
     \ skipwhite
 
 syntax match vim9Number /-\d\+\%(\.\d\+\%([eE][+-]\=\d\+\)\=\)\=\>/
-    \ nextgroup=vim9Comment
+    \ nextgroup=vim9Comment,vim9StrictWhitespace
     \ skipwhite
 
-syntax match vim9Number /\<0[xX]\x\+\>/ nextgroup=vim9Comment skipwhite
-syntax match vim9Number /\_A\zs#\x\{6}\>/ nextgroup=vim9Comment skipwhite
-syntax match vim9Number /\<0[zZ][a-fA-F0-9.]\+\>/ nextgroup=vim9Comment skipwhite
-syntax match vim9Number /\<0o[0-7]\+\>/ nextgroup=vim9Comment skipwhite
-syntax match vim9Number /\<0b[01]\+\>/ nextgroup=vim9Comment skipwhite
+syntax match vim9Number /\<0[xX]\x\+\>/ nextgroup=vim9Comment,vim9StrictWhitespace skipwhite
+syntax match vim9Number /\_A\zs#\x\{6}\>/ nextgroup=vim9Comment,vim9StrictWhitespace skipwhite
+syntax match vim9Number /\<0[zZ][a-fA-F0-9.]\+\>/ nextgroup=vim9Comment,vim9StrictWhitespace skipwhite
+syntax match vim9Number /\<0o[0-7]\+\>/ nextgroup=vim9Comment,vim9StrictWhitespace skipwhite
+syntax match vim9Number /\<0b[01]\+\>/ nextgroup=vim9Comment,vim9StrictWhitespace skipwhite
 
 # It is possible to use single quotes inside numbers to make them easier to read:{{{
 #
@@ -2587,7 +2645,7 @@ syntax match vim9Number /\<0b[01]\+\>/ nextgroup=vim9Comment skipwhite
 #    - `Foo()` is folded (hence, not displayed)
 #    - `vim9Number` is defined with `display`
 #}}}
-syntax match vim9Number /\d\@1<='\d\@=/ nextgroup=vim9Comment skipwhite
+syntax match vim9Number /\d\@1<='\d\@=/ nextgroup=vim9Comment,vim9StrictWhitespace skipwhite
 
 # Dictionaries {{{2
 
@@ -3193,7 +3251,7 @@ syntax cluster vim9CommentGroup contains=
     \ @Spell,
     \ vim9CommentContinuation,
     \ vim9CommentTitle,
-    \ vim9DictLiteralLegacyDeprecated,
+    \ vim9DeprecatedDictLiteralLegacy,
     \ vim9Todo
 
 # Embedded Scripts  {{{1
@@ -3236,6 +3294,72 @@ syntax region vim9LuaRegion
     \ contains=@vim9LuaScript
 #}}}1
 # Errors {{{1
+# Strict whitespace usage {{{2
+
+#                ✘
+#                v
+#     var l = [1  , 2]
+#     var l = ['' , '']
+#     var l = [[] , []]
+#     var l = [{} , {}]
+#                ^
+#                ✘
+#
+#                   ✘
+#                   v
+#     var d = {a: 1  , b: 2}
+#     var d = {a: '' , b: ''}
+#     var d = {a: [] , b: []}
+#     var d = {a: {} , b: {}}
+#                   ^
+#                   ✘
+syntax match vim9StrictWhitespace /\s\+\ze,/ contained containedin=vim9Dict,vim9ListSlice
+
+#     [a, b ; c] = ...
+#          ^
+#          ✘
+#
+#     [a, b;c] = ...
+#          ^
+#          ✘
+syntax match vim9StrictWhitespace /\s\+\ze;\|;\ze\S/ contained containedin=vim9ListSlice
+
+#     var l = [1,2]
+#               ^
+#               ✘
+#
+#     var d = {a: 1,b: 2}
+#                  ^
+#                  ✘
+syntax match vim9StrictWhitespace /,\ze\S/ contained containedin=vim9Dict,vim9ListSlice
+
+#     var d = {'a' :1, 'b' :2}
+#                 ^       ^
+#                 ✘       ✘
+syntax match vim9StrictWhitespace /\s\+\ze:\S/ contained containedin=vim9Dict
+
+#     var d = {a:1, b:2}
+#               ^    ^
+#               ✘    ✘
+syntax match vim9StrictWhitespace /\S\@1<=:\S\@=/ contained containedin=vim9Dict
+    # `\S:\S` *might* be valid when it matches the start of a scoped variable.
+    # Don't highlight its colon as an error then.
+    # Why not just `\h`?{{{
+    #
+    # An explicit scope is not necessarily followed by an identifier:
+    #
+    #     var d = {key: g:}
+    #                     ^
+    #}}}
+    syntax match vim9StrictWhitespaceScopedVar
+        \ /\%(\<[bgstvw]\)\@1<=:\%(\h\|\_s\|[,;}\]]\)\@=/
+        \ contained
+        \ containedin=vim9Dict
+
+# TODO: Try to highlight missing whitespace around most binary operators as an error.
+# That's going to be tricky.
+# For example, a filename could be `abc+def`; and `+` is not an operator.
+
 # Deprecated syntaxes {{{2
 
 # Even in a `:def` function, or in a Vim9 script, there might be valid legacy code.{{{
@@ -3277,27 +3401,29 @@ if get(g:, 'vim9_syntax', {})
  ->get('deprecated_syntaxes', true)
 
     # `:let` is deprecated.
-    syntax keyword vim9LetDeprecated let contained
+    syntax keyword vim9DeprecatedLet let contained
 
     # In legacy Vim script, a literal dictionary starts with `#{`.
     # This syntax is no longer valid in Vim9.
-    syntax match vim9DictLiteralLegacyDeprecated /#{{\@!/
+    syntax match vim9DeprecatedDictLiteralLegacy /#{{\@!/
+
+    # the scopes `a:` and `l:` are no longer valid
+    syntax match vim9DeprecatedScopes /\<a:\w\@=/ contained containedin=@vim9Expr
+    syntax match vim9DeprecatedScopes /&\@1<!\<l:\h\@=/ contained containedin=@vim9Expr
+
+    # The `is#` operator worked in legacy, but didn't make sense.
+    # It's no longer supported in Vim9.
+    syntax match vim9DeprecatedIsOperator /\C\<\%(is\|isnot\)[#?]/ contained containedin=vim9Oper
 endif
 
 syntax match vim9LegacyVarArgs /a:000/
 
-# TODO: Handle other legacy constructs like `a:`, `l:`:
-#
-#     syntax match Test /\<a:\h\@=/ containedin=@vim9Expr
-#     syntax match Test /&\@1<!\<l:\h\@=/ containedin=@vim9Expr
-#     highlight link Test vim9Error
-#
-# Also:
+# TODO: Handle other legacy constructs like:
 #
 #    - `...)` in a function's header
-#    - eval strings
-#    - lambdas (tricky)
-#    - single dots for concatenation (tricky)
+#    - eval string
+#    - lambda (tricky)
+#    - single dot for concatenation (tricky)
 
 # TODO: Highlight `s:` as useless (`SpellRare`?).  But make it optional.
 # Rationale: You probably never need it.
@@ -3333,45 +3459,6 @@ syntax match vim9LegacyVarArgs /a:000/
 # TODO: Highlight this as an error:
 #
 #     def Func(...name: job)
-
-# TODO: Highlight this as an error:
-#
-#     vvv
-#     var b:name = ...
-#     var g:name = ...
-#     var t:name = ...
-#     var v:name = ...
-#     var w:name = ...
-#     var &name = ...
-#     var &l:name = ...
-#     var &g:name = ...
-#     var $ENV = ...
-#     ^^^
-
-# TODO: Highlight this as an error:
-#
-#     is#
-#     isnot#
-#     is?
-#     isnot?
-
-# TODO: Highlight these as errors:
-#
-#     var d = {'a' : 1, 'b' : 2, 'c' : 3}
-#                 ^        ^    ^
-#                 ✘        ✘    ✘
-#
-#     var d = {'a': 1 , 'b': 2 , 'c': 3}
-#                    ^        ^
-#                    ✘        ✘
-#
-#     var l = [1 , 2 , 3]
-#               ^   ^
-#               ✘   ✘
-#
-#     (_,v) => ...
-#       ^
-#       ✘
 
 # List unpack declaration {{{2
 
@@ -3549,8 +3636,8 @@ if get(g:, 'vim9_syntax', {})
     #      ✔
     #}}}
     # Order: Out of these 3 rules, this one must come last.
-    execute 'syntax match vim9ColonForVariableScope '
-        .. '/'
+    execute 'syntax match vim9ColonForVariableScope'
+        .. ' /'
         .. '\<[bgstvw]:'
         .. '\%('
         # There must not be an open paren right after; otherwise it might be a function name.{{{
@@ -3735,19 +3822,21 @@ highlight default link vim9Error Error
 
 highlight default link vim9AutocmdEventBadCase vim9Error
 highlight default link vim9CollationClassErr vim9Error
+highlight default link vim9DeclareError vim9Error
 highlight default link vim9DefBangError vim9Error
-highlight default link vim9DictLiteralLegacyDeprecated vim9Error
+highlight default link vim9DeprecatedDictLiteralLegacy vim9Error
+highlight default link vim9DeprecatedIsOperator vim9Error
+highlight default link vim9DeprecatedScopes vim9Error
 highlight default link vim9DictMayBeLiteralKey vim9Error
 highlight default link vim9DigraphsCharsInvalid vim9Error
 highlight default link vim9FTError vim9Error
 highlight default link vim9FuncCall vim9Error
-highlight default link vim9HiAttribList vim9Error
-highlight default link vim9HiCtermError vim9Error
-highlight default link vim9HiKeyError vim9Error
+highlight default link vim9IncrementError vim9Error
 highlight default link vim9LambdaDictMissingParen vim9Error
+highlight default link vim9LegacyConcatInvalid vim9Error
 highlight default link vim9LegacyFuncArgs vim9Error
 highlight default link vim9LegacyVarArgs vim9Error
-highlight default link vim9LetDeprecated vim9Error
+highlight default link vim9DeprecatedLet vim9Error
 highlight default link vim9ListUnpackDeclaration vim9Error
 highlight default link vim9MapModErr vim9Error
 highlight default link vim9MarkCmdArgInvalid vim9Error
@@ -3762,12 +3851,13 @@ highlight default link vim9SetEqualError vim9Error
 highlight default link vim9SpaceExtraBetweenArgs vim9Error
 highlight default link vim9SpaceMissingBetweenArgs vim9Error
 highlight default link vim9SpaceMissingListSlice vim9Error
+highlight default link vim9StrictWhitespace vim9Error
 highlight default link vim9SubstFlagErr vim9Error
 highlight default link vim9SynCaseError vim9Error
 highlight default link vim9SynCaseError vim9Error
 highlight default link vim9SynError vim9Error
 highlight default link vim9SyncError vim9Error
-highlight default link vim9UserCmdAttrbError vim9Error
+highlight default link vim9UserCmdAttrError vim9Error
 highlight default link vim9WincmdArgInvalid vim9Error
 
 highlight default link vim9AbbrevCmd vim9GenericCmd
@@ -3797,8 +3887,6 @@ highlight default link vim9ContinuationBeforeCmd vim9Continuation
 highlight default link vim9ContinuationBeforeUserCmd vim9Continuation
 highlight default link vim9CopyMove vim9GenericCmd
 highlight default link vim9CtrlChar SpecialChar
-highlight default link vim9DataType Type
-highlight default link vim9DataTypeCast vim9DataType
 highlight default link vim9Declare Identifier
 highlight default link vim9DefKey Keyword
 highlight default link vim9DictIsLiteralKey String
@@ -3814,11 +3902,9 @@ highlight default link vim9ExSpecialCharacters vim9BracketNotation
 highlight default link vim9Export vim9Import
 highlight default link vim9FTCmd vim9GenericCmd
 highlight default link vim9FTOption vim9SynType
-highlight default link vim9FgBgAttrib vim9HiAttrib
 highlight default link vim9Finish vim9Return
 highlight default link vim9FuncArgs Identifier
 highlight default link vim9FuncEnd vim9DefKey
-highlight default link vim9FuncNameBuiltin Function
 highlight default link vim9Global vim9GenericCmd
 highlight default link vim9GlobalPat vim9String
 highlight default link vim9Group Type
@@ -3828,17 +3914,18 @@ highlight default link vim9GroupRem vim9SynOption
 highlight default link vim9GroupSpecial Special
 highlight default link vim9HLGroup vim9Group
 highlight default link vim9HereDoc vim9String
-highlight default link vim9HiAttrib PreProc
-highlight default link vim9HiCTerm vim9HiTerm
-highlight default link vim9HiClear vim9Highlight
+highlight default link vim9HiAttr PreProc
+highlight default link vim9HiCterm vim9HiTerm
 highlight default link vim9HiCtermFgBg vim9HiTerm
 highlight default link vim9HiCtermul vim9HiTerm
+highlight default link vim9HiEqual vim9OperAssign
+highlight default link vim9HiFgBgAttr vim9HiAttr
 highlight default link vim9HiGroup vim9GroupName
 highlight default link vim9HiGui vim9HiTerm
 highlight default link vim9HiGuiFgBg vim9HiTerm
 highlight default link vim9HiGuiFont vim9HiTerm
 highlight default link vim9HiGuiRgb vim9Number
-highlight default link vim9HiNmbr Number
+highlight default link vim9HiNumber Number
 highlight default link vim9HiStartStop vim9HiTerm
 highlight default link vim9HiTerm Type
 highlight default link vim9Highlight vim9GenericCmd
@@ -3850,6 +3937,7 @@ highlight default link vim9IskSep Delimiter
 highlight default link vim9LambdaArgs vim9FuncArgs
 highlight default link vim9LambdaArrow vim9Sep
 highlight default link vim9LegacyComment vim9Comment
+highlight default link vim9LegacyString vim9String
 highlight default link vim9Line12MissingColon vim9Error
 highlight default link vim9Map vim9GenericCmd
 highlight default link vim9MapMod vim9BracketKey
@@ -3937,25 +4025,37 @@ highlight default link vim9TryCatch Exception
 highlight default link vim9TryCatchPattern String
 highlight default link vim9TryCatchPatternDelim Delimiter
 highlight default link vim9Unmap vim9Map
-highlight default link vim9UserCmdAttrbAddress vim9String
-highlight default link vim9UserCmdAttrbAddress vim9String
-highlight default link vim9UserCmdAttrbComma vim9Sep
-highlight default link vim9UserCmdAttrbComplete vim9String
-highlight default link vim9UserCmdAttrbEqual vim9OperAssign
-highlight default link vim9UserCmdAttrbErrorValue vim9Error
-highlight default link vim9UserCmdAttrbName vim9Special
-highlight default link vim9UserCmdAttrbNargs vim9String
-highlight default link vim9UserCmdAttrbNargsNumber vim9Number
-highlight default link vim9UserCmdAttrbRange vim9String
+highlight default link vim9UserCmdAttrAddress vim9String
+highlight default link vim9UserCmdAttrAddress vim9String
+highlight default link vim9UserCmdAttrComma vim9Sep
+highlight default link vim9UserCmdAttrComplete vim9String
+highlight default link vim9UserCmdAttrEqual vim9OperAssign
+highlight default link vim9UserCmdAttrErrorValue vim9Error
+highlight default link vim9UserCmdAttrName vim9Special
+highlight default link vim9UserCmdAttrNargs vim9String
+highlight default link vim9UserCmdAttrNargsNumber vim9Number
+highlight default link vim9UserCmdAttrRange vim9String
 highlight default link vim9UserCmdDef Statement
 highlight default link vim9UserCmdLhs vim9UserCmdExe
 highlight default link vim9UserCmdRhsEscapeSeq vim9BracketNotation
-highlight default link vim9ValidSubType vim9DataType
 highlight default link vim9VimGrep vim9GenericCmd
 highlight default link vim9VimGrepPat vim9String
 highlight default link vim9Wincmd vim9GenericCmd
 highlight default link vim9WincmdArg vim9String
+
+if get(g:, 'vim9_syntax', {})
+ ->get('builtin_functions', false)
+   highlight default link vim9FuncNameBuiltin Function
+endif
+
+if get(g:, 'vim9_syntax', {})
+ ->get('data_types', false)
+   highlight default link vim9DataType Type
+   highlight default link vim9DataTypeCast vim9DataType
+   highlight default link vim9ValidSubType vim9DataType
+endif
 #}}}1
+
 
 b:current_syntax = 'vim9'
 

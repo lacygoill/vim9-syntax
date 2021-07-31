@@ -1312,6 +1312,10 @@ END
 
 export const ex_special_characters: string = ex_special_characters_list->join("\\|")
 
+# increment_invalid {{{1
+
+export const increment_invalid: string = '\%(++\|--\)\%(\%(\h\w*\|&\%([lg]:\)\=[a-z]\{2,}\)\s*[|\n]\|\h\w*[[.]\)\@!'
+
 # key_name {{{1
 
 const key_name_list: list<string> =<< trim END
