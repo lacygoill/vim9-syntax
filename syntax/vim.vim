@@ -676,13 +676,19 @@ syntax match vim9AutocmdAllEvents /\*\_s\@=/
 
 syntax match vim9AutocmdPat /\S\+/
     \ contained
-    \ nextgroup=@vim9CanBeAtStartOfLine,vim9AutocmdMod,vim9ContinuationBeforeCmd
+    \ nextgroup=@vim9CanBeAtStartOfLine,
+    \     vim9AutocmdMod,
+    \     vim9BlockUserCmd,
+    \     vim9ContinuationBeforeCmd
     \ skipnl
     \ skipwhite
 
 syntax match vim9AutocmdMod /++\%(nested\|once\)/
     \ contained
-    \ nextgroup=@vim9CanBeAtStartOfLine,vim9ContinuationBeforeCmd
+    \ nextgroup=
+    \     @vim9CanBeAtStartOfLine,
+    \     vim9BlockUserCmd,
+    \     vim9ContinuationBeforeCmd
     \ skipnl
     \ skipwhite
 
@@ -2202,15 +2208,20 @@ syntax region vim9LegacyFuncBody
     \ nextgroup=vim9LegacyComment
     \ skipwhite
 
-# We need to match strings because they can contain arbitrary text, which can break other rules.
-# Order: Needs to be installed before `vim9LegacyComment`.
-syntax region vim9LegacyString start=/"/ skip=/\\\\\|\\"/ end=/"/  oneline keepend
-syntax region vim9LegacyString start=/'/ skip=/''/ end=/'/  oneline keepend
-
 # We  need to  support inline  comments (if  only for  a trailing  comment after
 # `:endfunction`), so we can't anchor the comment to the start of the line.
 syntax match vim9LegacyComment /".*/ contained
-#}}}2
+
+# We need to match strings because they can contain arbitrary text, which can break other rules.
+# Order: Needs to be installed after `vim9LegacyComment`.{{{
+#
+#     :echo "string"
+#            ^----^
+#            must be highlighted as a string; not as a comment
+#}}}
+syntax region vim9LegacyString start=/"/ skip=/\\\\\|\\"/ end=/"/  oneline keepend
+syntax region vim9LegacyString start=/'/ skip=/''/ end=/'/  oneline keepend
+
 # In a Vim9 script, `.` cannot be used for a concatenation (nor `.=`).  Only `..` is valid.
 # *Even* in a legacy function.{{{
 #
@@ -2231,18 +2242,21 @@ syntax match vim9LegacyConcatInvalid /\./ contained
     # Note that this regex is too broad, but we can't make it better.
     # For example:
     #
-    #     foo.bar
+    #     d.key
+    #     d['a'].key
+    #     {a: 0}.key
+    #     Func().key
     #
-    # This is correct only if `foo` evaluates to a dictionary.
+    # This is correct only if what precedes `.key` evaluates to a dictionary.
     # Unfortunately, we can't know that with a  simple regex; so we accept it no
     # matter what it is.
     #}}}
-    syntax match vim9LegacyDictMember /\h\w*\zs\.\ze\h\w*/ contained
+    syntax match vim9LegacyDictMember /\%(\h\w*\|[)})\]]\)\zs\.\ze\h\w*/ contained
     # A dot in `...` at the end of a legacy function's header is valid.
     syntax match vim9LegacyVarArgsHeader /\.\.\.\%(\s*)\)\@=/ contained
     # A dot in a float is valid.
     syntax match vim9LegacyFloat /\d\+\.\d\+/ contained
-
+#}}}2
 # User Call {{{2
 
 # call to any kind of function (builtin + user)
@@ -3336,7 +3350,7 @@ syntax match vim9StrictWhitespace /,\ze\S/ contained containedin=vim9Dict,vim9Li
 #     var d = {'a' :1, 'b' :2}
 #                 ^       ^
 #                 ✘       ✘
-syntax match vim9StrictWhitespace /\s\+\ze:\S/ contained containedin=vim9Dict
+syntax match vim9StrictWhitespace /\s\+\ze:[^ \t\]]/ contained containedin=vim9Dict
 
 #     var d = {a:1, b:2}
 #               ^    ^
@@ -3396,25 +3410,36 @@ syntax match vim9StrictWhitespace /\S\@1<=:\S\@=/ contained containedin=vim9Dict
 # because those are  common errors; e.g. when copy-pasting legacy  code in a new
 # Vim9 script.
 #}}}
-if get(g:, 'vim9_syntax', {})
- ->get('errors', {})
- ->get('deprecated_syntaxes', true)
+# `:let` is deprecated.
+syntax keyword vim9DeprecatedLet let contained
 
-    # `:let` is deprecated.
-    syntax keyword vim9DeprecatedLet let contained
+# Declaring more than one variable at  a time, using the unpack notation, is
+# not supported.  See `:help E1092`.
+syntax region vim9ListUnpackDeclaration
+    \ contained
+    \ contains=vim9ListUnpackDeclaration
+    \ end=/\]/
+    \ oneline
+    \ start=/\[/
 
-    # In legacy Vim script, a literal dictionary starts with `#{`.
-    # This syntax is no longer valid in Vim9.
-    syntax match vim9DeprecatedDictLiteralLegacy /#{{\@!/
+# In legacy Vim script, a literal dictionary starts with `#{`.
+# This syntax is no longer valid in Vim9.
+syntax match vim9DeprecatedDictLiteralLegacy /#{{\@!/
 
-    # the scopes `a:` and `l:` are no longer valid
-    syntax match vim9DeprecatedScopes /\<a:\w\@=/ contained containedin=@vim9Expr
-    syntax match vim9DeprecatedScopes /&\@1<!\<l:\h\@=/ contained containedin=@vim9Expr
+# the scopes `a:` and `l:` are no longer valid
+# Don't use `contained` to limit these rules to `@vim9Expr`.{{{
+#
+# Because then, they would fail to match this:
+#
+#     let a:name = ...
+#         ^^
+#}}}
+syntax match vim9DeprecatedScopes /\<a:\w\@=/ containedin=@vim9Expr
+syntax match vim9DeprecatedScopes /&\@1<!\<l:\h\@=/ containedin=@vim9Expr
 
-    # The `is#` operator worked in legacy, but didn't make sense.
-    # It's no longer supported in Vim9.
-    syntax match vim9DeprecatedIsOperator /\C\<\%(is\|isnot\)[#?]/ contained containedin=vim9Oper
-endif
+# The `is#` operator worked in legacy, but didn't make sense.
+# It's no longer supported in Vim9.
+syntax match vim9DeprecatedIsOperator /\C\<\%(is\|isnot\)[#?]/ contained containedin=vim9Oper
 
 syntax match vim9LegacyVarArgs /a:000/
 
@@ -3459,22 +3484,6 @@ syntax match vim9LegacyVarArgs /a:000/
 # TODO: Highlight this as an error:
 #
 #     def Func(...name: job)
-
-# List unpack declaration {{{2
-
-# Declaring more than one variable at a  time, using the unpack notation, is not
-# supported.  See `:help E1092`.
-if get(g:, 'vim9_syntax', {})
- ->get('errors', {})
- ->get('list_unpack_declaration', true)
-
-    syntax region vim9ListUnpackDeclaration
-        \ contained
-        \ contains=vim9ListUnpackDeclaration
-        \ end=/\]/
-        \ oneline
-        \ start=/\[/
-endif
 
 # Missing space / Extra space {{{2
 
@@ -3531,7 +3540,7 @@ endif
 
 if get(g:, 'vim9_syntax', {})
  ->get('errors', {})
- ->get('missing_or_extra_space', true)
+ ->get('strict_whitespace', true)
 
     #         ✘
     #         v
@@ -3665,21 +3674,16 @@ endif
 #    > Numbers starting with zero are not considered to be octal, only numbers
 #    > starting with "0o" are octal: "0o744". |scriptversion-4|
 #
-# We don't  could install a  rule to  highlight the number  as an error,  but it
-# would not  work everywhere  (e.g. in  an `:echo`).  We  would need  to include
-# this  new group  in  other regions/matches.   It's simpler  to  just stop  the
-# highlighting at the `0`.
-#
-#           do not highlight
-#           vvv
+#          ✘
+#          v
 #     echo 0765
 #     echo 0o765
-#          ^---^
-#          *do* highlight
+#          ^^
+#          ✔
 #}}}
 if get(g:, 'vim9_syntax', {})
  ->get('errors', {})
- ->get('octal_missing_o_prefix', true)
+ ->get('octal_missing_o_prefix', false)
 
     # The  negative lookbehind  is necessary  to  ignore big  numbers which  are{{{
     # written with quotes to be more readable:
@@ -3690,7 +3694,7 @@ if get(g:, 'vim9_syntax', {})
     # Here, `076` is not a badly written octal number.
     # There is no reason to stop the highlighting at `0`.
     #}}}
-    syntax match vim9Number /\%(\d'\)\@2<!\<0[0-7]\+\>/he=s+1
+    syntax match vim9NumberOctalWarn /\%(\d'\)\@2<!\<0[0-7]\+\>/he=s+1
         \ display
         \ nextgroup=vim9Comment
         \ skipwhite
@@ -3746,19 +3750,14 @@ endif
 
 # Reserved names {{{2
 
-if get(g:, 'vim9_syntax', {})
- ->get('errors', {})
- ->get('reserved_names', true)
-
-    # Some names cannot be used for variables, because they're reserved:{{{
-    #
-    #     var true = 0
-    #     var null = ''
-    #     var this = []
-    #     ...
-    #}}}
-    syntax keyword vim9ReservedNames true false null this contained
-endif
+# Some names cannot be used for variables, because they're reserved:{{{
+#
+#     var true = 0
+#     var null = ''
+#     var this = []
+#     ...
+#}}}
+syntax keyword vim9ReservedNames true false null this contained
 #}}}1
 # Synchronize (speed) {{{1
 
@@ -3826,6 +3825,7 @@ highlight default link vim9DeclareError vim9Error
 highlight default link vim9DefBangError vim9Error
 highlight default link vim9DeprecatedDictLiteralLegacy vim9Error
 highlight default link vim9DeprecatedIsOperator vim9Error
+highlight default link vim9DeprecatedLet vim9Error
 highlight default link vim9DeprecatedScopes vim9Error
 highlight default link vim9DictMayBeLiteralKey vim9Error
 highlight default link vim9DigraphsCharsInvalid vim9Error
@@ -3836,10 +3836,10 @@ highlight default link vim9LambdaDictMissingParen vim9Error
 highlight default link vim9LegacyConcatInvalid vim9Error
 highlight default link vim9LegacyFuncArgs vim9Error
 highlight default link vim9LegacyVarArgs vim9Error
-highlight default link vim9DeprecatedLet vim9Error
 highlight default link vim9ListUnpackDeclaration vim9Error
 highlight default link vim9MapModErr vim9Error
 highlight default link vim9MarkCmdArgInvalid vim9Error
+highlight default link vim9NumberOctalWarn vim9Error
 highlight default link vim9OperError vim9Error
 highlight default link vim9PatSepErr vim9Error
 highlight default link vim9ProfileSubCmdInvalid vim9Error
@@ -4044,15 +4044,15 @@ highlight default link vim9Wincmd vim9GenericCmd
 highlight default link vim9WincmdArg vim9String
 
 if get(g:, 'vim9_syntax', {})
- ->get('builtin_functions', false)
-   highlight default link vim9FuncNameBuiltin Function
+ ->get('builtin_functions', true)
+    highlight default link vim9FuncNameBuiltin Function
 endif
 
 if get(g:, 'vim9_syntax', {})
- ->get('data_types', false)
-   highlight default link vim9DataType Type
-   highlight default link vim9DataTypeCast vim9DataType
-   highlight default link vim9ValidSubType vim9DataType
+ ->get('data_types', true)
+    highlight default link vim9DataType Type
+    highlight default link vim9DataTypeCast vim9DataType
+    highlight default link vim9ValidSubType vim9DataType
 endif
 #}}}1
 
