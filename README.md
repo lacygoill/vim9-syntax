@@ -8,7 +8,7 @@ The highlighting can be controlled via keys in the dictionary `g:vim9_syntax`:
    - `data_types` controls whether Vim9 data types in declarations are highlighted (`true` by default)
    - `errors` controls whether some possible mistakes are highlighted
 
-`g:vim9_syntax` is itself a dictionary:
+`g:vim9_syntax.errors` is a nested dictionary containing these keys:
 
    - `event_wrong_case` controls whether names of events in autocmds are highlighted as errors, if they don't have the same case as in the help (`false` by default)
    - `octal_missing_o_prefix` controls whether an octal number prefixed with `0` instead of `0o` is highlighted as an error (`false` by default)
