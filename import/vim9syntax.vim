@@ -104,6 +104,7 @@ const builtin_func_list: list<string> =<< trim END
     executable
     exepath
     exists
+    exists_compiled
     exp
     expand
     expandcmd
@@ -1314,7 +1315,7 @@ export const ex_special_characters: string = ex_special_characters_list->join("\
 
 # increment_invalid {{{1
 
-export const increment_invalid: string = '\%(++\|--\)\%(\%(\h\w*\|&\%([lg]:\)\=[a-z]\{2,}\)\s*[|\n]\|\h\w*[[.]\)\@!'
+export const increment_invalid: string = '\%(++\|--\)\%(\%(\%([bgstvw]:\)\=\h\w*\|&\%([lg]:\)\=[a-z]\{2,}\)\s*[|\n]\|\h\w*[[.]\)\@!'
 
 # key_name {{{1
 

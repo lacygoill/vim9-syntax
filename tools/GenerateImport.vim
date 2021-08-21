@@ -387,7 +387,7 @@ const increment_invalid: string = '\%(++\|--\)'
     # from now on, we must describe what *is* valid
     ..     '\%('
     # a simple variable identifier (`++name`)
-    ..         '\h\w*'
+    ..         '\%([bgstvw]:\)\=\h\w*'
     # or an option name (`++&shiftwidth`)
     ..         '\|'
     ..         '&\%([lg]:\)\=[a-z]\{2,}'

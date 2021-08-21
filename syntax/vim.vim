@@ -785,7 +785,15 @@ syntax region vim9RepeatForVarList
 
 # :for name
 #      ^--^
-syntax match vim9RepeatForVar /\h\w*/
+# The negative lookahead is necessary to highlight `a:` and `l:` as errors:{{{
+#
+#         this is a scope which is only valid in legacy
+#         vv
+#     for l:legacy_var in ...
+#         ^
+#         this is NOT an iteration variable
+#}}}
+syntax match vim9RepeatForVar /\h\w*\%(:\S\)\@!/
     \ contained
     \ nextgroup=vim9DataType,vim9RepeatForIn
     \ skipwhite
@@ -874,9 +882,7 @@ syntax match vim9Declare /\<\%(const\=\|final\|unl\%[et]\|var\)\>/
     #}}}
     syntax match vim9DeclareError /\<unlet\ze\s\+[&@]/ contained
 
-# NOTE: In the legacy syntax plugin, `vimLetHereDoc` contains `vimComment` and `vim9Comment`.{{{
-#
-# That's wrong.
+# In the legacy syntax plugin, `vimLetHereDoc` contains `vimComment` and `vim9Comment`.  That's wrong.{{{
 #
 # It causes  any text  following a double  quote at  the start of  a line  to be
 # highlighted as a Vim comment.  But that's  not a comment; that's a part of the
@@ -885,9 +891,21 @@ syntax match vim9Declare /\<\%(const\=\|final\|unl\%[et]\|var\)\>/
 # Besides, we apply various styles inside comments, such as bold or italics.
 # It would be unexpected and distracting to see those styles in a heredoc.
 #}}}
+# Don't assign `vim9Declare` instead of `vim9DeclareHereDoc` to `matchgroup`.{{{
+#
+# We want the syntax  item on the text at the start/end of  a heredoc to contain
+# the keyword "heredoc".  It might be useful for other plugins; for example, for
+# the Vim indent plugin.
+#}}}
+# Similarly, don't change the name of `vim9DeclareHereDocStop`.{{{
+#
+# The Vim indent plugin relies on the keyword "HereDocStop" to find the end of a
+# heredoc.
+#}}}
 syntax region vim9HereDoc
-    \ matchgroup=vim9Declare
+    \ matchgroup=vim9DeclareHereDoc
     \ start=/\s\@1<==<<\s\+\%(trim\>\)\=\s*\z(\L\S*\)/
+    \ matchgroup=vim9DeclareHereDocStop
     \ end=/^\s*\z1$/
 
 # Modifier {{{3
@@ -2208,17 +2226,16 @@ syntax region vim9LegacyFuncBody
     \ nextgroup=vim9LegacyComment
     \ skipwhite
 
-# We  need to  support inline  comments (if  only for  a trailing  comment after
-# `:endfunction`), so we can't anchor the comment to the start of the line.
-syntax match vim9LegacyComment /".*/ contained
+# We've borrowed these regexes from the legacy plugin.
+syntax match vim9LegacyComment /^\s*".*$/ contained
+# We also need to support inline comments.{{{
+#
+# If only  for a trailing comment  after `:endfunction`, so we  can't anchor the
+# comment to the start of the line.
+#}}}
+syntax match vim9LegacyComment /\s\@1<="[^\-:.%#=*].*$/ contained
 
 # We need to match strings because they can contain arbitrary text, which can break other rules.
-# Order: Needs to be installed after `vim9LegacyComment`.{{{
-#
-#     :echo "string"
-#            ^----^
-#            must be highlighted as a string; not as a comment
-#}}}
 syntax region vim9LegacyString start=/"/ skip=/\\\\\|\\"/ end=/"/  oneline keepend
 syntax region vim9LegacyString start=/'/ skip=/''/ end=/'/  oneline keepend
 
@@ -2234,7 +2251,15 @@ syntax region vim9LegacyString start=/'/ skip=/''/ end=/'/  oneline keepend
 #
 #    > String concatenation with "." is not supported, use ".." instead.
 #}}}
-syntax match vim9LegacyConcatInvalid /\./ contained
+# The positive lookahead is necessary to avoid a spurious match when dot is used in a non-quoted regex.{{{
+#
+#     syn match Rule /aaa .* bbb/
+#                         ^
+#                         this is NOT a concatenation operator;
+#                         this is a regex atom
+#}}}
+# TODO: Highlight these errors everywhere; not just in legacy functions.
+syntax match vim9LegacyConcatInvalid /\.\%(\s\|\w\|['"=]\)\@=/ contained
     # A dot in the `..` concatenation operator is valid.
     syntax match vim9LegacyConcatValid /\.\./ contained
     # A dot to access a dictionary member is valid.{{{
@@ -2290,12 +2315,12 @@ execute 'syntax match vim9FuncCall'
     #
     # Here, the dictionary is obtained with `Foo()`.
     #}}}
-    .. '\|' .. '\.\w\+\ze('
+    .. '\|' .. '\.\@1<!\.\w\+\ze('
     .. '/'
-    .. ' contains=vim9FuncNameBuiltin,vim9UserFuncNameUser'
+    .. ' contains=vim9FuncNameBuiltin,vim9FuncNameUser'
 
 # name of user function in function call
-execute 'syntax match vim9UserFuncNameUser'
+execute 'syntax match vim9FuncNameUser'
     .. ' /'
     .. '\<\%('
     ..     '\%('
@@ -2311,7 +2336,7 @@ execute 'syntax match vim9UserFuncNameUser'
     ..     '\h\w*[#.]\%(\w\|[#.]\)*'
     .. '\)'
     .. '\ze('
-    .. '\|' .. '\.\w\+\ze('
+    .. '\|' .. '\.\@1<!\.\w\+\ze('
     .. '/'
     .. ' contained'
     .. ' contains=vim9BracketNotation'
@@ -2337,6 +2362,12 @@ execute 'syntax keyword vim9FuncNameBuiltin'
 execute 'syntax match vim9FuncNameBuiltin'
     .. ' /\<\%(' .. builtin_func_ambiguous .. '\)(\@=/'
     .. ' contained'
+
+# Lambda {{{2
+
+# This is necessary  to avoid the closing angle bracket  being highlighted as an
+# error (with `vim9OperError`).
+syntax match vim9LambdaName /<lambda>\d\+/
 #}}}1
 # Operators {{{1
 
@@ -2707,7 +2738,7 @@ syntax match vim9LambdaArrow /\s\@1<==>\_s\@=/
 
 # Type checking {{{2
 
-# Order: This section must come *after* the `vim9FuncCall` and `vim9UserFuncNameUser` rules.{{{
+# Order: This section must come *after* the `vim9FuncCall` and `vim9FuncNameUser` rules.{{{
 #
 # Otherwise, a funcref return type in a function's header would sometimes not be
 # highlighted in its entirety:
@@ -3693,8 +3724,17 @@ if get(g:, 'vim9_syntax', {})
     #
     # Here, `076` is not a badly written octal number.
     # There is no reason to stop the highlighting at `0`.
+    #
+    # ---
+    #
+    # Also, it's necessary to ignore a number used as a key in a dictionary:
+    #
+    #     d.0123
+    #       ^--^
+    #       this is not an octal number;
+    #       this is a key to retrieve some value from a dictionary
     #}}}
-    syntax match vim9NumberOctalWarn /\%(\d'\)\@2<!\<0[0-7]\+\>/he=s+1
+    syntax match vim9NumberOctalWarn /\%(\d'\|\.\)\@2<!\<0[0-7]\+\>/he=s+1
         \ display
         \ nextgroup=vim9Comment
         \ skipwhite
@@ -3811,7 +3851,7 @@ highlight default link vim9GenericCmd Statement
 #}}}
 if execute('highlight vim9UserCmdExe') =~ '\<cleared$'
     import Derive from 'vim9syntaxUtil.vim'
-    Derive('vim9UserFuncNameUser', 'Function', 'term=bold cterm=bold gui=bold')
+    Derive('vim9FuncNameUser', 'Function', 'term=bold cterm=bold gui=bold')
     Derive('vim9UserCmdExe', 'vim9GenericCmd', 'term=bold cterm=bold gui=bold')
     Derive('vim9FuncHeader', 'Function', 'term=bold cterm=bold gui=bold')
     Derive('vim9CmdModifier', 'vim9GenericCmd', 'term=italic cterm=italic gui=italic')
@@ -3888,6 +3928,8 @@ highlight default link vim9ContinuationBeforeUserCmd vim9Continuation
 highlight default link vim9CopyMove vim9GenericCmd
 highlight default link vim9CtrlChar SpecialChar
 highlight default link vim9Declare Identifier
+highlight default link vim9DeclareHereDoc vim9Declare
+highlight default link vim9DeclareHereDocStop vim9Declare
 highlight default link vim9DefKey Keyword
 highlight default link vim9DictIsLiteralKey String
 highlight default link vim9DigraphsChars vim9String
