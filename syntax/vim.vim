@@ -184,8 +184,8 @@ import event from 'vim9syntax.vim'
 import ex_special_characters from 'vim9syntax.vim'
 import increment_invalid from 'vim9syntax.vim'
 import key_name from 'vim9syntax.vim'
-import lambda_start from 'vim9syntax.vim'
 import lambda_end from 'vim9syntax.vim'
+import lambda_start from 'vim9syntax.vim'
 import logical_not from 'vim9syntax.vim'
 import mark_valid from 'vim9syntax.vim'
 import maybe_dict_literal_key from 'vim9syntax.vim'
@@ -2134,10 +2134,11 @@ execute 'syntax match vim9FuncHeader'
                # autoloaded function
     .. '\|' .. '\h\w*#\%(\w\|#\)*'
     .. '\)'
-    .. '\ze('
+    .. '\ze\s*('
     .. '/'
     .. ' contains=vim9DefKey'
-    .. ' nextgroup=vim9FuncSignature'
+    .. ' nextgroup=vim9FuncSignature,vim9SpaceAfterFuncHeader'
+    syntax match vim9SpaceAfterFuncHeader /\s\+\ze(/ contained nextgroup=vim9FuncSignature
 
 syntax keyword vim9DefKey def fu[nction]
     \ contained
@@ -2194,10 +2195,11 @@ execute 'syntax match vim9LegacyFunction'
     .. '\<fu\%[nction]!\='
     .. '\s\+\%([gs]:\)\='
     .. '\%(\w\|[#.]\)*'
-    .. '\ze('
+    .. '\ze\s*('
     .. '/'
     .. ' contains=vim9DefKey'
-    .. ' nextgroup=vim9LegacyFuncBody'
+    .. ' nextgroup=vim9LegacyFuncBody,vim9SpaceAfterLegacyFuncHeader'
+    syntax match vim9SpaceAfterLegacyFuncHeader /\s\+\ze(/ contained nextgroup=vim9LegacyFuncBody
 
 # There might be a trailing comment after `:endfunction`.{{{
 #
@@ -2211,7 +2213,7 @@ execute 'syntax match vim9LegacyFunction'
 # We don't want those to be highlighted as errors (because they're unbalanced).
 #}}}
 syntax region vim9LegacyFuncBody
-    \ start=/\s*(/
+    \ start=/(/
     \ matchgroup=vim9DefKey
     \ end=/^\s*\<endf\%[unction]\ze\s*\%(".*\)\=$/
     \ contained
@@ -3888,6 +3890,8 @@ highlight default link vim9RangeMissingSpecifier1 vim9Error
 highlight default link vim9RangeMissingSpecifier2 vim9Error
 highlight default link vim9ReservedNames vim9Error
 highlight default link vim9SetEqualError vim9Error
+highlight default link vim9SpaceAfterFuncHeader vim9Error
+highlight default link vim9SpaceAfterLegacyFuncHeader vim9Error
 highlight default link vim9SpaceExtraBetweenArgs vim9Error
 highlight default link vim9SpaceMissingBetweenArgs vim9Error
 highlight default link vim9SpaceMissingListSlice vim9Error

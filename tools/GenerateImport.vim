@@ -392,28 +392,29 @@ const increment_invalid: string = '\%(++\|--\)'
     ..         '\|'
     ..         '&\%([lg]:\)\=[a-z]\{2,}'
     ..     '\)'
-    # it must be at the end of a line, or followed by a bar
-    ..     '\s*[|\n]'
-    ..     '\|'
-    # Tricky Special Cases:{{{
+    # it must be at the end of a line, or followed by a bracket/bar/dot{{{
     #
-    #     var l = [1, 2, 3]
-    #        v
-    #     ++l[0]
-    #       ^--^
+    #     # bracket
+    #           v
+    #     ++list[0]
+    #       ^-----^
     #        ✔
     #
-    #     var d = {key: 123}
-    #        v
-    #     ++d.key
-    #       ^---^
-    #         ✔
+    #     # bar
+    #            v
+    #     ++name | ...
+    #
+    #     # dot
+    #           v
+    #     ++dict.key
+    #       ^------^
+    #          ✔
     #
     # We don't try to describe what follows the bracket or dot, because it seems
     # too complex.   IOW, our regex  is not perfect,  but should be  good enough
     # most of the time.
     #}}}
-    ..     '\h\w*[[.]'
+    ..     '\s*\_[[|.]'
     .. '\)\@!'
 
 # lambda_start, lambda_end {{{3
@@ -937,18 +938,23 @@ def KeyName(): list<string>
     completions->remove(completions->index('Cmd'))
 
     return completions->sort()
-        #     <C-A>
-        #        ^
-        + ['\a']
-        #     <C-3>
-        #        ^
-        + ['\d']
+        + ['F\d\{1,2}']
         #     <F12>
         #      ^^^
-        + ['F\d\{1,2}']
+        # Need a broad pattern to support special characters:{{{
+        #
+        #     <C-A>
+        #        ^
+        #     <C-3>
+        #        ^
         #     <C-\>
         #        ^
-        + ['\\']
+        #     <C-]>
+        #        ^
+        #     <C-é>
+        #        ^
+        #}}}
+        + ['.']
 enddef
 
 const key_name: list<string> = KeyName()

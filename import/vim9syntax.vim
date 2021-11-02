@@ -34,6 +34,7 @@ const builtin_func_list: list<string> =<< trim END
     balloon_gettext
     balloon_show
     balloon_split
+    blob2list
     browsedir
     bufadd
     bufexists
@@ -229,6 +230,7 @@ const builtin_func_list: list<string> =<< trim END
     line
     line2byte
     lispindent
+    list2blob
     list2str
     listener_add
     listener_flush
@@ -290,6 +292,7 @@ const builtin_func_list: list<string> =<< trim END
     prompt_setinterrupt
     prompt_setprompt
     prop_add
+    prop_add_list
     prop_clear
     prop_find
     prop_list
@@ -1249,6 +1252,7 @@ const event_list: list<string> =<< trim END
     InsertLeave
     InsertLeavePre
     MenuPopup
+    ModeChanged
     OptionSet
     QuickFixCmdPost
     QuickFixCmdPre
@@ -1315,7 +1319,7 @@ export const ex_special_characters: string = ex_special_characters_list->join("\
 
 # increment_invalid {{{1
 
-export const increment_invalid: string = '\%(++\|--\)\%(\%(\%([bgstvw]:\)\=\h\w*\|&\%([lg]:\)\=[a-z]\{2,}\)\s*[|\n]\|\h\w*[[.]\)\@!'
+export const increment_invalid: string = '\%(++\|--\)\%(\%(\%([bgstvw]:\)\=\h\w*\|&\%([lg]:\)\=[a-z]\{2,}\)\s*\_[[|.]\)\@!'
 
 # key_name {{{1
 
@@ -1426,10 +1430,8 @@ const key_name_list: list<string> =<< trim END
     xUp
     zEnd
     zHome
-    \a
-    \d
     F\d\{1,2}
-    \\
+    .
 END
 
 export const key_name: string = key_name_list->join("\\|")
@@ -1807,6 +1809,8 @@ const option_list: list<string> =<< trim END
     gfw
     guiheadroom
     ghr
+    guiligatures
+    gli
     guioptions
     go
     guipty
@@ -2333,6 +2337,7 @@ const option_list: list<string> =<< trim END
     tw
     thesaurus
     tsr
+    thesaurusfunc
     tildeop
     top
     notildeop
