@@ -1371,6 +1371,19 @@ syntax match vim9HiGuiRgb /#\x\{6}/ contained nextgroup=vim9HiGuiFgBg,vim9HiGui 
 # :import
 # :export
 syntax keyword vim9Import imp[ort] contained nextgroup=vim9ImportedItems skipwhite
+# `import * ...` is a special case.{{{
+#
+# `vim9Import`  is included  in the  `vim9IsCmd` cluster,  which itself  is only
+# allowed  to  match  after  `vim9MayBeCmd`.   The  latter  does  not  recognize
+# something like:
+#
+#     cmd * arg
+#     ^^^
+#
+# Because –  in the general  case – this  is most probably  a multiplication
+# between 2 expressions.
+#}}}
+syntax match vim9Import /^\s*imp\%[ort]\%(\s\+\*\s\+\%(from\|as\)\)\@=/ nextgroup=vim9ImportedItems skipwhite
 syntax keyword vim9Export exp[ort] contained nextgroup=vim9Declare skipwhite
 
 #        v----v

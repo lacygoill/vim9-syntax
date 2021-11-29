@@ -106,7 +106,7 @@ def Getattr(arg_attr: any): string #{{{3
     if typename(arg_attr) == 'string'
         return arg_attr
     elseif typename(arg_attr) =~ '^dict'
-        var gui: bool = has('gui_running') || &termguicolors
+        var gui: bool = has('gui_running')
         var mode: string = gui ? 'gui' : 'cterm'
         var attr: string
         var hg: string

@@ -195,6 +195,8 @@ const builtin_func_list: list<string> =<< trim END
     histnr
     hlID
     hlexists
+    hlget
+    hlset
     hostname
     iconv
     indent
@@ -1291,6 +1293,7 @@ const event_list: list<string> =<< trim END
     VimResized
     VimResume
     VimSuspend
+    WinClosed
     WinEnter
     WinLeave
     WinNew
