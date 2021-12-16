@@ -512,6 +512,7 @@ syntax cluster vim9CanBeAtStartOfLine contains=
     \     vim9Block,
     \     vim9Comment,
     \     vim9FuncCall,
+    \     vim9FuncEnd,
     \     vim9FuncHeader,
     \     vim9Increment,
     \     vim9IncrementError,
@@ -882,6 +883,14 @@ syntax match vim9Declare /\<\%(const\=\|final\|unl\%[et]\|var\)\>/
     #}}}
     syntax match vim9DeclareError /\<unlet\ze\s\+[&@]/ contained
 
+syntax region vim9ListUnpackDeclaration
+    \ contained
+    \ contains=@vim9DataTypeCluster
+    \ matchgroup=vim9Sep
+    \ start=/\[/
+    \ end=/\]/
+    \ oneline
+
 # In the legacy syntax plugin, `vimLetHereDoc` contains `vimComment` and `vim9Comment`.  That's wrong.{{{
 #
 # It causes  any text  following a double  quote at  the start of  a line  to be
@@ -917,6 +926,22 @@ execute 'syntax match vim9CmdModifier'
     .. ' skipwhite'
 
 syntax match vim9CmdBang /!/ contained nextgroup=@vim9CanBeAtStartOfLine skipwhite
+
+# Highlight a legacy command (run with `:legacy`) to a minimum.{{{
+#
+# In particular, we don't want `:let` to be wrongly highlighted as an error:
+#
+#     legacy let g:name = 'value'
+#            ^^^
+#            not an error because valid in legacy
+#}}}
+execute 'syntax match vim9CmdModifier'
+    .. ' /\<legacy\>/'
+    .. ' contained'
+    .. ' nextgroup=vim9LegacyCmd'
+    .. ' skipwhite'
+
+syntax match vim9LegacyCmd /.\{-}\%(\\\@1<!|\|$\)\@=/ contained contains=@vim9LegacyCluster
 
 # User {{{3
 # Definition {{{4
@@ -1658,7 +1683,7 @@ syntax match vim9ProfilePat '\S\+' contained
 #
 # Some  of its  effects are  really  nice in  a substitution  pattern (like  the
 # highlighting of capturing groups).  But I  don't think all of its effects make
-# sense here.   Consider replacing it  with a  similar groups whose  effects are
+# sense here.   Consider replacing  it with  a similar  group whose  effects are
 # limited to the ones which make sense.
 #
 # Also, make sure to include it in  any pattern supplied to a command (`:catch`,
@@ -1882,6 +1907,7 @@ syntax match vim9SynKeyOpt
 
 syntax cluster vim9SynMatchGroup contains=
     \ vim9BracketNotation,
+    \ vim9MatchComment,
     \ vim9SynContains,
     \ vim9SynError,
     \ vim9SynMatchOpt,
@@ -1974,6 +2000,10 @@ syntax region vim9SynRegPat
     \ extend
     \ nextgroup=vim9SynPatMod,vim9SynRegStartSkipEnd
     \ skipwhite
+
+    # Handles inline comment after a `:help :syn-match` rule.
+    # Order: must come after `vim9SynRegPat`.
+    syntax match vim9MatchComment contained '#[^#]\+$'
 
 syntax match vim9SynPatMod
     \ /\%(hs\|ms\|me\|hs\|he\|rs\|re\)=[se]\%([-+]\d\+\)\=/
@@ -2166,7 +2196,9 @@ syntax match vim9DefBangError /!\%(\s\+g:\)\@!/ contained
 syntax region vim9FuncSignature
     \ matchgroup=vim9ParenSep
     \ start=/(/
-    \ end=/)\|^\s*enddef\ze\s*\%(#.*\)\=$/
+    \ end=/)/
+    \ matchgroup=NONE
+    \ end=/^\s*enddef\ze\s*\%(#.*\)\=$/
     \ contained
     \ contains=
     \     @vim9DataTypeCluster,
@@ -2214,6 +2246,15 @@ execute 'syntax match vim9LegacyFunction'
     .. ' nextgroup=vim9LegacyFuncBody,vim9SpaceAfterLegacyFuncHeader'
     syntax match vim9SpaceAfterLegacyFuncHeader /\s\+\ze(/ contained nextgroup=vim9LegacyFuncBody
 
+syntax cluster vim9LegacyCluster contains=
+    \ vim9LegacyComment,
+    \ vim9LegacyConcatInvalid,
+    \ vim9LegacyConcatValid,
+    \ vim9LegacyDictMember,
+    \ vim9LegacyFloat,
+    \ vim9LegacyString,
+    \ vim9LegacyVarArgsHeader
+
 # There might be a trailing comment after `:endfunction`.{{{
 #
 # Typically, it might be fold markers:
@@ -2230,14 +2271,7 @@ syntax region vim9LegacyFuncBody
     \ matchgroup=vim9DefKey
     \ end=/^\s*\<endf\%[unction]\ze\s*\%(".*\)\=$/
     \ contained
-    \ contains=
-    \     vim9LegacyComment,
-    \     vim9LegacyConcatInvalid,
-    \     vim9LegacyConcatValid,
-    \     vim9LegacyDictMember,
-    \     vim9LegacyFloat,
-    \     vim9LegacyVarargsHeader,
-    \     vim9LegacyString
+    \ contains=@vim9LegacyCluster
     \ nextgroup=vim9LegacyComment
     \ skipwhite
 
@@ -2292,8 +2326,14 @@ syntax match vim9LegacyConcatInvalid /\.\%(\s\|\w\|['"=]\)\@=/ contained
     # matter what it is.
     #}}}
     syntax match vim9LegacyDictMember /\%(\h\w*\|[)})\]]\)\zs\.\ze\h\w*/ contained
-    # A dot in `...` at the end of a legacy function's header is valid.
-    syntax match vim9LegacyVarArgsHeader /\.\.\.\%(\s*)\)\@=/ contained
+    # A dot in `...` at the end of a legacy function's header is valid.{{{
+    #
+    # Same thing in a legacy lambda:
+    #
+    #     :legacy call timer_start(0, {... -> 0})
+    #                                  ^^^
+    #}}}
+    syntax match vim9LegacyVarArgsHeader /\.\.\.\%(\s*\%()\|->\)\)\@=/ contained
     # A dot in a float is valid.
     syntax match vim9LegacyFloat /\d\+\.\d\+/ contained
 #}}}2
@@ -3459,15 +3499,6 @@ syntax match vim9StrictWhitespace /\S\@1<=:\S\@=/ contained containedin=vim9Dict
 # `:let` is deprecated.
 syntax keyword vim9DeprecatedLet let contained
 
-# Declaring more than one variable at  a time, using the unpack notation, is
-# not supported.  See `:help E1092`.
-syntax region vim9ListUnpackDeclaration
-    \ contained
-    \ contains=vim9ListUnpackDeclaration
-    \ end=/\]/
-    \ oneline
-    \ start=/\[/
-
 # In legacy Vim script, a literal dictionary starts with `#{`.
 # This syntax is no longer valid in Vim9.
 syntax match vim9DeprecatedDictLiteralLegacy /#{{\@!/
@@ -3891,7 +3922,6 @@ highlight default link vim9LambdaDictMissingParen vim9Error
 highlight default link vim9LegacyConcatInvalid vim9Error
 highlight default link vim9LegacyFuncArgs vim9Error
 highlight default link vim9LegacyVarArgs vim9Error
-highlight default link vim9ListUnpackDeclaration vim9Error
 highlight default link vim9MapModErr vim9Error
 highlight default link vim9MarkCmdArgInvalid vim9Error
 highlight default link vim9NumberOctalWarn vim9Error
@@ -4004,6 +4034,7 @@ highlight default link vim9MapModExpr vim9MapMod
 highlight default link vim9MapModKey Special
 highlight default link vim9MarkCmd vim9GenericCmd
 highlight default link vim9MarkCmdArg Special
+highlight default link vim9MatchComment vim9Comment
 highlight default link vim9None Constant
 highlight default link vim9Norm vim9GenericCmd
 highlight default link vim9NormCmds String

@@ -655,7 +655,6 @@ const command_modifier_list: list<string> =<< trim END
     ke\%[epmarks]
     keepp\%[atterns]
     lefta\%[bove]
-    leg\%[acy]
     loc\%[kmarks]
     noa\%[utocmd]
     nos\%[wapfile]
