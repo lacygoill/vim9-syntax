@@ -128,17 +128,10 @@ endif
 #     :helpgrep ^:.*\[++opt\]
 
 # TODO:
-#                                  should be highlighted as a translated keycode?
-#                                  v---v
-#     nnoremap <expr> <F3> true ? '<C-A>' : '<C-B>'
-#                          ^--^
-#                          should be highlighted as an error?
 #
-# IMO, it's part of a more general issue.
-# Mappings  installed from  a Vim9  script should  use the  Vim9 syntax;  that's
-# probably what users would expect.  Unfortunately,  mappings are not run in the
-# context  of the  script where  they  were defined.   At the  very least,  this
-# pitfall should be documented.
+#     nnoremap <expr> <F3> true ? '<C-A>' : '<C-B>'
+#                                  ^---^
+#                                  should be highlighted as a translated keycode?
 
 # TODO: These command expect a pattern as argument:
 #
