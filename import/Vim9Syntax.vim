@@ -504,6 +504,8 @@ const builtin_func_list: list<string> =<< trim END
     win_gotoid
     win_id2tabwin
     win_id2win
+    win_move_separator
+    win_move_statusline
     win_screenpos
     win_splitmove
     winbufnr
@@ -595,7 +597,7 @@ export const command_address_type: string = command_address_type_list->join("\\|
 
 # command_can_be_before {{{1
 
-export const command_can_be_before: string = '\%(!\=[ \t\n]\@=\|\c<\%(bar\|cr\)>\)\%(\s*\%([-+*/%]=\|=\s\|=<<\|\.\.=\)\|\_s*\%(->\|[-+*/%]\%(\s\+\)\@>[^|<]\)\)\@!'
+export const command_can_be_before: string = '\%([ \t\n]\@=\|\c<\%(bar\|cr\)>\)\%(\s*\%([-+*/%]=\|=\s\|=<<\|\.\.=\)\|\_s*\%(->\|[-+*/%]\%(\s\+\)\@>[^|<]\)\)\@!'
 
 # command_complete_type {{{1
 
@@ -655,6 +657,7 @@ const command_modifier_list: list<string> =<< trim END
     ke\%[epmarks]
     keepp\%[atterns]
     lefta\%[bove]
+    leg\%[acy]
     loc\%[kmarks]
     noa\%[utocmd]
     nos\%[wapfile]
@@ -679,6 +682,7 @@ const command_name_list: list<string> =<< trim END
     am[enu]
     an[oremenu]
     arga[dd]
+    argded[upe]
     argd[elete]
     arge[dit]
     argg[lobal]
@@ -1115,7 +1119,9 @@ const default_highlighting_group_list: list<string> =<< trim END
     CursorColumn
     CursorIM
     CursorLine
+    CursorLineFold
     CursorLineNr
+    CursorLineSign
     DiffAdd
     DiffChange
     DiffDelete
@@ -1379,6 +1385,7 @@ const key_name_list: list<string> =<< trim END
     RightRelease
     SID
     SNR
+    ScriptCmd
     ScrollWheelDown
     ScrollWheelLeft
     ScrollWheelRight
@@ -1444,7 +1451,7 @@ export const lambda_end: string = ')\ze\%(:.\{-}\)\=\s\+=>'
 
 # lambda_start {{{1
 
-export const lambda_start: string = '(\ze\%(\s*\h\w*\%([^(]\|\%(\<func\)\@4<=(\)*\)\=)\%(:.\{-}\)\=\s\+=>'
+export const lambda_start: string = '(\ze\%(\%(\s*\h\w*\|\s*\.\.\.\h[a-zA-Z0-9_]*\)\%([^(]\|\%(\<func\)\@4<=(\)*\)\=)\%(:.\{-}\)\=\s\+=>'
 
 # logical_not {{{1
 
@@ -1456,7 +1463,7 @@ export const mark_valid: string = '[a-zA-Z''[\]<>0-9"^.(){}]'
 
 # maybe_dict_literal_key {{{1
 
-export const maybe_dict_literal_key: string = '/\%([{\n]\|[^ \t\n,{]\@1<!\s\)\@1<=[^ \t{(''"]\+\ze\%(:\s\)\@=/'
+export const maybe_dict_literal_key: string = '/\%([{\n]\|[^ \t\n,{\\]\@1<!\s\)\@1<=[^ \t{(''"]\+\ze\%(:\s\)\@=/'
 
 # most_operators {{{1
 
@@ -1569,6 +1576,8 @@ const option_list: list<string> =<< trim END
     bt
     casemap
     cmp
+    cdhome
+    cdh
     cdpath
     cd
     cedit
@@ -2340,6 +2349,7 @@ const option_list: list<string> =<< trim END
     thesaurus
     tsr
     thesaurusfunc
+    tsrfu
     tildeop
     top
     notildeop
@@ -2482,13 +2492,19 @@ const option_list: list<string> =<< trim END
     nowb
     writedelay
     wd
+    xtermcodes
+    noxtermcodes
 END
 
 export const option: string = option_list->join()
 
 # option_can_be_after {{{1
 
-export const option_can_be_after: string = '\%(^\|[-+ \t!([]\)\@1<='
+export const option_can_be_after: string = '\%(^\|[-+ \t!([>]\)\@1<='
+
+# option_modifier {{{1
+
+export const option_modifier: string = '\%(&\%(vim\)\=\|[<?!]\)\%(\_s\||\)\@='
 
 # option_sigil {{{1
 

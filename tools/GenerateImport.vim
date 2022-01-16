@@ -316,10 +316,9 @@ enddef
 const command_can_be_before: string =
     # after a command, we know there must be a whitespace or a newline
        '\%('
-       # (possibly after a bang)
-       ..     '!\=' .. '[ \t\n]\@='
+       ..     '[ \t\n]\@='
        .. '\|'
-       # Special Case: An Ex command in the rhs of a mapping, right after `<Cmd>` or `<Bar>`.
+       # Special Case: An Ex command in the rhs of a mapping, right after `<ScriptCmd>` or `<Bar>`.
        ..     '\c<\%(bar\|cr\)>'
        .. '\)'
     # but there must *not* be a binary operator
@@ -568,10 +567,10 @@ const maybe_dict_literal_key: string = '/'
     # Or there must be some space.{{{
     #
     # But if there is, it should not preceded by a non-whitespace, unless it's a
-    # comma (separating items) or a curly brace (start of dictionary).
-    #
+    # comma  (separating items),  a  curly  brace (start  of  dictionary), or  a
+    # backslash (continuation line).
     #}}}
-    ..    '[^ \t\n,{]\@1<!' .. '\s'
+    ..    '[^ \t\n,{\\]\@1<!' .. '\s'
     .. '\)\@1<='
     # the key itself
     .. '[^ \t{(''"]\+'
@@ -611,8 +610,8 @@ const most_operators: string = '"'
     #
     #         v
     #     Cmd + | eval 0
-    #     nnoremap <key> <Cmd>Cmd + <Bar> eval 0<CR>
-    #                             ^
+    #     nnoremap <key> <ScriptCmd>Cmd + <Bar> eval 0<CR>
+    #                                   ^
     #}}}
     .. '\%(\s*[|<]\)\@!'
     .. '"'
@@ -750,16 +749,47 @@ const pattern_delimiter: string =
 
 const option_can_be_after: string = '\%('
     .. '^'
-    .. '\|' .. '['
-    # Support the increment and decrement operators (`--` and `++`). Example:{{{
+    ..     '\|'
+    .. '['
+    # Support the increment and decrement operators (`--` and `++`).{{{
+    #
+    # Example:
     #
     #     ++&l:foldlevel
     #     ^^
     #}}}
     ..     '-+'
     ..     ' \t!(['
+    # Support an option after `<ScriptCmd>` or `Bar`.{{{
+    #
+    # Example:
+    #
+    #     nnoremap <F3> <ScriptCmd>&operatorfunc = Opfunc<CR>g@
+    #                              ^-----------^
+    #}}}
+    ..     '>'
     .. ']'
     .. '\)\@1<='
+
+# option_modifier {{{3
+
+# This regex should make sure that we're  in a position where a Vim option could
+# appear right after.
+
+const option_modifier: string =
+    '\%('
+    ..     '&\%(vim\)\='
+    ..     '\|'
+    ..     '[<?!]'
+    .. '\)'
+    # Necessary to avoid a spurious highlight:{{{
+    #
+    #     nnoremap <key> <ScriptCmd>set wrap<Bar> eval 0 + 0<CR>
+    #                                       ^
+    #                                       this is not a modifier which applies to 'wrap';
+    #                                       this is the start of the Vim keycode <Bar>
+    #}}}
+    .. '\%(\_s\||\)\@='
 
 # option_sigil {{{3
 
@@ -1016,7 +1046,7 @@ const option_terminal_special: list<string> =
         ->uniq()
 #}}}1
 
-const IMPORT_FILE: string = expand('<sfile>:p:h:h') .. '/import/vim9syntax.vim'
+const IMPORT_FILE: string = expand('<sfile>:p:h:h') .. '/import/Vim9Syntax.vim'
 var header: list<string> =<< trim END
     vim9script
 
@@ -1047,6 +1077,7 @@ AppendSection('maybe_dict_literal_key')
 AppendSection('most_operators')
 AppendSection('option')
 AppendSection('option_can_be_after')
+AppendSection('option_modifier')
 AppendSection('option_sigil')
 AppendSection('option_terminal')
 AppendSection('option_terminal_special', true)

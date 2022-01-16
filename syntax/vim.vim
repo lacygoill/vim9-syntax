@@ -171,33 +171,36 @@ endif
 
 # Imports {{{1
 
-import builtin_func from 'vim9syntax.vim'
-import builtin_func_ambiguous from 'vim9syntax.vim'
-import collation_class from 'vim9syntax.vim'
-import command_address_type from 'vim9syntax.vim'
-import command_can_be_before from 'vim9syntax.vim'
-import command_complete_type from 'vim9syntax.vim'
-import command_modifier from 'vim9syntax.vim'
-import command_name from 'vim9syntax.vim'
-import default_highlighting_group from 'vim9syntax.vim'
-import event from 'vim9syntax.vim'
-import ex_special_characters from 'vim9syntax.vim'
-import increment_invalid from 'vim9syntax.vim'
-import key_name from 'vim9syntax.vim'
-import lambda_end from 'vim9syntax.vim'
-import lambda_start from 'vim9syntax.vim'
-import logical_not from 'vim9syntax.vim'
-import mark_valid from 'vim9syntax.vim'
-import maybe_dict_literal_key from 'vim9syntax.vim'
-import most_operators from 'vim9syntax.vim'
-import option from 'vim9syntax.vim'
-import option_can_be_after from 'vim9syntax.vim'
-import option_sigil from 'vim9syntax.vim'
-import option_terminal from 'vim9syntax.vim'
-import option_terminal_special from 'vim9syntax.vim'
-import option_valid from 'vim9syntax.vim'
-import pattern_delimiter from 'vim9syntax.vim'
-import wincmd_valid from 'vim9syntax.vim'
+import 'Vim9Syntax.vim'
+
+const builtin_func: string = Vim9Syntax.builtin_func
+const builtin_func_ambiguous: string = Vim9Syntax.builtin_func_ambiguous
+const collation_class: string = Vim9Syntax.collation_class
+const command_address_type: string = Vim9Syntax.command_address_type
+const command_can_be_before: string = Vim9Syntax.command_can_be_before
+const command_complete_type: string = Vim9Syntax.command_complete_type
+const command_modifier: string = Vim9Syntax.command_modifier
+const command_name: string = Vim9Syntax.command_name
+const default_highlighting_group: string = Vim9Syntax.default_highlighting_group
+const event: string = Vim9Syntax.event
+const ex_special_characters: string = Vim9Syntax.ex_special_characters
+const increment_invalid: string = Vim9Syntax.increment_invalid
+const key_name: string = Vim9Syntax.key_name
+const lambda_end: string = Vim9Syntax.lambda_end
+const lambda_start: string = Vim9Syntax.lambda_start
+const logical_not: string = Vim9Syntax.logical_not
+const mark_valid: string = Vim9Syntax.mark_valid
+const maybe_dict_literal_key: string = Vim9Syntax.maybe_dict_literal_key
+const most_operators: string = Vim9Syntax.most_operators
+const option: string = Vim9Syntax.option
+const option_can_be_after: string = Vim9Syntax.option_can_be_after
+const option_modifier: string = Vim9Syntax.option_modifier
+const option_sigil: string = Vim9Syntax.option_sigil
+const option_terminal: string = Vim9Syntax.option_terminal
+const option_terminal_special: string = Vim9Syntax.option_terminal_special
+const option_valid: string = Vim9Syntax.option_valid
+const pattern_delimiter: string = Vim9Syntax.pattern_delimiter
+const wincmd_valid: string = Vim9Syntax.wincmd_valid
 #}}}1
 
 # Early {{{1
@@ -225,16 +228,27 @@ execute 'syntax match vim9BracketNotation'
     #              ^--^
     syntax match vim9SetBracketKeycode /\S\+/ contained
 
-# This could break the highlighting of a command after `<Bar>` (between `<Cmd>` and `<CR>`).
+# This could break the highlighting of a command after `<Bar>` (between `<ScriptCmd>` and `<CR>`).
 syntax match vim9BracketNotation /\c<Bar>/ contains=vim9BracketKey skipwhite
 
-# This could break the highlighting of a command in a mapping (between `<Cmd>` and `<CR>`).
-# Especially if `<Cmd>` is preceded by some key(s).
-syntax match vim9BracketNotation /\c<Cmd>/hs=s+1
+# This could break the highlighting of a command in a mapping (between `<ScriptCmd>` and `<CR>`).
+# Especially if `<ScriptCmd>` is preceded by some key(s).
+syntax match vim9BracketNotation /\c<ScriptCmd>/hs=s+1
     \ contains=vim9BracketKey
     \ nextgroup=@vim9CanBeAtStartOfLine,@vim9Range,vim9RangeIntroducer2
     \ skipwhite
     syntax match vim9RangeIntroducer2 /:/ contained nextgroup=@vim9Range,vim9RangeMissingSpecifier1
+
+# We only highlight `<Cmd>`; not the command which comes right after.{{{
+#
+# That's because this command is run in the global context, thus with the legacy
+# syntax.  And handling the legacy syntax adds too much complexity.
+#
+# Besides, the fact  that it's not highlighted gives us  some feedback: it tells
+# us  that the  command  is not  run  with  the Vim9  syntax.   Just like  after
+# `:legacy`, and inside a `:function`.
+#}}}
+syntax match vim9BracketNotation /\c<Cmd>/hs=s+1 contains=vim9BracketKey
 
 # let's put this here for consistency
 execute 'syntax match vim9ExSpecialCharacters'
@@ -438,7 +452,7 @@ syntax match vim9RangeDelimiter /[,;]/
 # One of them is not properly highlighted!{{{
 #
 # First, as mentioned before, make sure it's listed in this cluster.
-# Second, make sure it's listed in `SPECIAL_CMDS` in `./import/vim9syntax.vim`.
+# Second, make sure it's listed in `SPECIAL_CMDS` in `./import/Vim9Syntax.vim`.
 # So that it's removed from `command_name`, and in turn from the `vim9GenericCmd` rule.
 #}}}
 syntax cluster vim9IsCmd contains=
@@ -503,7 +517,7 @@ syntax match vim9MayBeCmd /\%(\<\h\w*\>\)\@=/
     # General case
     # Order: Must come after the previous rule handling the special case.
     execute 'syntax match vim9MayBeCmd'
-        .. ' /\%(\<\h\w*\>' .. command_can_be_before .. '\)\@=/'
+        .. ' /\%(' .. '\<\h\w*\>' .. '!\=' .. command_can_be_before .. '\)\@=/'
         .. ' contained'
         .. ' nextgroup=@vim9IsCmd'
 
@@ -593,7 +607,8 @@ syntax match vim9GenericCmd /\<z[-+^.=]\=\>/ contained
 # That includes, for example, a function.
 # But the legacy syntax plugin wrongly handles such a situation:
 #
-#     augroup Name | autocmd!
+#     augroup Name
+#        autocmd!
 #         def Func()
 #         ^^^
 #         wrongly highlighted as an option (:def is confused with 'def')
@@ -1395,57 +1410,33 @@ syntax match vim9HiGuiRgb /#\x\{6}/ contained nextgroup=vim9HiGuiFgBg,vim9HiGui 
 
 # :import
 # :export
-syntax keyword vim9Import imp[ort] contained nextgroup=vim9ImportedItems skipwhite
-# `import * ...` is a special case.{{{
-#
-# `vim9Import`  is included  in the  `vim9IsCmd` cluster,  which itself  is only
-# allowed  to  match  after  `vim9MayBeCmd`.   The  latter  does  not  recognize
-# something like:
-#
-#     cmd * arg
-#     ^^^
-#
-# Because –  in the general  case – this  is most probably  a multiplication
-# between 2 expressions.
-#}}}
-syntax match vim9Import /^\s*imp\%[ort]\%(\s\+\*\s\+\%(from\|as\)\)\@=/ nextgroup=vim9ImportedItems skipwhite
+syntax keyword vim9Import imp[ort] contained nextgroup=vim9ImportedScript,vim9ImportAutoload skipwhite
 syntax keyword vim9Export exp[ort] contained nextgroup=vim9Declare skipwhite
 
-#        v----v
-# import MyItem ...
-syntax match vim9ImportedItems /\h[a-zA-Z0-9_]*/
+#        v------v
+# import autoload 'path/to/script.vim'
+syntax keyword vim9ImportAutoload autoload
     \ contained
-    \ nextgroup=vim9ImportAsFrom
+    \ nextgroup=vim9ImportedScript
     \ skipwhite
 
-#        v---------v
-# import {My, Items} ...
-syntax region vim9ImportedItems matchgroup=vim9Sep
-    \ start=/{/
-    \ end=/}/
+#        v------------v
+# import 'MyScript.vim' ...
+syntax match vim9ImportedScript /\(['"]\)\f\+\1/
     \ contained
-    \ contains=vim9ImportAsFrom
-    \ nextgroup=vim9ImportAsFrom
+    \ nextgroup=vim9ImportAs
     \ skipwhite
-syntax match vim9ImportedItems /\*/ contained nextgroup=vim9ImportAsFrom skipwhite
 
-#               vv         v--v
-# import MyItem as MyAlias from 'myfile.vim'
-syntax keyword vim9ImportAsFrom as from contained nextgroup=vim9ImportAlias skipwhite
-
-#                  v-----v
-# import MyItem as MyAlias from 'myfile.vim'
-syntax match vim9ImportAlias /\h[a-zA-Z0-9_]*/
-    \ contained
-    \ nextgroup=vim9ImportAsFrom
-    \ skipwhite
+#                       vv
+# import 'MyScript.vim' as MyAlias
+syntax keyword vim9ImportAs as contained
 
 # :inoreabbrev {{{3
 
 syntax keyword vim9AbbrevCmd
     \ ab[breviate] ca[bbrev] inorea[bbrev] cnorea[bbrev] norea[bbrev] ia[bbrev]
     \ contained
-    \ nextgroup=@vim9MapLhs,@vim9MapMod
+    \ nextgroup=vim9MapLhs,@vim9MapMod
     \ skipwhite
 
 # :mark {{{3
@@ -1461,12 +1452,10 @@ execute 'syntax match vim9MarkCmdArg /\s\@1<=' .. mark_valid .. '\_s\@=/ contain
 # :nnoremap {{{3
 
 syntax cluster vim9MapMod contains=vim9MapMod,vim9MapModExpr
-syntax cluster vim9MapLhs contains=vim9MapLhs,vim9MapLhsExpr
-syntax cluster vim9MapRhs contains=vim9MapRhs,vim9MapRhsExpr
 
 syntax match vim9Map /\<map\>!\=\ze\s*[^(]/
     \ contained
-    \ nextgroup=@vim9MapLhs,vim9MapMod,vim9MapModExpr
+    \ nextgroup=vim9MapLhs,vim9MapMod,vim9MapModExpr
     \ skipwhite
 
 # Do *not* include `vim9MapLhsExpr` in the `nextgroup` argument.{{{
@@ -1491,7 +1480,7 @@ syntax keyword vim9Unmap
     \ cu[nmap] iu[nmap] lu[nmap] nun[map] ou[nmap] sunm[ap]
     \ tunma[p] unm[ap] unm[ap] vu[nmap] xu[nmap]
     \ contained
-    \ nextgroup=vim9MapBang,@vim9MapLhs,@vim9MapMod
+    \ nextgroup=vim9MapBang,vim9MapLhs,@vim9MapMod
     \ skipwhite
 
 syntax match vim9MapLhs /\S\+/
@@ -1506,7 +1495,7 @@ syntax match vim9MapLhsExpr /\S\+/
     \ nextgroup=vim9MapRhsExpr
     \ skipwhite
 
-syntax match vim9MapBang /!/ contained nextgroup=@vim9MapLhs,@vim9MapMod skipwhite
+syntax match vim9MapBang /!/ contained nextgroup=vim9MapLhs,@vim9MapMod skipwhite
 
 execute 'syntax match vim9MapMod'
     .. ' /'
@@ -1549,7 +1538,7 @@ syntax match vim9MapRhs /.*/
     \ contains=
     \     vim9BracketNotation,
     \     vim9CtrlChar,
-    \     vim9MapCmd,
+    \     vim9MapScriptCmd,
     \     vim9MapCmdlineExpr,
     \     vim9MapInsertExpr
     \ nextgroup=vim9MapRhsExtend
@@ -1565,10 +1554,10 @@ syntax match vim9MapRhsExpr /.*/
 #
 # Example:
 #
-#                                v--v
-#     nnoremap x <Cmd>normal! abc<CR>
-#     nnoremap x <Cmd>doautocmd WinEnter<CR>
-#                                       ^--^
+#                                      v--v
+#     nnoremap x <ScriptCmd>normal! abc<CR>
+#     nnoremap x <ScriptCmd>doautocmd WinEnter<CR>
+#                                             ^--^
 #
 # In the first command, `<CR>` should not be matched normal commands.
 # In the second one, `<CR>` should not be matched as a file pattern in an autocmd.
@@ -1577,18 +1566,24 @@ syntax match vim9MapRhsExpr /.*/
 # match in its start/end?
 # We don't add `oneline` because it's convenient to break a rhs on multiple lines.{{{
 #
-#     nnoremap <key> <Cmd>call Foo(
+#     nnoremap <key> <ScriptCmd>Foo(
 #       \ arg1,
 #       \ arg2,
 #       \ arg3,
 #       \ )
 #}}}
-syntax region vim9MapCmd
-    \ start=/\c<Cmd>/
+syntax region vim9MapScriptCmd
+    \ start=/\c<ScriptCmd>/
     \ matchgroup=vim9BracketNotation
     \ end=/\c<CR>\|<Enter>\|^\s*$/
     \ contained
-    \ contains=@vim9Expr,vim9BracketNotation,vim9MapCmdBar,vim9SpecFile
+    \ contains=
+    \     @vim9Expr,
+    \     vim9BracketNotation,
+    \     vim9Continuation,
+    \     vim9MapCmdBar,
+    \     vim9OperAssign,
+    \     vim9SpecFile
     \ keepend
 
 syntax region vim9MapInsertExpr
@@ -1613,11 +1608,14 @@ syntax region vim9MapCmdlineExpr
 
 # Highlight what comes after `<Bar>` as a command:{{{
 #
-#     nnoremap xxx <Cmd>call FuncA() <Bar> call FuncB()<CR>
-#                                          ^--^
+#     nnoremap xxx <ScriptCmd>FuncA() <Bar> eval 1 + 2<CR>
+#                                           ^--^
 #
-# But only if it's between `<Cmd>` and `<CR>`.
-# Anywhere else, we have no guarantee that we're on the command-line.
+# But only if it's between `<ScriptCmd>` and `<CR>`.
+# Anywhere else, we have no guarantee that we're inside an Ex command.
+# Actually, we  do between `<Cmd>`  and `<CR>`, but  we don't want  to highlight
+# anything  in there;  it's processed  in the  global context  where the  legacy
+# syntax must be used; we're only interested in highlighting the Vim9 syntax.
 #}}}
 syntax match vim9MapCmdBar /\c<Bar>/
     \ contained
@@ -2618,8 +2616,6 @@ syntax cluster vim9Expr contains=
 
 # Booleans / null / v:none {{{2
 
-# Even though `v:` is useless in Vim9, we  still need it in a mapping; because a
-# mapping is run in the legacy context, even when installed from a Vim9 script.
 syntax match vim9Bool /\%(v:\)\=\<\%(false\|true\)\>:\@!/
 syntax match vim9Null /\%(v:\)\=\<null\>:\@!/
 
@@ -2922,6 +2918,10 @@ execute 'syntax match vim9DataTypeCast'
     .. ' /<\%('
     ..         'any\|blob\|bool\|channel\|float\|func\|job\|number\|string\|void'
     .. '\)>'
+    # TODO: Type casts *might* be used for script/function local variables too.
+    # If so, you might need to remove this assertion.
+    # And also allow `vim9DataTypeCastComposite` to be matched in
+    # `vim9OperParen` (and other groups?), and link it to the `Type` HG.
     .. '\%([bgtw]:\)\@='
     .. '/'
 
@@ -2950,11 +2950,6 @@ syntax keyword vim9Set setl[ocal] setg[lobal] se[t]
 
 # Names {{{2
 
-# Note that an option value can be written right at the start of the line.{{{
-#
-#     &guioptions = 'M'
-#     ^---------^
-#}}}
 execute 'syntax match vim9MayBeOptionScoped'
     .. ' /'
     ..     option_can_be_after
@@ -2981,16 +2976,34 @@ execute 'syntax match vim9MayBeOptionSet'
     .. ' contains=vim9IsOption'
     .. ' nextgroup=vim9SetEqual,vim9SetEqualError,vim9MayBeOptionSet,vim9SetMod'
     .. ' skipwhite'
-    # White space is disallowed around the assignment operator:{{{
-    #
-    #                        ✘
-    #                        vv
-    #     setlocal foldmethod = 'expr'
-    #     setlocal foldmethod=expr
-    #                        ^
-    #                        ✔
-    #}}}
-    syntax match vim9SetEqualError / [-+^]\==/ contained
+    execute 'syntax match vim9SetEqualError'
+        .. ' /'
+        ..    '\s\+'
+        ..    '\%('
+        # White space is disallowed around the assignment operator:{{{
+        #
+        #                        ✘
+        #                        vv
+        #     setlocal foldmethod = 'expr'
+        #     setlocal foldmethod=expr
+        #                        ^
+        #                        ✔
+        #}}}
+        ..        '[-+^]\=='
+        ..    '\|'
+        # It's also disallowed before a modifier:{{{
+        #
+        #                 ✘
+        #                 v
+        #     set hlsearch &
+        #     set hlsearch !
+        #                 ^
+        #                 ✘
+        #}}}
+        ..        option_modifier
+        ..    '\)\@='
+        .. '/'
+        .. ' contained'
 
 syntax match vim9OptionSigil /&\%([gl]:\)\=/ contained
 
@@ -3054,17 +3067,10 @@ syntax match vim9SetNumberValue /\d\+\_s\@=/
 # ? = show value
 # ! = invert value
 #}}}
-# The positive lookahead is necessary to avoid a spurious highlight:{{{
-#
-#     nnoremap <key> <Cmd>set wrap<Bar> eval 0<CR>
-#                                 ^
-#                                 this is not a modifier which applies to 'wrap';
-#                                 this is the start of the Vim keycode <Bar>
-#}}}
-syntax match vim9SetMod /\%(&\%(vim\)\=\|[<?!]\)\%(\_s\||\)\@=/
-    \ contained
-    \ nextgroup=vim9MayBeOptionScoped,vim9MayBeOptionSet
-    \ skipwhite
+execute 'syntax match vim9SetMod /' .. option_modifier .. '/'
+    .. ' contained'
+    .. ' nextgroup=vim9MayBeOptionScoped,vim9MayBeOptionSet'
+    .. ' skipwhite'
 #}}}1
 # Blocks {{{1
 
@@ -3251,8 +3257,8 @@ syntax match vim9SpecFile /\s%\%($\|\s*[|<]\)\@=/ms=s+1 nextgroup=vim9SpecFileMo
 syntax match vim9SpecFile /\s%<\%([^ \t<>]*>\)\@!/ms=s+1,me=e-1 nextgroup=vim9SpecFileMod
 # TODO: The negative lookahead is necessary to prevent a match in a mapping:{{{
 #
-#     nnoremap x <Cmd>argedit %<CR>
-#                              ^
+#     nnoremap x <ScriptCmd>argedit %<CR>
+#                                    ^
 # Pretty sure it's needed in other similar rules around here.
 # Make tests.
 # Try to avoid code repetition; import a regex if necessary.
@@ -3462,46 +3468,24 @@ syntax match vim9StrictWhitespace /\S\@1<=:\S\@=/ contained containedin=vim9Dict
 
 # Deprecated syntaxes {{{2
 
-# Even in a `:def` function, or in a Vim9 script, there might be valid legacy code.{{{
+# Where can a legacy syntax be used in a Vim9 script?{{{
 #
-# After `:legacy`, or in the rhs of a mapping.
-# We don't try to handle these contexts specially because those seem like corner
-# cases.
+#    - inside a `:function`
+#    - after `:legacy`
+#    - in the rhs of a mapping (except if it uses `<expr>` or `<ScriptCmd>`)
+#}}}
+#   Can't the next rules sometimes highlight a valid legacy syntax as an error?{{{
 #
-# `:legacy` should hardly be ever used.
-# And  in the  rhs of  a mapping,  it's easy  to avoid  any syntax  triggering a
-# highlighting error;  just wrap the problematic  code in a `:def`  function and
-# call it.
-#
-#     ✘
-#     nnoremap <F3> <Cmd>let g:myvar = 123<CR>
-#
-#     ✔
-#     nnoremap <F3> <Cmd>call Func()<CR>
-#     def Func()
-#         g:myvar = 123
-#     enddef
-#
-# This also gives  the benefit of making  the context (legacy vs  Vim9) in which
-# the code  is run explicit.   Which in turn can  fix some obscure  issues; e.g.
-# when a mapping  is executed – from  a Vim9 script –  with `feedkeys()` and
-# the `x` flag, the rhs is run in the Vim9 context, instead of the legacy one.
-# IOW, there  is no guarantee about  the context in  which the rhs will  be run;
-# unless you wrap it inside a function.
-#
-# ---
-#
-# In any  case, since these rules  might highlight valid syntaxes  as errors, we
-# should have  an option  to disable  them.  We still  install them  by default,
-# because those are  common errors; e.g. when copy-pasting legacy  code in a new
-# Vim9 script.
+# No, they can't.
+# We install syntax rules to match the previous contexts, and we don't allow the
+# next rules to nest inside.
 #}}}
 # `:let` is deprecated.
 syntax keyword vim9DeprecatedLet let contained
 
 # In legacy Vim script, a literal dictionary starts with `#{`.
 # This syntax is no longer valid in Vim9.
-syntax match vim9DeprecatedDictLiteralLegacy /#{{\@!/
+syntax match vim9DeprecatedDictLiteralLegacy /#{{\@!/ containedin=vim9ListSlice
 
 # the scopes `a:` and `l:` are no longer valid
 # Don't use `contained` to limit these rules to `@vim9Expr`.{{{
@@ -3542,17 +3526,10 @@ syntax match vim9LegacyVarArgs /a:000/
 # Exceptions: `_` and `..._`.
 
 # TODO: Highlight `:call` as useless.
-# But not after `<Cmd>` nor `<Bar>`.
 #
 # ---
 #
 # Same thing for `v:` in `v:true`, `v:false`, `v:null`.
-# Although, it's  trickier, because you must  not do that in  a mapping, and
-# these variables can appear anywhere (contrary to `:call`).
-# Idea: Make  the highlighting  optional, and  provide a  mapping which  can
-# toggle the option on-demand.
-# Update: Actually,  it  should cycle  between  different  errors, until  it
-# highlight them all simultaneously, then none, then the cycle repeats.
 #
 # ---
 #
@@ -3896,7 +3873,8 @@ highlight default link vim9GenericCmd Statement
 #                                              ✘
 #}}}
 if execute('highlight vim9UserCmdExe') =~ '\<cleared$'
-    import Derive from 'vim9syntaxUtil.vim'
+    import 'Vim9SyntaxUtil.vim'
+    const Derive: func = Vim9SyntaxUtil.Derive
     Derive('vim9FuncNameUser', 'Function', 'term=bold cterm=bold gui=bold')
     Derive('vim9UserCmdExe', 'vim9GenericCmd', 'term=bold cterm=bold gui=bold')
     Derive('vim9FuncHeader', 'Function', 'term=bold cterm=bold gui=bold')
@@ -4019,7 +3997,8 @@ highlight default link vim9HiStartStop vim9HiTerm
 highlight default link vim9HiTerm Type
 highlight default link vim9Highlight vim9GenericCmd
 highlight default link vim9Import Include
-highlight default link vim9ImportAsFrom vim9Import
+highlight default link vim9ImportAs vim9Import
+highlight default link vim9ImportedScript Vim9String
 highlight default link vim9Increment vim9Oper
 highlight default link vim9IsOption PreProc
 highlight default link vim9IskSep Delimiter

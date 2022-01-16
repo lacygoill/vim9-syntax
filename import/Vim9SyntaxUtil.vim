@@ -80,7 +80,8 @@ enddef
 # with the type `any`.
 var derived_hgs: list<dict<any>>
 
-augroup ResetDerivedHgWhenColorschemeChanges | autocmd!
+augroup ResetDerivedHgWhenColorschemeChanges
+    autocmd!
     autocmd ColorScheme * ResetDerivedHgWhenColorschemeChanges()
 augroup END
 
