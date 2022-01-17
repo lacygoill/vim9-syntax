@@ -2340,6 +2340,15 @@ execute 'syntax match vim9FuncCall'
     # otherwise, it must start with a head of word (i.e. word character except digit);
     # afterward, it can contain any word character and `#` (for autoloaded functions) and `.` (for dict functions)
     ..     '\h\%(\w\|[#.]\)*'
+    .. '\|'
+    # Special Case: call to function saved in dictionary obtained from arbitrary expression.{{{
+    #
+    #     Foo().bar()
+    #          ^--^
+    #
+    # Here, the dictionary is obtained with `Foo()`.
+    #}}}
+    ..     '\.\@1<!\.\w\+\ze('
     .. '\)'
     # Do *not* allow whitespace between the function name and the open paren.{{{
     #
@@ -2354,14 +2363,6 @@ execute 'syntax match vim9FuncCall'
     #     this should not be highlighted as a function, but as a command
     #}}}
     .. '\ze('
-    # Special Case: call to function saved in dictionary obtained from arbitrary expression.{{{
-    #
-    #     Foo().bar()
-    #          ^--^
-    #
-    # Here, the dictionary is obtained with `Foo()`.
-    #}}}
-    .. '\|' .. '\.\@1<!\.\w\+\ze('
     .. '/'
     .. ' contains=vim9FuncNameBuiltin,vim9FuncNameUser'
 
@@ -2536,7 +2537,7 @@ syntax match vim9OperAssign #\s\@1<=\%([-+*/%]\|\.\.\)\==\_s\@=#
     \ skipwhite
 
 # methods
-syntax match vim9Oper /->\%(\_s*\%(\h\|(\)\)\@=/ skipwhite
+syntax match vim9Oper /->\%(\_s*\h\)\@=/ skipwhite
 # logical not
 execute 'syntax match vim9Oper' .. ' ' .. logical_not .. ' display skipwhite'
 
