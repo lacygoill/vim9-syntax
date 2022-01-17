@@ -2536,7 +2536,7 @@ syntax match vim9OperAssign #\s\@1<=\%([-+*/%]\|\.\.\)\==\_s\@=#
     \ skipwhite
 
 # methods
-syntax match vim9Oper /->\%(\_s*\h\)\@=/ skipwhite
+syntax match vim9Oper /->\%(\_s*\%(\h\|(\)\)\@=/ skipwhite
 # logical not
 execute 'syntax match vim9Oper' .. ' ' .. logical_not .. ' display skipwhite'
 

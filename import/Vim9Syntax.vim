@@ -1451,7 +1451,7 @@ export const lambda_end: string = ')\ze\%(:.\{-}\)\=\s\+=>'
 
 # lambda_start {{{1
 
-export const lambda_start: string = '(\ze\%(\s*\h\w*\%([^(]\|\%(\<func\)\@4<=(\)*\)\=)\%(:.\{-}\)\=\s\+=>'
+export const lambda_start: string = '(\ze\%(\s*\h\w*\%([^(]\|\%(\<func\)\@4<=(\)*\|\s*\.\.\._\)\=)\%(:.\{-}\)\=\s\+=>'
 
 # logical_not {{{1
 

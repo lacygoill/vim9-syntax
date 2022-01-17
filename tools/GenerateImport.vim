@@ -455,6 +455,9 @@ const lambda_start: string = '('
     # obviously, the arguments can contain several characters;
     # so, let's repeat this group
     .. '*'
+    # Special Case: the first argument might be `..._`.
+    # It's a special case because it's not matched by `\h\w*`.
+    .. '\|' .. '\s*\.\.\._'
     # all these arguments are optional; the lambda could have none
     .. '\)\='
     .. lambda_end->substitute('\\ze', '', '')
@@ -483,6 +486,10 @@ const lambda_start: string = '('
 #     substitute(a, b, (m) => '', '')
 #                      ^^^
 #                       ✔
+#
+#     range(123)->map((..._) => v + 1)
+#                      ^--^
+#                      should be highlighted as an argument
 #
 # Also:
 #
