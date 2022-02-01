@@ -344,7 +344,7 @@ syntax match vim9RangeIntroducer /\%(^\|\s\):\S\@=/
     #     ^
     #}}}
     # Order: Must come after `vim9RangeIntroducer`.
-    syntax match vim9UnambiguousColon /\s\=:[a-zA-Z!]\@=/
+    syntax match vim9DisambiguatingColon /\s\=:[a-zA-Z!]\@=/
         \ contained
         \ nextgroup=@vim9CanBeAtStartOfLine
 
@@ -413,10 +413,14 @@ syntax match vim9RangeDelimiter /[,;]/
 # a specific highlighting, its arguments do.
 #}}}
 # Let's list them in this cluster.
+# Don't try to include `vim9BangCmd` here.{{{
+#
+# It wouldn't work, because `!` is not matched by `vim9MayBeCmd`.
+#}}}
 # One of them is not properly highlighted!{{{
 #
 # First, as mentioned before, make sure it's listed in this cluster.
-# Second, make sure it's listed in `SPECIAL_CMDS` in `./import/Vim9Syntax.vim`.
+# Second, make sure it's listed in `SPECIAL_CMDS` in `./tools/GenerateImport.vim`.
 # So that it's removed from `regex.command_name`, and in turn from the `vim9GenericCmd` rule.
 #}}}
 syntax cluster vim9IsCmd contains=
@@ -424,7 +428,6 @@ syntax cluster vim9IsCmd contains=
     \ vim9AbbrevCmd,
     \ vim9Augroup,
     \ vim9Autocmd,
-    \ vim9BangCmd,
     \ vim9CmdModifier,
     \ vim9CopyMove,
     \ vim9Declare,
@@ -488,16 +491,17 @@ syntax match vim9MayBeCmd /\%(\<\h\w*\>\)\@=/
 # Now, let's build a cluster containing all groups which can appear at the start of a line.
 syntax cluster vim9CanBeAtStartOfLine contains=
     \     @vim9FuncCall,
+    \     vim9BangCmd,
     \     vim9Block,
     \     vim9Comment,
+    \     vim9DisambiguatingColon,
     \     vim9FuncEnd,
     \     vim9FuncHeader,
     \     vim9Increment,
     \     vim9IncrementError,
     \     vim9LegacyFunction,
     \     vim9MayBeCmd,
-    \     vim9RangeIntroducer,
-    \     vim9UnambiguousColon
+    \     vim9RangeIntroducer
 
 # Let's use it in all relevant contexts.   We won't list them all here; only the
 # ones which  don't have a  dedicated section (i.e. start  of line, and  after a
@@ -901,10 +905,8 @@ syntax region vim9HereDoc
 execute 'syntax match vim9CmdModifier'
     .. ' /\<\%(' .. regex.command_modifier .. '\)\>/'
     .. ' contained'
-    .. ' nextgroup=@vim9CanBeAtStartOfLine,vim9CmdBang'
+    .. ' nextgroup=@vim9CanBeAtStartOfLine'
     .. ' skipwhite'
-
-syntax match vim9CmdBang /!/ contained nextgroup=@vim9CanBeAtStartOfLine skipwhite
 
 # Highlight a legacy command (run with `:legacy`) to a minimum.{{{
 #
@@ -2065,6 +2067,10 @@ execute 'syntax match vim9WincmdArg ' .. regex.wincmd_valid .. ' contained'
 #
 # Third, `:terminal`  is a better  command; it's  more readable, and  provides a
 # regular buffer in which you can leverage all of your usual commands.
+#
+# ---
+#
+# Note that we do support `!`, if it's after a command modifier like `:silent`.
 #}}}
 syntax match vim9BangCmd /!/ contained nextgroup=vim9BangShellCmd
 syntax match vim9BangShellCmd /.*/ contained contains=vim9BangLastShellCmd
@@ -2134,14 +2140,38 @@ execute 'syntax match vim9FuncHeader'
     .. '\%('
                # function with explicit scope (global or script-local)
     ..         '[gs]:\w\+'
-               # script-local function
+               # script-local function (or exported function in autoload script)
     .. '\|' .. '\u\w*'
-               # autoloaded function
+               # *invalid* autoload function name{{{
+               #
+               # In a Vim9 autoload script, when declaring an autoload function,
+               # we cannot write `path#to#script#Func()`; `:export` must be used
+               # instead:
+               #
+               #     ✘
+               #     def path#to#script#Func()
+               #
+               #     ✔
+               #     export def Func()
+               #
+               # Let's highlight the old way as an error.
+               #
+               # ---
+               #
+               # Note that we use the `*` quantifier at the end, and not `+`.
+               # That's  because  in  legacy,  it is  allowed  for  an  autoload
+               # function name to be empty:
+               #
+               #     def path#to#script#()
+               #                       ^
+               #
+               # We want to catch the error no matter what.
+               #}}}
     .. '\|' .. '\h\w*#\%(\w\|#\)*'
     .. '\)'
     .. '\ze\s*('
     .. '/'
-    .. ' contains=vim9DefKey'
+    .. ' contains=vim9DefKey,vim9LegacyAutoloadInvalid'
     .. ' nextgroup=vim9FuncSignature,vim9SpaceAfterFuncHeader'
     syntax match vim9SpaceAfterFuncHeader /\s\+\ze(/ contained nextgroup=vim9FuncSignature
 
@@ -2152,6 +2182,8 @@ syntax keyword vim9DefKey def fu[nction]
 syntax match vim9DefBang /!/ contained
 # but only for global functions
 syntax match vim9DefBangError /!\%(\s\+g:\)\@!/ contained
+
+syntax match vim9LegacyAutoloadInvalid /\h\w*#\%(\w\|#\)*/ contained
 
 # Ending the  signature at `enddef`  prevents a temporary unbalanced  paren from
 # causing havoc beyond the end of the function.
@@ -2313,8 +2345,8 @@ execute 'syntax match vim9FuncCallUser'
     # function with implicit scope: its name must start with an uppercase
     ..     '\u\w*'
     .. '\|'
-    # autoload function: its name must contain a `#`
-    ..     '\h\w*#\%(\w\|#\)\+'
+    # autoload function called with global name: its name must contain a `#`
+    ..     '\h\w*#\%(\w\|#\)*'
     .. '\|'
     # dict function: its name must contain a `.`
     # Why do you disallow `:`?{{{
@@ -3885,6 +3917,7 @@ highlight default link vim9DigraphsCharsInvalid vim9Error
 highlight default link vim9FTError vim9Error
 highlight default link vim9IncrementError vim9Error
 highlight default link vim9LambdaDictMissingParen vim9Error
+highlight default link vim9LegacyAutoloadInvalid vim9Error
 highlight default link vim9LegacyConcatInvalid vim9Error
 highlight default link vim9LegacyFuncArgs vim9Error
 highlight default link vim9LegacyVarArgs vim9Error
