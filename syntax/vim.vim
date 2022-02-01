@@ -413,10 +413,6 @@ syntax match vim9RangeDelimiter /[,;]/
 # a specific highlighting, its arguments do.
 #}}}
 # Let's list them in this cluster.
-# Don't try to include `vim9BangCmd` here.{{{
-#
-# It wouldn't work, because `!` is not matched by `vim9MayBeCmd`.
-#}}}
 # One of them is not properly highlighted!{{{
 #
 # First, as mentioned before, make sure it's listed in this cluster.
@@ -428,6 +424,7 @@ syntax cluster vim9IsCmd contains=
     \ vim9AbbrevCmd,
     \ vim9Augroup,
     \ vim9Autocmd,
+    \ vim9BangCmd,
     \ vim9CmdModifier,
     \ vim9CopyMove,
     \ vim9Declare,
@@ -476,6 +473,9 @@ syntax cluster vim9IsCmd contains=
 # parsed as a command; like the presence of a whitespace.
 #}}}
 
+# Special Case: `:!`
+syntax match vim9MayBeCmd /!\@=/ contained nextgroup=@vim9Iscmd
+
 # Special Case: Some commands (like `:g` and `:s`) *can* be followed by a non-whitespace.
 syntax match vim9MayBeCmd /\%(\<\h\w*\>\)\@=/
     \ contained
@@ -491,7 +491,6 @@ syntax match vim9MayBeCmd /\%(\<\h\w*\>\)\@=/
 # Now, let's build a cluster containing all groups which can appear at the start of a line.
 syntax cluster vim9CanBeAtStartOfLine contains=
     \     @vim9FuncCall,
-    \     vim9BangCmd,
     \     vim9Block,
     \     vim9Comment,
     \     vim9DisambiguatingColon,
@@ -905,8 +904,13 @@ syntax region vim9HereDoc
 execute 'syntax match vim9CmdModifier'
     .. ' /\<\%(' .. regex.command_modifier .. '\)\>/'
     .. ' contained'
-    .. ' nextgroup=@vim9CanBeAtStartOfLine'
+    .. ' nextgroup=@vim9CanBeAtStartOfLine,vim9CmdBangModifier'
     .. ' skipwhite'
+
+# A command modifier can be followed by a bang.
+# We need to match it, otherwise, we can't match the command which comes afterward.
+# The negative lookbehind is necessary because of the previous `skipwhite`.
+syntax match vim9CmdBangModifier /\s\@1<!!/ contained nextgroup=@vim9CanBeAtStartOfLine skipwhite
 
 # Highlight a legacy command (run with `:legacy`) to a minimum.{{{
 #
@@ -1135,7 +1139,20 @@ execute 'syntax match vim9UserCmdRhsEscapeSeq'
 #}}}4
 # Execution {{{4
 
-syntax match vim9UserCmdExe /\u\w*/ contained nextgroup=vim9SpaceExtraAfterFuncname
+syntax match vim9UserCmdExe /\u\w*/ contained nextgroup=vim9SpaceExtraAfterFuncname,vim9UserCmdArgs
+# Don't highlight the arguments of a user-defined command.{{{
+#
+# We don't know their semantics, so assuming anything might lead to mistakes.
+# For example:
+#
+#             those are not dictionary delimiters
+#             v       v
+#     Abolish {hte,teh} the
+#                 ^
+#                 there is no error here;
+#                 no missing whitespace after a comma between items in a dictionary
+#}}}
+syntax match vim9UserCmdArgs /\s*[^ \t|].\{-}[|\n]/ contained
 
 # This lets Vim highlight the name of an option and its value, when we set it with `:CompilerSet`.{{{
 #
