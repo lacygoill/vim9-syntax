@@ -1,4 +1,4 @@
-vim9script
+vim9script noclear
 
 if $MYVIMRC != ''
     var msg: list<string> =<< trim END
@@ -252,7 +252,9 @@ def AppendSection(what: string, match_rule = false) #{{{2
     if what->eval()->typename() =~ '^list'
         lines += ['const ' .. what .. '_list: list<string> =<< trim END']
             + eval(what)
-                ->mapnew((_, v: string): string => '    ' .. v)
+                # to suppress `E741: Value is locked: map() argument`
+                ->copy()
+                ->map((_, v: string): string => '    ' .. v)
             + ['END', '']
             + ['export const ' .. what .. ': string = '
                 .. what .. '_list->join(' .. (match_rule ? '"\\|"' : '') .. ')']
@@ -942,7 +944,7 @@ def DefaultHighlightingGroup(): list<string>
         var i: number = completions->index(name)
         completions->remove(i)
     endfor
-    completions += range(2, 8)->mapnew((_, v: number): string => 'User' .. v)
+    completions += range(2, 8)->map((_, v: number): string => 'User' .. v)
     return completions->sort()
 enddef
 

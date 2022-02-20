@@ -1,4 +1,4 @@
-vim9script
+vim9script noclear
 
 # Credits: Charles E. Campbell <NcampObell@SdrPchip.AorgM-NOSPAM>
 # Author of syntax plugin for Vim script legacy.
@@ -493,6 +493,7 @@ syntax cluster vim9CanBeAtStartOfLine contains=
     \     @vim9FuncCall,
     \     vim9Block,
     \     vim9Comment,
+    \     vim9DeprecatedScopes,
     \     vim9DisambiguatingColon,
     \     vim9FuncEnd,
     \     vim9FuncHeader,
@@ -751,24 +752,38 @@ syntax keyword vim9Conditional en[dif] contained skipwhite
 syntax keyword vim9Repeat fo[r]
     \ contained
     \ skipwhite
-    \ nextgroup=vim9RepeatForVar,vim9RepeatForVarList
+    \ nextgroup=vim9RepeatForDeclareName,vim9RepeatForListUnpackDeclaration
     \ skipwhite
 
 # :for [name, ...]
 #      ^---------^
-syntax region vim9RepeatForVarList
+syntax region vim9RepeatForListUnpackDeclaration
     \ matchgroup=vim9Sep
     \ start=/\[/
     \ end=/]/
     \ contained
-    \ contains=@vim9DataTypeCluster,vim9RepeatForVar
+    \ contains=vim9RepeatForDeclareName
     \ nextgroup=vim9RepeatForIn
     \ oneline
     \ skipwhite
 
 # :for name
 #      ^--^
-# The negative lookahead is necessary to highlight `a:` and `l:` as errors:{{{
+# In the positive lookahead, we need to allow whitespace in front of the colon.{{{
+#
+# Even though it's wrong.
+#
+#             we want this highlighted as an error
+#             v
+#     for name : string in []
+#         ^--^
+#         we want this highlighted as an iteration variable
+#
+# This is even more necessary when iterating over a list.
+#}}}
+#   And we need to match a whitespace afterward.{{{
+#
+# To highlight `a:`, `l:` and `s:` as errors.
 #
 #         this is a scope which is only valid in legacy
 #         vv
@@ -776,9 +791,9 @@ syntax region vim9RepeatForVarList
 #         ^
 #         this is NOT an iteration variable
 #}}}
-syntax match vim9RepeatForVar /\h\w*\%(:\S\)\@!/
+syntax match vim9RepeatForDeclareName /\<\h\w*\>\%(\s*:\s\|\<in\>\)\@=/
     \ contained
-    \ nextgroup=vim9DataType,vim9RepeatForIn
+    \ nextgroup=@vim9DataTypeCluster,vim9RepeatForIn,vim9NoWhitespaceBeforeInit
     \ skipwhite
 
 # for name in
@@ -823,9 +838,12 @@ execute 'syntax region vim9TryCatchPattern'
 # But it uses a match, and thus can only win against another match/region.
 syntax match vim9Declare /\<\%(const\=\|final\|unl\%[et]\|var\)\>/
     \ contained
-    \ nextgroup=vim9ListUnpackDeclaration,vim9ReservedNames
+    \ nextgroup=
+    \     vim9DeclareName,
+    \     vim9ListUnpackDeclaration,
+    \     vim9ReservedNames
     \ skipwhite
-    # "Public" variables cannot be declared:{{{
+    # “Public” variables cannot be declared:{{{
     #
     #      ✘
     #     vvv
@@ -849,7 +867,7 @@ syntax match vim9Declare /\<\%(const\=\|final\|unl\%[et]\|var\)\>/
     #     ^^^
     #      ✘
     #}}}
-    syntax match vim9DeclareError /\<var\ze\s\+\%([bgtvw]:\h\|[$&@]\)/
+    syntax match vim9DeclareError /\<var\ze\s\+\%([bgstvw]:\h\|[$&@]\)/
         \ contained
     syntax match vim9DeclareError /\<\%(const\=\|final\)\ze\s\+[$&@]/
         \ contained
@@ -867,11 +885,33 @@ syntax match vim9Declare /\<\%(const\=\|final\|unl\%[et]\|var\)\>/
 
 syntax region vim9ListUnpackDeclaration
     \ contained
-    \ contains=@vim9DataTypeCluster
+    \ contains=vim9DeclareName
     \ matchgroup=vim9Sep
     \ start=/\[/
     \ end=/\]/
+    \ keepend
     \ oneline
+
+syntax region vim9DeclareName
+    \ contained
+    \ contains=@vim9DataTypeCluster,vim9NoWhitespaceBeforeInit
+    \ start=/[^ \t[]/
+    \ end=/=\@=/
+    \ oneline
+
+#     var name : string = 'value'
+#             ^
+#             ✘
+syntax match vim9NoWhitespaceBeforeInit /\s\+:\@=/
+    \ contained
+    \ nextgroup=@vim9DataTypeCluster
+    # Necessary if we want a broken type specification to be still highlighted.{{{
+    #
+    #     for [name : string] in []
+    #                 ^----^
+    #                 even though it's broken by the space before the colon,
+    #                 we still want this to be recognized as a type
+    #}}}
 
 # In the legacy syntax plugin, `vimLetHereDoc` contains `vimComment` and `vim9Comment`.  That's wrong.{{{
 #
@@ -885,12 +925,12 @@ syntax region vim9ListUnpackDeclaration
 # Don't assign `vim9Declare` instead of `vim9DeclareHereDoc` to `matchgroup`.{{{
 #
 # We want the syntax  item on the text at the start/end of  a heredoc to contain
-# the keyword "heredoc".  It might be useful for other plugins; for example, for
+# the keyword `heredoc`.  It might be useful for other plugins; for example, for
 # the Vim indent plugin.
 #}}}
 # Similarly, don't change the name of `vim9DeclareHereDocStop`.{{{
 #
-# The Vim indent plugin relies on the keyword "HereDocStop" to find the end of a
+# The Vim indent plugin relies on the keyword `HereDocStop` to find the end of a
 # heredoc.
 #}}}
 syntax region vim9HereDoc
@@ -1200,7 +1240,7 @@ syntax match vim9DigraphsCharsInvalid /\S\+/
     \ skipwhite
     syntax match vim9DigraphsCmdBang /!/ contained
 
-# A valid "characters" argument is any sequence of 2 non-whitespace characters.
+# A valid `characters` argument is any sequence of 2 non-whitespace characters.
 # Special Case:  a bar must  be escaped,  so that it's  not parsed as  a command
 # termination.
 syntax match vim9DigraphsChars /\s\@<=\%([^ \t|]\|\\|\)\{2}\_s\@=/
@@ -2155,10 +2195,8 @@ execute 'syntax match vim9FuncHeader'
     .. ' /'
     .. '\<def!\=\s\+'
     .. '\%('
-               # function with explicit scope (global or script-local)
-    ..         '[gs]:\w\+'
-               # script-local function (or exported function in autoload script)
-    .. '\|' .. '\u\w*'
+        # function with explicit scope (global or script-local), or script-local function
+    .. '\|' .. '\%([gs]:\)\=\u\w*'
                # *invalid* autoload function name{{{
                #
                # In a Vim9 autoload script, when declaring an autoload function,
@@ -2250,7 +2288,7 @@ execute 'syntax match vim9LegacyFunction'
     .. ' /'
     .. '\<fu\%[nction]!\='
     .. '\s\+\%([gs]:\)\='
-    .. '\%(\w\|[#.]\)*'
+    .. '\u\%(\w\|[.]\)*'
     .. '\ze\s*('
     .. '/'
     .. ' contains=vim9DefKey'
@@ -2263,6 +2301,8 @@ syntax cluster vim9LegacyCluster contains=
     \ vim9LegacyConcatValid,
     \ vim9LegacyDictMember,
     \ vim9LegacyFloat,
+    #\ to support the case of a nested legacy function
+    \ vim9LegacyFunction,
     \ vim9LegacyString,
     \ vim9LegacyVarArgsHeader
 
@@ -2357,13 +2397,10 @@ execute 'syntax match vim9FuncCallUser'
     .. ' /\<'
     .. '\%('
     # function with explicit scope
-    ..     '[gs]:\w\+'
+    ..     '[gs]:\u\w*'
     .. '\|'
     # function with implicit scope: its name must start with an uppercase
     ..     '\u\w*'
-    .. '\|'
-    # autoload function called with global name: its name must contain a `#`
-    ..     '\h\w*#\%(\w\|#\)*'
     .. '\|'
     # dict function: its name must contain a `.`
     # Why do you disallow `:`?{{{
@@ -3254,8 +3291,8 @@ syntax match vim9SpecFile /<\%([acs]file\|abuf\)>/ nextgroup=vim9SpecFileMod
 #
 # ---
 #
-# Make sure the file name modifiers  are accepted only after "%", "%%", "%%123",
-# "<cfile>", "<sfile>", "<afile>" and "<abuf>".
+# Make sure the file name modifiers  are accepted only after `%`, `%%`, `%%123`,
+# `<cfile>`, `<sfile>`, `<afile>` and `<abuf>`.
 #
 # Update: We currently match `<cfile>` (&friends) with `vim9ExSpecialCharacters`.
 # Is that wrong?  Should we match them with `vim9SpecFile`?
@@ -3525,7 +3562,7 @@ syntax keyword vim9DeprecatedLet let contained
 # This syntax is no longer valid in Vim9.
 syntax match vim9DeprecatedDictLiteralLegacy /#{{\@!/ containedin=vim9ListSlice
 
-# the scopes `a:` and `l:` are no longer valid
+# the scopes `a:`, `l:` and `s:` are no longer valid
 # Don't use `contained` to limit these rules to `@vim9Expr`.{{{
 #
 # Because then, they would fail to match this:
@@ -3533,7 +3570,7 @@ syntax match vim9DeprecatedDictLiteralLegacy /#{{\@!/ containedin=vim9ListSlice
 #     let a:name = ...
 #         ^^
 #}}}
-syntax match vim9DeprecatedScopes /\<a:\w\@=/ containedin=@vim9Expr
+syntax match vim9DeprecatedScopes /\<[as]:\w\@=/ containedin=@vim9Expr
 syntax match vim9DeprecatedScopes /&\@1<!\<l:\h\@=/ containedin=@vim9Expr
 
 # The `is#` operator worked in legacy, but didn't make sense.
@@ -3548,12 +3585,6 @@ syntax match vim9LegacyVarArgs /a:000/
 #    - eval string
 #    - lambda (tricky)
 #    - single dot for concatenation (tricky)
-
-# TODO: Highlight `s:` as useless (`SpellRare`?).  But make it optional.
-# Rationale: You probably never need it.
-# Worse, you might  use it to try  and declare a script-local  variable in a
-# `:def` function, which is disallowed.
-# Update: You do need it for a user function starting with a lowercase...
 
 # TODO: Highlight legacy comment leaders as an error.  Optional.
 
@@ -3739,17 +3770,9 @@ if get(g:, 'vim9_syntax', {})
     # Order: Out of these 3 rules, this one must come last.
     execute 'syntax match vim9ColonForVariableScope'
         .. ' /'
-        .. '\<[bgstvw]:'
+        .. '\<[bgtvw]:'
         .. '\%('
-        # There must not be an open paren right after; otherwise it might be a function name.{{{
-        #
-        # If we don't  disallow a paren, a call to  a user script-local function
-        # inside a list slice might be wrongly highlighted as an error:
-        #
-        #     echo [s:func()]
-        #             ^--^
-       #}}}
-        .. '\%(\w*\)\@>(\@!'
+        ..    '\w'
         .. '\|'
                # `b:` is a dictionary expression, thus might be followed by `->`
         ..     '->'
@@ -3873,7 +3896,7 @@ syntax sync match vim9AugroupSyncA groupthere NONE /\<aug\%[roup]\>\s\+END/
 # So that they survive after we change/reload the colorscheme.
 # Indeed,  a  colorscheme  always  executes  `:highlight  clear`  to  reset  all
 # highlighting to the defaults.  By default,  the user-defined HGs do not exist,
-# so for the latter, "reset all highlighting" means:
+# so for the latter, “reset all highlighting” means:
 #
 #    - removing all their attributes
 #
@@ -3940,6 +3963,7 @@ highlight default link vim9LegacyFuncArgs vim9Error
 highlight default link vim9LegacyVarArgs vim9Error
 highlight default link vim9MapModErr vim9Error
 highlight default link vim9MarkCmdArgInvalid vim9Error
+highlight default link vim9NoWhitespaceBeforeInit vim9Error
 highlight default link vim9NumberOctalWarn vim9Error
 highlight default link vim9OperError vim9Error
 highlight default link vim9PatSepErr vim9Error
@@ -4076,7 +4100,7 @@ highlight default link vim9RangePatternFwdDelim Delimiter
 highlight default link vim9RangeSpecialSpecifier Special
 highlight default link vim9Repeat Repeat
 highlight default link vim9RepeatForIn vim9Repeat
-highlight default link vim9RepeatForVar vim9Declare
+highlight default link vim9RepeatForDeclareName vim9Declare
 highlight default link vim9Return vim9DefKey
 highlight default link vim9ScriptDelim Comment
 highlight default link vim9Sep Delimiter

@@ -459,8 +459,7 @@ const builtin_func_list: list<string> =<< trim END
     test_garbagecollect_now
     test_garbagecollect_soon
     test_getvalue
-    test_gui_drop_files
-    test_gui_mouse_event
+    test_gui_event
     test_ignore_error
     test_null_blob
     test_null_channel
@@ -473,7 +472,6 @@ const builtin_func_list: list<string> =<< trim END
     test_option_not_set
     test_override
     test_refcount
-    test_scrollbar
     test_setmouse
     test_settime
     test_srand_seed
@@ -1228,6 +1226,7 @@ const event_list: list<string> =<< trim END
     CursorMovedI
     DiffUpdated
     DirChanged
+    DirChangedPre
     EncodingChanged
     ExitPre
     FileAppendCmd
