@@ -58,7 +58,7 @@ export def Derive( #{{{3
     # Indeed, all  color schemes run  `:highlight clear`, which might  clear our
     # custom HG.  So, we need to save some information to reset it when needed.
     #}}}
-    #   Ok, but why not saving the `:highlight ...` command directly?{{{
+    #   OK, but why not saving the `:highlight ...` command directly?{{{
     #
     # If we change the color scheme, we want to *re*-derive the HG.
     # For example, suppose we've run:

@@ -733,25 +733,25 @@ syntax cluster vim9ControlFlow contains=
     \ vim9TryCatch
 
 # :return
-syntax keyword vim9Return retu[rn] contained nextgroup=@vim9Expr skipwhite
+syntax keyword vim9Return return contained nextgroup=@vim9Expr skipwhite
 
 # :break
 # :continue
-syntax keyword vim9BreakContinue brea[k] con[tinue] contained skipwhite
+syntax keyword vim9BreakContinue break continue contained
 # :finish
-syntax keyword vim9Finish fini[sh] contained skipwhite
+syntax keyword vim9Finish finish contained
 
 # :if
 # :elseif
-syntax keyword vim9Conditional if el[seif] contained nextgroup=@vim9Expr skipwhite
+syntax keyword vim9Conditional if elseif contained nextgroup=@vim9Expr skipwhite
 
+# :else
 # :endif
-syntax keyword vim9Conditional en[dif] contained skipwhite
+syntax keyword vim9Conditional else endif contained
 
 # :for
-syntax keyword vim9Repeat fo[r]
+syntax keyword vim9Repeat for
     \ contained
-    \ skipwhite
     \ nextgroup=vim9RepeatForDeclareName,vim9RepeatForListUnpackDeclaration
     \ skipwhite
 
@@ -791,7 +791,7 @@ syntax region vim9RepeatForListUnpackDeclaration
 #         ^
 #         this is NOT an iteration variable
 #}}}
-syntax match vim9RepeatForDeclareName /\<\h\w*\>\%(\s*:\s\|\<in\>\)\@=/
+syntax match vim9RepeatForDeclareName /\<\h\w*\>\%(\s*\%(:\s\|\<in\>\)\)\@=/
     \ contained
     \ nextgroup=@vim9DataTypeCluster,vim9RepeatForIn,vim9NoWhitespaceBeforeInit
     \ skipwhite
@@ -801,26 +801,22 @@ syntax match vim9RepeatForDeclareName /\<\h\w*\>\%(\s*:\s\|\<in\>\)\@=/
 syntax keyword vim9RepeatForIn in contained
 
 # :while
-syntax keyword vim9Repeat wh[ile] contained skipwhite nextgroup=@vim9Expr
+syntax keyword vim9Repeat while contained nextgroup=@vim9Expr skipwhite
 
 # :endfor
 # :endwhile
-syntax keyword vim9Repeat endfo[r] endw[hile] contained skipwhite
+syntax keyword vim9Repeat endfor endwhile contained
 
 # :try
+# :finally
 # :endtry
-syntax keyword vim9TryCatch try endt[ry] contained
+syntax keyword vim9TryCatch try finally endtry contained
 
 # :throw
-syntax keyword vim9TryCatch th[row] contained nextgroup=@vim9Expr skipwhite
-
-# :finally
-# We can't write `:syntax keyword ...  fina[lly]`, because it would break `:final`,
-# which has a different meaning.
-syntax match vim9TryCatch /\<\%(fina\|finall\|finally\)\>/ contained
+syntax keyword vim9TryCatch throw contained nextgroup=@vim9Expr skipwhite
 
 # :catch
-syntax match vim9TryCatch /\<cat\%[ch]\>/ contained nextgroup=vim9TryCatchPattern skipwhite
+syntax keyword vim9TryCatch catch contained nextgroup=vim9TryCatchPattern skipwhite
 execute 'syntax region vim9TryCatchPattern'
     .. ' matchgroup=vim9SubstDelim'
     .. ' start=/\z(' .. regex.pattern_delimiter .. '\)/rs=s+1'
