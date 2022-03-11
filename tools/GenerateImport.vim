@@ -61,8 +61,10 @@ const DEPRECATED_CMDS: list<string> =<< trim END
     insert
     k
     let
+    mode
     open
     t
+    xit
 END
 
 const DO_CMDS: list<string> =<< trim END
@@ -194,27 +196,38 @@ const SPECIAL_CMDS: list<string> =
     + VARIOUS_SPECIAL_CMDS
 
 # Util Functions {{{1
-def Abbreviate( #{{{2
-    to_abbreviate: list<string>,
+def Shorten( #{{{2
+    to_shorten: list<string>,
     for_match: bool = false
 ): list<string>
 
-    var abbreviated: list<string>
-    for cmd: string in to_abbreviate
+    var shortened: list<string>
+    for cmd: string in to_shorten
         var len: number
+        var cannot_be_shortened: bool
         for l: number in strcharlen(cmd)->range()->reverse()
             if l == 0
                 continue
             endif
-            if cmd->slice(0, l)->fullcommand() != cmd
-                len = l
+            try
+                if cmd->slice(0, l)->fullcommand() != cmd
+                    len = l
+                    break
+                endif
+            # E1065: Command cannot be shortened: con
+            catch /^Vim\%((\a\+)\)\=:E1065:/
+                if l == cmd->strcharlen()
+                    cannot_be_shortened = true
+                else
+                    len = l
+                endif
                 break
-            endif
+            endtry
         endfor
-        if len == cmd->strcharlen() - 1
-            abbreviated += [cmd]
+        if cannot_be_shortened || len == cmd->strcharlen() - 1
+            shortened += [cmd]
         else
-            abbreviated += [printf(
+            shortened += [printf(
                 '%s%s[%s]',
                 cmd[: len],
                 for_match ? '\%' : '',
@@ -222,7 +235,7 @@ def Abbreviate( #{{{2
             )]
         endif
     endfor
-    return abbreviated
+    return shortened
 enddef
 
 def AppendSection(what: string, match_rule = false) #{{{2
@@ -910,27 +923,27 @@ const command_complete_type: list<string> = getcompletion('command -complete=', 
 
 # command_modifier {{{3
 
-const command_modifier: list<string> = MODIFIER_CMDS->Abbreviate(true)
+const command_modifier: list<string> = MODIFIER_CMDS->Shorten(true)
 
 # command_name {{{3
 
 def CommandName(): list<string>
-    var to_abbreviate: list<string> = getcompletion('', 'command')
+    var to_shorten: list<string> = getcompletion('', 'command')
           ->filter((_, v: string): bool => v =~ '^[a-z]')
     for cmd: string in SPECIAL_CMDS
-        var i: number = to_abbreviate->index(cmd)
+        var i: number = to_shorten->index(cmd)
         if i == -1
             continue
         endif
-        to_abbreviate->remove(i)
+        to_shorten->remove(i)
     endfor
 
-    var abbreviated: list<string> = to_abbreviate->Abbreviate()
+    var shortened: list<string> = to_shorten->Shorten()
 
     # this one is missing from `getcompletion()`
-    abbreviated += ['addd']
+    shortened += ['addd']
 
-    return abbreviated
+    return shortened
 enddef
 
 const command_name: list<string> = CommandName()

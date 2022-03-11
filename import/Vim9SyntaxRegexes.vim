@@ -789,7 +789,7 @@ const command_name_list: list<string> =<< trim END
     e[dit]
     em[enu]
     endc[lass]
-    endd[ef]
+    enddef
     ende[num]
     endf[unction]
     endin[terface]
@@ -896,7 +896,6 @@ const command_name_list: list<string> =<< trim END
     mksp[ell]
     mkvie[w]
     mkv[imrc]
-    mod[e]
     mzf[ile]
     mz[scheme]
     nbc[lose]
@@ -1098,7 +1097,6 @@ const command_name_list: list<string> =<< trim END
     wu[ndo]
     wv[iminfo]
     xa[ll]
-    xit
     xme[nu]
     xnoreme[nu]
     xr[estore]

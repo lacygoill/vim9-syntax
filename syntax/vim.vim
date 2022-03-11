@@ -2689,6 +2689,7 @@ syntax cluster vim9Expr contains=
 
 syntax match vim9Bool /\%(v:\)\=\<\%(false\|true\)\>:\@!/
 syntax match vim9Null /\%(v:\)\=\<null\>:\@!/
+syntax match vim9Null /\<null_\%(blob\|channel\|dict\|function\|job\|list\|partial\|string\)/
 
 syntax match vim9None /\<v:none\>:\@!/
 
