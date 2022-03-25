@@ -1735,7 +1735,7 @@ syntax cluster vim9SubstRepList contains=
 #
 # It could break some subsequent highlighting.
 #
-# MWE:
+# MRE:
 #
 #     # test script
 #     def Foo()
@@ -1842,7 +1842,7 @@ syntax match vim9GroupList /@\=[^ \t,|']*,/
 
 # Warning: Do not turn `:syntax match` into `:syntax keyword`.
 # It would fail to match `CONTAINED`.
-syntax match vim9GroupSpecial /\%(ALL\|ALLBUT\|CONTAINED\|TOP\)/ contained
+syntax match vim9GroupSpecial /\<\%(ALL\|ALLBUT\|CONTAINED\|TOP\)\>/ contained
 syntax match vim9SynError /\i\+/ contained
 syntax match vim9SynError /\i\+=/ contained nextgroup=vim9GroupList
 
@@ -2567,7 +2567,7 @@ syntax cluster vim9OperGroup contains=
 #
 # In practice, it would sometimes cause spurious highlights.
 #
-# MWE:
+# MRE:
 #
 #     # test script
 #     (x ==# 0)
@@ -2668,7 +2668,24 @@ syntax region vim9OperParen
 # Data Types {{{1
 # `vim9Expr` {{{2
 
-syntax cluster vim9Expr contains=
+# Don't try to define `vim9Expr` first, and use `remove=`.  It wouldn't work.{{{
+#
+#     syntax cluster vim9Expr contains=...,vim9String,...
+#     syntax cluster vim9ExprExceptString contains=@vim9Expr
+#     syntax cluster vim9ExprExceptString remove=vim9String
+#                                         ^---------------^
+#                                                 ✘
+#
+# Vim  would  not  remove  `vim9String`,   because  the  latter  doesn't  appear
+# explicitly in the definition the `vim9ExprExceptString` cluster:
+#
+#     syntax cluster vim9ExprExceptString contains=@vim9Expr
+#                                                  ^-------^
+#                                                  no vim9String here
+#
+# IOW, Vim doesn't expand `@vim9Expr`.
+#}}}
+syntax cluster vim9ExprExceptString contains=
     \ @vim9FuncCall,
     \ vim9Bool,
     \ vim9DataTypeCast,
@@ -2682,8 +2699,9 @@ syntax cluster vim9Expr contains=
     \ vim9Number,
     \ vim9Oper,
     \ vim9OperParen,
-    \ vim9Registers,
-    \ vim9String
+    \ vim9Registers
+
+syntax cluster vim9Expr contains=@vim9ExprExceptString,vim9String
 
 # Booleans / null / v:none {{{2
 
@@ -2794,7 +2812,7 @@ syntax match vim9Number /\<0b[01]\+\>/ nextgroup=vim9Comment,vim9StrictWhitespac
 #
 # It could break some subsequent highlighting.
 #
-# MWE:
+# MRE:
 #
 #     # test script
 #     def Foo()
@@ -3538,6 +3556,16 @@ syntax match vim9StrictWhitespace /\S\@1<=:\S\@=/ contained containedin=vim9Dict
 # That's going to be tricky.
 # For example, a filename could be `abc+def`; and `+` is not an operator.
 
+# TODO: Highlight these as errors:
+#
+#            ✘
+#            v
+#     &option=value
+#     &option-=value
+#     &option+=value
+#            ^^
+#            ✘
+
 # Deprecated syntaxes {{{2
 
 # Where can a legacy syntax be used in a Vim9 script?{{{
@@ -3560,15 +3588,22 @@ syntax keyword vim9DeprecatedLet let contained
 syntax match vim9DeprecatedDictLiteralLegacy /#{{\@!/ containedin=vim9ListSlice
 
 # the scopes `a:`, `l:` and `s:` are no longer valid
-# Don't use `contained` to limit these rules to `@vim9Expr`.{{{
+# But don't give any error in a string.{{{
+#
+# We have no way to determine the meaning of whatever it contains.
+#
+#     ... containedin=@vim9ExprExceptString
+#                              ^----------^
+#}}}
+# Don't use `contained` to limit these rules to `@vim9ExprExceptString`.{{{
 #
 # Because then, they would fail to match this:
 #
 #     let a:name = ...
 #         ^^
 #}}}
-syntax match vim9DeprecatedScopes /\<[as]:\w\@=/ containedin=@vim9Expr
-syntax match vim9DeprecatedScopes /&\@1<!\<l:\h\@=/ containedin=@vim9Expr
+syntax match vim9DeprecatedScopes /\<[as]:\w\@=/ containedin=@vim9ExprExceptString
+syntax match vim9DeprecatedScopes /&\@1<!\<l:\h\@=/ containedin=@vim9ExprExceptString
 
 # The `is#` operator worked in legacy, but didn't make sense.
 # It's no longer supported in Vim9.
