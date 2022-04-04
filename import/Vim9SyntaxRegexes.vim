@@ -603,6 +603,7 @@ const command_complete_type_list: list<string> =<< trim END
     arglist
     augroup
     behave
+    breakpoint
     buffer
     color
     command
@@ -629,6 +630,7 @@ const command_complete_type_list: list<string> =<< trim END
     messages
     option
     packadd
+    scriptnames
     shellcmd
     sign
     syntax
@@ -2018,6 +2020,8 @@ const option_list: list<string> =<< trim END
     nomh
     mousemodel
     mousem
+    mousemoveevent
+    mousemev
     mouseshape
     mouses
     mousetime
