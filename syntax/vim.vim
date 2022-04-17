@@ -931,7 +931,7 @@ syntax match vim9NoWhitespaceBeforeInit /\s\+:\@=/
 #}}}
 syntax region vim9HereDoc
     \ matchgroup=vim9DeclareHereDoc
-    \ start=/\s\@1<==<<\s\+\%(\%(trim\|eval\)\s\)\{2,}\s*\z(\L\S*\)/
+    \ start=/\s\@1<==<<\s\+\%(\%(trim\|eval\)\s\)\{,2}\s*\z(\L\S*\)/
     \ matchgroup=vim9DeclareHereDocStop
     \ end=/^\s*\z1$/
 
