@@ -769,7 +769,7 @@ const pattern_delimiter: string =
 # This regex should make sure that we're  in a position where a Vim option could
 # appear right after.
 
-const option_can_be_after: string = '\%('
+const option_can_be_after: string = '\%(\%('
     .. '^'
     ..     '\|'
     .. '['
@@ -792,6 +792,10 @@ const option_can_be_after: string = '\%('
     ..     '>'
     .. ']'
     .. '\)\@1<='
+    .. '\|'
+    # support an expression in an `eval` heredoc
+    ..     '\%(`=\)\@2<='
+    .. '\)'
 
 # option_modifier {{{3
 

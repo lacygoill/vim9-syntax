@@ -931,9 +931,23 @@ syntax match vim9NoWhitespaceBeforeInit /\s\+:\@=/
 #}}}
 syntax region vim9HereDoc
     \ matchgroup=vim9DeclareHereDoc
-    \ start=/\s\@1<==<<\s\+\%(\%(trim\|eval\)\s\)\{,2}\s*\z(\L\S*\)/
+    \ start=/\s\@1<==<<\s\+\%(trim\s\)\=\s*\z(\L\S*\)/
     \ matchgroup=vim9DeclareHereDocStop
     \ end=/^\s*\z1$/
+
+syntax region vim9HereDoc
+    \ matchgroup=vim9DeclareHereDoc
+    \ start=/\s\@1<==<<\s\+\%(.*\<eval\>\)\@=\%(\%(trim\|eval\)\s\)\{1,2}\s*\z(\L\S*\)/
+    \ matchgroup=vim9DeclareHereDocStop
+    \ end=/^\s*\z1$/
+    \ contains=vim9HereDocExpr
+
+syntax region vim9HereDocExpr
+    \ start=/`=/
+    \ end=/`/
+    \ contained
+    \ contains=@vim9Expr
+    \ oneline
 
 # Modifier {{{3
 

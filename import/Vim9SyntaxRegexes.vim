@@ -2506,7 +2506,7 @@ export const option: string = option_list->join()
 
 # option_can_be_after {{{1
 
-export const option_can_be_after: string = '\%(^\|[-+ \t!([>]\)\@1<='
+export const option_can_be_after: string = '\%(\%(^\|[-+ \t!([>]\)\@1<=\|\%(`=\)\@2<=\)'
 
 # option_modifier {{{1
 
