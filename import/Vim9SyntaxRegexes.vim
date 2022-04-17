@@ -1113,6 +1113,7 @@ export const command_name: string = command_name_list->join()
 
 const default_highlighting_group_list: list<string> =<< trim END
     ColorColumn
+    CurSearch
     Cursor
     CursorColumn
     CursorIM
@@ -1301,6 +1302,7 @@ const event_list: list<string> =<< trim END
     WinEnter
     WinLeave
     WinNew
+    WinScrolled
 END
 
 export const event: string = event_list->join()
@@ -1319,6 +1321,7 @@ const ex_special_characters_list: list<string> =<< trim END
     stack
     amatch
     client
+    script
     sflnum
 END
 
@@ -1592,6 +1595,8 @@ const option_list: list<string> =<< trim END
     cino
     cinwords
     cinw
+    cinscopedecls
+    cinsd
     clipboard
     cb
     cmdheight

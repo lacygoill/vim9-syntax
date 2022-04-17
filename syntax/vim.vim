@@ -931,7 +931,7 @@ syntax match vim9NoWhitespaceBeforeInit /\s\+:\@=/
 #}}}
 syntax region vim9HereDoc
     \ matchgroup=vim9DeclareHereDoc
-    \ start=/\s\@1<==<<\s\+\%(trim\>\)\=\s*\z(\L\S*\)/
+    \ start=/\s\@1<==<<\s\+\%(\%(trim\|eval\)\s\)\{2,}\s*\z(\L\S*\)/
     \ matchgroup=vim9DeclareHereDocStop
     \ end=/^\s*\z1$/
 
@@ -2398,6 +2398,10 @@ execute 'syntax match vim9FuncCallUser'
     # function with implicit scope: its name must start with an uppercase
     ..     '\u\w*'
     .. '\|'
+    # autoload function
+    # (even in a Vim9 script, we might need to call an autoload function with its legacy name)
+    ..     '\%(\w\|#\)*'
+    .. '\|'
     # dict function: its name must contain a `.`
     # Why do you disallow `:`?{{{
     #
@@ -2707,7 +2711,7 @@ syntax cluster vim9Expr contains=@vim9ExprExceptString,vim9String
 
 syntax match vim9Bool /\%(v:\)\=\<\%(false\|true\)\>:\@!/
 syntax match vim9Null /\%(v:\)\=\<null\>:\@!/
-syntax match vim9Null /\<null_\%(blob\|channel\|dict\|function\|job\|list\|partial\|string\)/
+syntax match vim9Null /\<null_\%(blob\|channel\|dict\|function\|job\|list\|partial\|string\)\>/
 
 syntax match vim9None /\<v:none\>:\@!/
 
