@@ -425,6 +425,7 @@ syntax cluster vim9IsCmd contains=
     \ vim9Augroup,
     \ vim9Autocmd,
     \ vim9BangCmd,
+    \ vim9Cd,
     \ vim9CmdModifier,
     \ vim9CopyMove,
     \ vim9Declare,
@@ -490,18 +491,18 @@ syntax match vim9MayBeCmd /\%(\<\h\w*\>\)\@=/
 
 # Now, let's build a cluster containing all groups which can appear at the start of a line.
 syntax cluster vim9CanBeAtStartOfLine contains=
-    \     @vim9FuncCall,
-    \     vim9Block,
-    \     vim9Comment,
-    \     vim9DeprecatedScopes,
-    \     vim9DisambiguatingColon,
-    \     vim9FuncEnd,
-    \     vim9FuncHeader,
-    \     vim9Increment,
-    \     vim9IncrementError,
-    \     vim9LegacyFunction,
-    \     vim9MayBeCmd,
-    \     vim9RangeIntroducer
+    \ @vim9FuncCall,
+    \ vim9Block,
+    \ vim9Comment,
+    \ vim9DeprecatedScopes,
+    \ vim9DisambiguatingColon,
+    \ vim9FuncEnd,
+    \ vim9FuncHeader,
+    \ vim9Increment,
+    \ vim9IncrementError,
+    \ vim9LegacyFunction,
+    \ vim9MayBeCmd,
+    \ vim9RangeIntroducer
 
 # Let's use it in all relevant contexts.   We won't list them all here; only the
 # ones which  don't have a  dedicated section (i.e. start  of line, and  after a
@@ -658,7 +659,17 @@ syntax match vim9AutocmdAllEvents /\*\_s\@=/
     \ nextgroup=vim9AutocmdPat
     \ skipwhite
 
-syntax match vim9AutocmdPat /\S\+/
+# An autocmd pattern cannot start with a bar.{{{
+#
+#     autocmd BufWinEnter |pat echomsg '...'
+#                         ^
+#                         this is not the start of a pattern
+#
+#     if exists('#BufEnter') | doautocmd BufEnter | endif
+#                                                 ^
+#                                                 this is not a pattern
+#}}}
+syntax match vim9AutocmdPat /[^ \t|]\S*/
     \ contained
     \ nextgroup=@vim9CanBeAtStartOfLine,
     \     vim9AutocmdMod,
@@ -943,8 +954,9 @@ syntax region vim9HereDoc
     \ contains=vim9HereDocExpr
 
 syntax region vim9HereDocExpr
-    \ start=/`=/
-    \ end=/`/
+    \ matchgroup=PreProc
+    \ start=/{/
+    \ end=/}/
     \ contained
     \ contains=@vim9Expr
     \ oneline
@@ -1222,6 +1234,23 @@ syntax match vim9UserCmdArgs /\s*[^ \t|].\{-}[|\n]/ contained
 #}}}
 syntax keyword vim9Set CompilerSet contained nextgroup=vim9MayBeOptionSet skipwhite
 #}}}3
+# :cd {{{3
+
+syntax keyword vim9Cd cd lc[d] tc[d] chd[ir] lch[dir] tch[dir] nextgroup=vim9CdPreviousDir
+
+# For `:cd`, `-` stands for the previous working directory.
+# Let's make sure it's not matched as an arithmetic operator.{{{
+#
+#     if getcwd() != cwd
+#       cd -
+#          ^
+#          this should not be highlighted as an operator
+#     endif
+#     # --^
+#     # otherwise, this would no longer be matched as a command
+#}}}
+syntax match vim9CdPreviousDir /!\=\s*-/ contained
+
 # :copy / :move {{{3
 # These commands need a special treatment because of the address they receive as argument.{{{
 #
@@ -1312,6 +1341,7 @@ execute 'syntax match vim9Global'
     .. ' /\<v\%[global]\>\ze\s*\(' .. regex.pattern_delimiter .. '\).\{-}\1/'
     .. ' contained'
     .. ' nextgroup=vim9GlobalPat'
+    .. ' skipwhite'
 
 execute 'syntax region vim9GlobalPat'
     .. ' matchgroup=vim9SubstDelim'
@@ -1725,7 +1755,6 @@ syntax cluster vim9SubstList contains=
     \ vim9PatRegion,
     \ vim9PatSep,
     \ vim9PatSepErr,
-    \ vim9SubstRange,
     \ vim9SubstTwoBS
 
         syntax match vim9NotPatSep /\\\\/ contained
@@ -2738,6 +2767,24 @@ syntax region vim9String
     \ keepend
     \ oneline
 
+# `:help interp-string`
+syntax region vim9StringInterpolated
+    \ matchgroup=PreProc
+    \ start=/$"/
+    \ skip=/\\\\\|\\"/
+    \ end=/"/
+    \ contains=vim9StringInterpolatedExpression
+    \ keepend
+    \ oneline
+
+syntax region vim9StringInterpolatedExpression
+    \ matchgroup=PreProc
+    \ start=/{/
+    \ end=/}/
+    \ contained
+    \ contains=@vim9Expr
+    \ oneline
+
 # In a  syntax file, we  often build  syntax rules with  strings concatenations,
 # which we then `:execute`.  Highlight the tokens inside the strings.
 if expand('%:p:h:t') == 'syntax'
@@ -2774,6 +2821,14 @@ else
         \ start=/'/
         \ skip=/''/
         \ end=/'\d\@!/
+        \ keepend
+        \ oneline
+    syntax region vim9String
+        \ matchgroup=PreProc
+        \ start=/$'/
+        \ skip=/''/
+        \ end=/'\d\@!/
+        \ contains=vim9StringInterpolatedExpression
         \ keepend
         \ oneline
 endif
@@ -4054,6 +4109,7 @@ highlight default link vim9Bool Boolean
 highlight default link vim9BracketKey Delimiter
 highlight default link vim9BracketNotation Special
 highlight default link vim9BreakContinue vim9Repeat
+highlight default link vim9Cd vim9GenericCmd
 highlight default link vim9Comment Comment
 highlight default link vim9CommentContinuation vim9Continuation
 highlight default link vim9CommentLine vim9Comment
@@ -4110,7 +4166,7 @@ highlight default link vim9HiTerm Type
 highlight default link vim9Highlight vim9GenericCmd
 highlight default link vim9Import Include
 highlight default link vim9ImportAs vim9Import
-highlight default link vim9ImportedScript Vim9String
+highlight default link vim9ImportedScript vim9String
 highlight default link vim9Increment vim9Oper
 highlight default link vim9IsOption PreProc
 highlight default link vim9IskSep Delimiter
@@ -4149,8 +4205,8 @@ highlight default link vim9RangePatternBwdDelim Delimiter
 highlight default link vim9RangePatternFwdDelim Delimiter
 highlight default link vim9RangeSpecialSpecifier Special
 highlight default link vim9Repeat Repeat
-highlight default link vim9RepeatForIn vim9Repeat
 highlight default link vim9RepeatForDeclareName vim9Declare
+highlight default link vim9RepeatForIn vim9Repeat
 highlight default link vim9Return vim9DefKey
 highlight default link vim9ScriptDelim Comment
 highlight default link vim9Sep Delimiter
@@ -4165,8 +4221,8 @@ highlight default link vim9SetStringValue String
 highlight default link vim9ShellCmd PreProc
 highlight default link vim9SpecFile Identifier
 highlight default link vim9SpecFileMod vim9SpecFile
-highlight default link vim9Special Type
 highlight default link vim9String String
+highlight default link vim9StringInterpolated vim9String
 highlight default link vim9Subst vim9GenericCmd
 highlight default link vim9SubstDelim Delimiter
 highlight default link vim9SubstFlags Special
@@ -4194,7 +4250,7 @@ highlight default link vim9SynPatRange vim9String
 highlight default link vim9SynRegOpt vim9SynOption
 highlight default link vim9SynRegPat vim9String
 highlight default link vim9SynRegStartSkipEnd Type
-highlight default link vim9SynType vim9Special
+highlight default link vim9SynType Type
 highlight default link vim9SyncC Type
 highlight default link vim9SyncGroup vim9GroupName
 highlight default link vim9SyncGroupName vim9GroupName
@@ -4212,7 +4268,7 @@ highlight default link vim9UserCmdAttrComma vim9Sep
 highlight default link vim9UserCmdAttrComplete vim9String
 highlight default link vim9UserCmdAttrEqual vim9OperAssign
 highlight default link vim9UserCmdAttrErrorValue vim9Error
-highlight default link vim9UserCmdAttrName vim9Special
+highlight default link vim9UserCmdAttrName Type
 highlight default link vim9UserCmdAttrNargs vim9String
 highlight default link vim9UserCmdAttrNargsNumber vim9Number
 highlight default link vim9UserCmdAttrRange vim9String
@@ -4236,6 +4292,5 @@ if get(g:, 'vim9_syntax', {})
     highlight default link vim9ValidSubType vim9DataType
 endif
 #}}}1
-
 
 b:current_syntax = 'vim9'

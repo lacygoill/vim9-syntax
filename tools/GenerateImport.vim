@@ -1,12 +1,12 @@
 vim9script noclear
 
 if $MYVIMRC != ''
-    var msg: list<string> =<< trim END
+    var sfile: string = expand('<sfile>:t')
+    var msg: list<string> =<< trim eval END
         This script must be sourced without any custom configuration:
 
-            $ vim -Nu NONE -S %s
+            $ vim -Nu NONE -S {sfile}
     END
-    msg[1] = msg[1]->substitute('%s', expand('<sfile>:t'), '')
     popup_notification(msg, {pos: 'center'})
     finish
 endif
@@ -154,6 +154,12 @@ const VARIOUS_SPECIAL_CMDS: list<string> =<< trim END
     augroup
     autocmd
     command
+    cd
+    chdir
+    lcd
+    lchdir
+    tcd
+    tchdir
     copy
     digraphs
     doautoall
@@ -373,10 +379,10 @@ const command_can_be_before: string =
     #            ^^
     #            ✔
     #
-    # Or, if we *really* want a space, and not a tab, we can write `\%x20`.
+    # Or, if we *really* want a space, and not a tab, we can write `[ ]`.
     #
-    #     catch /\%x20pattern/
-    #            ^---^
+    #     catch /[ ]pattern/
+    #            ^^^
     #}}}
     ..     '\%(\s\+\)\@>'
     # necessary to be able to match `source` in `source % | eval 0` or `source % <Bar> eval 0`

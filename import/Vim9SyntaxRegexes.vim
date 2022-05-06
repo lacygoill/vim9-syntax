@@ -209,6 +209,7 @@ const builtin_func_list: list<string> =<< trim END
     inputsecret
     interrupt
     invert
+    isabsolutepath
     isdirectory
     isinf
     islocked
@@ -243,6 +244,7 @@ const builtin_func_list: list<string> =<< trim END
     luaeval
     maparg
     mapcheck
+    maplist
     mapnew
     mapset
     matchadd
@@ -724,7 +726,6 @@ const command_name_list: list<string> =<< trim END
     cb[uffer]
     cc
     ccl[ose]
-    cd
     ce[nter]
     cex[pr]
     cf[ile]
@@ -733,7 +734,6 @@ const command_name_list: list<string> =<< trim END
     cgete[xpr]
     cg[etfile]
     changes
-    chd[ir]
     che[ckpath]
     checkt[ime]
     chi[story]
@@ -851,8 +851,6 @@ const command_name_list: list<string> =<< trim END
     lbel[ow]
     lbo[ttom]
     lb[uffer]
-    lc[d]
-    lch[dir]
     lcl[ose]
     lcs[cope]
     le[ft]
@@ -1050,8 +1048,6 @@ const command_name_list: list<string> =<< trim END
     tabs
     ta[g]
     tags
-    tc[d]
-    tch[dir]
     tcl
     tcld[o]
     tclf[ile]
