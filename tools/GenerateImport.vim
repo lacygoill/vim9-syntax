@@ -800,7 +800,7 @@ const option_can_be_after: string = '\%(\%('
     .. '\)\@1<='
     .. '\|'
     # support an expression in an `eval` heredoc
-    ..     '\%(`=\)\@2<='
+    ..     '{\@1<='
     .. '\)'
 
 # option_modifier {{{3

@@ -2773,7 +2773,7 @@ syntax region vim9StringInterpolated
     \ start=/$"/
     \ skip=/\\\\\|\\"/
     \ end=/"/
-    \ contains=vim9StringInterpolatedExpression
+    \ contains=vim9StringInterpolatedExpression,vim9SILB
     \ keepend
     \ oneline
 
@@ -2784,6 +2784,8 @@ syntax region vim9StringInterpolatedExpression
     \ contained
     \ contains=@vim9Expr
     \ oneline
+    # string interpolated literal bracket
+    syntax match vim9SILB /{{\|}}/ contained
 
 # In a  syntax file, we  often build  syntax rules with  strings concatenations,
 # which we then `:execute`.  Highlight the tokens inside the strings.
@@ -2828,9 +2830,10 @@ else
         \ start=/$'/
         \ skip=/''/
         \ end=/'\d\@!/
-        \ contains=vim9StringInterpolatedExpression
+        \ contains=vim9StringInterpolatedExpression,vim9SILB
         \ keepend
         \ oneline
+        syntax match vim9SILB /{{\|}}/ contained
 endif
 
 # The contents of a register is a string, and can be referred to via `@{regname}`.{{{
@@ -4208,6 +4211,7 @@ highlight default link vim9Repeat Repeat
 highlight default link vim9RepeatForDeclareName vim9Declare
 highlight default link vim9RepeatForIn vim9Repeat
 highlight default link vim9Return vim9DefKey
+highlight default link vim9SILB vim9String
 highlight default link vim9ScriptDelim Comment
 highlight default link vim9Sep Delimiter
 highlight default link vim9Set vim9GenericCmd

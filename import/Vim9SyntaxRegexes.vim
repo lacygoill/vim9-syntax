@@ -143,8 +143,10 @@ const builtin_func_list: list<string> =<< trim END
     getcharpos
     getcharsearch
     getcharstr
+    getcmdcompltype
     getcmdline
     getcmdpos
+    getcmdscreenpos
     getcmdtype
     getcmdwintype
     getcompletion
@@ -2502,7 +2504,7 @@ export const option: string = option_list->join()
 
 # option_can_be_after {{{1
 
-export const option_can_be_after: string = '\%(\%(^\|[-+ \t!([>]\)\@1<=\|\%(`=\)\@2<=\)'
+export const option_can_be_after: string = '\%(\%(^\|[-+ \t!([>]\)\@1<=\|{\@1<=\)'
 
 # option_modifier {{{1
 
