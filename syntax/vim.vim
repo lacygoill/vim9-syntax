@@ -2825,7 +2825,7 @@ else
         \ end=/'\d\@!/
         \ keepend
         \ oneline
-    syntax region vim9String
+    syntax region vim9StringInterpolated
         \ matchgroup=PreProc
         \ start=/$'/
         \ skip=/''/
