@@ -2748,7 +2748,7 @@ syntax cluster vim9ExprExceptString contains=
     \ vim9OperParen,
     \ vim9Registers
 
-syntax cluster vim9Expr contains=@vim9ExprExceptString,vim9String
+syntax cluster vim9Expr contains=@vim9ExprExceptString,vim9String,vim9StringInterpolated
 
 # Booleans / null / v:none {{{2
 
