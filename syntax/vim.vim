@@ -3525,9 +3525,8 @@ syntax cluster vim9CommentGroup contains=
     \ vim9DeprecatedDictLiteralLegacy,
     \ vim9Todo
 
-# Embedded Scripts  {{{1
+# Fenced Languages  {{{1
 
-g:vim9_syntax.fenced_languages = ['perl']
 # NOTE: This block uses string interpolation which requires patch 8.2.4883
 for lang: string in g:vim9_syntax->get('fenced_languages', [])
     var cmdpat: string = {
