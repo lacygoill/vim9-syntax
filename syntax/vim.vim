@@ -3528,7 +3528,7 @@ syntax cluster vim9CommentGroup contains=
 # Fenced Languages  {{{1
 
 # NOTE: This block uses string interpolation which requires patch 8.2.4883
-for lang: string in g:vim9_syntax->get('fenced_languages', [])
+for lang: string in get(g:, 'vim9_syntax', {})->get('fenced_languages', [])
     var cmdpat: string = {
         lua: 'lua',
         ruby: 'rub\%[y]',
@@ -3541,7 +3541,9 @@ for lang: string in g:vim9_syntax->get('fenced_languages', [])
     endif
     var code: list<string> =<< trim eval END
         unlet! b:current_syntax
+
         syntax include @vim9{lang}Script syntax/{lang}.vim
+
         syntax region vim9{lang}Region
             \ matchgroup=vim9ScriptDelim
             \ start=/{cmdpat}\s\+<<\s*\z(\S\+\)$/
@@ -3555,7 +3557,6 @@ for lang: string in g:vim9_syntax->get('fenced_languages', [])
             \ start=/{cmdpat}\s\+<<$/
             \ end=/\.$/
             \ contains=@vim9{lang}Script
-        syntax cluster vim9IsCmd add=vim9{lang}Region
     END
     code->join("\n")
         ->substitute('\n\s*\\', ' ', 'g')
