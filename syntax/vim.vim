@@ -446,7 +446,6 @@ syntax cluster vim9IsCmd contains=
     \ vim9MarkCmd,
     \ vim9Norm,
     \ vim9ProfileCmd,
-    \ vim9PythonRegion,
     \ vim9Set,
     \ vim9Subst,
     \ vim9Syntax,
@@ -2769,23 +2768,25 @@ syntax region vim9String
 
 # `:help interp-string`
 syntax region vim9StringInterpolated
-    \ matchgroup=PreProc
     \ start=/$"/
     \ skip=/\\\\\|\\"/
     \ end=/"/
-    \ contains=vim9StringInterpolatedExpression,vim9SILB
+    \ contains=vim9StringInterpolatedExpression,vim9SILB,vim9SIUB
     \ keepend
     \ oneline
 
-syntax region vim9StringInterpolatedExpression
-    \ matchgroup=PreProc
-    \ start=/{/
-    \ end=/}/
-    \ contained
-    \ contains=@vim9Expr
-    \ oneline
-    # string interpolated literal bracket
-    syntax match vim9SILB /{{\|}}/ contained
+# String Interpolated Unbalanced Bracket
+syntax match vim9SIUB /[{}]/ contained
+# String Interpolated Literal Bracket
+syntax match vim9SILB /{{\|}}/ contained
+# Order: This must come *after* the rules matching unbalanced and literal brackets.
+    syntax region vim9StringInterpolatedExpression
+        \ matchgroup=PreProc
+        \ start=/{{\@!/
+        \ end=/}/
+        \ contained
+        \ contains=@vim9Expr
+        \ oneline
 
 # In a  syntax file, we  often build  syntax rules with  strings concatenations,
 # which we then `:execute`.  Highlight the tokens inside the strings.
@@ -2826,14 +2827,12 @@ else
         \ keepend
         \ oneline
     syntax region vim9StringInterpolated
-        \ matchgroup=PreProc
         \ start=/$'/
         \ skip=/''/
         \ end=/'\d\@!/
-        \ contains=vim9StringInterpolatedExpression,vim9SILB
+        \ contains=vim9StringInterpolatedExpression,vim9SILB,vim9SIUB
         \ keepend
         \ oneline
-        syntax match vim9SILB /{{\|}}/ contained
 endif
 
 # The contents of a register is a string, and can be referred to via `@{regname}`.{{{
@@ -3527,43 +3526,43 @@ syntax cluster vim9CommentGroup contains=
     \ vim9Todo
 
 # Embedded Scripts  {{{1
-# Python {{{2
 
-unlet! b:current_syntax
-syntax include @vim9PythonScript syntax/python.vim
+g:vim9_syntax.fenced_languages = ['perl']
+# NOTE: This block uses string interpolation which requires patch 8.2.4883
+for lang: string in g:vim9_syntax->get('fenced_languages', [])
+    var cmdpat: string = {
+        lua: 'lua',
+        ruby: 'rub\%[y]',
+        perl: 'pe\%[rl]',
+        python: 'py\%[thon][3x]\=',
+        tcl: 'tcl',
+    }->get(lang, '')
+    if cmdpat == ''
+        continue
+    endif
+    var code: list<string> =<< trim eval END
+        unlet! b:current_syntax
+        syntax include @vim9{lang}Script syntax/{lang}.vim
+        syntax region vim9{lang}Region
+            \ matchgroup=vim9ScriptDelim
+            \ start=/{cmdpat}\s\+<<\s*\z(\S\+\)$/
+            \ end=/^\z1$/
+            \ matchgroup=vim9Error
+            \ end=/^\s\+\z1$/
+            \ contains=@vim9{lang}Script
 
-syntax region vim9PythonRegion
-    \ matchgroup=vim9ScriptDelim
-    \ start=/py\%[thon][3x]\=\s\+<<\s\+\z(\S\+\)$/
-    \ end=/^\z1$/
-    \ matchgroup=vim9Error
-    \ end=/^\s\+\z1$/
-    \ contains=@vim9PythonScript
-
-syntax region vim9PythonRegion
-    \ matchgroup=vim9ScriptDelim
-    \ start=/py\%[thon][3x]\=\s\+<<$/
-    \ end=/\.$/
-    \ contains=@vim9PythonScript
-
-# Lua {{{2
-
-unlet! b:current_syntax
-syntax include @vim9LuaScript syntax/lua.vim
-
-syntax region vim9LuaRegion
-    \ matchgroup=vim9ScriptDelim
-    \ start=/lua\s\+<<\s\+\z(\S\+\)$/
-    \ end=/^\z1$/
-    \ matchgroup=vim9Error
-    \ end=/^\s\+\z1$/
-    \ contains=@vim9LuaScript
-
-syntax region vim9LuaRegion
-    \ matchgroup=vim9ScriptDelim
-    \ start=/lua\s\+<<$/
-    \ end=/\.$/
-    \ contains=@vim9LuaScript
+        syntax region vim9{lang}Region
+            \ matchgroup=vim9ScriptDelim
+            \ start=/{cmdpat}\s\+<<$/
+            \ end=/\.$/
+            \ contains=@vim9{lang}Script
+        syntax cluster vim9IsCmd add=vim9{lang}Region
+    END
+    code->join("\n")
+        ->substitute('\n\s*\\', ' ', 'g')
+        ->split('\n')
+        ->execute()
+endfor
 #}}}1
 # Errors {{{1
 # Strict whitespace usage {{{2
@@ -4080,6 +4079,7 @@ highlight default link vim9RangeMissingSpace vim9Error
 highlight default link vim9RangeMissingSpecifier1 vim9Error
 highlight default link vim9RangeMissingSpecifier2 vim9Error
 highlight default link vim9ReservedNames vim9Error
+highlight default link vim9SIUB vim9Error
 highlight default link vim9SetEqualError vim9Error
 highlight default link vim9SpaceAfterFuncHeader vim9Error
 highlight default link vim9SpaceAfterLegacyFuncHeader vim9Error

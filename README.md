@@ -7,6 +7,7 @@ The highlighting can be controlled via keys in the dictionary `g:vim9_syntax`:
    - `builtin_functions` controls whether builtin functions are highlighted (`true` by default)
    - `data_types` controls whether Vim9 data types in declarations are highlighted (`true` by default)
    - `errors` controls whether some possible mistakes are highlighted
+   - `fenced_languages` is a list of languages which should be highlighted with their own syntax when included inside fenced codeblocks (empty list by default)
 
 `g:vim9_syntax.errors` is a nested dictionary containing these keys:
 
@@ -21,6 +22,7 @@ Example of configuration:
     g:vim9_syntax = {
        builtin_functions: true,
        data_types: false,
+       fenced_languages: ['lua', 'python'],
        errors: {
            event_wrong_case: false,
            octal_missing_o_prefix: false,
