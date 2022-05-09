@@ -259,6 +259,16 @@ syntax match vim9OperError /[)\]}]/
 #}}}
 syntax match vim9OperError /-\@1<!>/
 
+# Special brackets in interpolated strings and heredocs {{{2
+
+# This must  come *before*  the rules  matching expressions  inside interpolated
+# strings and heredocs.
+
+# String Interpolated Unbalanced Bracket
+syntax match vim9SIUB /[{}]/ contained
+# String Interpolated Literal Bracket
+syntax match vim9SILB /{{\|}}/ contained
+
 # :++ / :-- {{{2
 # Order: Must come before `vim9AutocmdMod`, to not break `++nested` and `++once`.
 
@@ -950,11 +960,11 @@ syntax region vim9HereDoc
     \ start=/\s\@1<==<<\s\+\%(.*\<eval\>\)\@=\%(\%(trim\|eval\)\s\)\{1,2}\s*\z(\L\S*\)/
     \ matchgroup=vim9DeclareHereDocStop
     \ end=/^\s*\z1$/
-    \ contains=vim9HereDocExpr
+    \ contains=vim9HereDocExpr,vim9SILB,vim9SIUB
 
 syntax region vim9HereDocExpr
     \ matchgroup=PreProc
-    \ start=/{/
+    \ start=/{{\@!/
     \ end=/}/
     \ contained
     \ contains=@vim9Expr
@@ -2775,18 +2785,13 @@ syntax region vim9StringInterpolated
     \ keepend
     \ oneline
 
-# String Interpolated Unbalanced Bracket
-syntax match vim9SIUB /[{}]/ contained
-# String Interpolated Literal Bracket
-syntax match vim9SILB /{{\|}}/ contained
-# Order: This must come *after* the rules matching unbalanced and literal brackets.
-    syntax region vim9StringInterpolatedExpression
-        \ matchgroup=PreProc
-        \ start=/{{\@!/
-        \ end=/}/
-        \ contained
-        \ contains=@vim9Expr
-        \ oneline
+ syntax region vim9StringInterpolatedExpression
+     \ matchgroup=PreProc
+     \ start=/{{\@!/
+     \ end=/}/
+     \ contained
+     \ contains=@vim9Expr
+     \ oneline
 
 # In a  syntax file, we  often build  syntax rules with  strings concatenations,
 # which we then `:execute`.  Highlight the tokens inside the strings.
