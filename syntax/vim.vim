@@ -2785,13 +2785,23 @@ syntax region vim9StringInterpolated
     \ keepend
     \ oneline
 
- syntax region vim9StringInterpolatedExpression
-     \ matchgroup=PreProc
-     \ start=/{{\@!/
-     \ end=/}/
-     \ contained
-     \ contains=@vim9Expr
-     \ oneline
+# `extend` is necessary in case the expression contains strings:{{{
+#
+#     echo $"{"foo"}" .. $'{'bar'}'
+#              ^^^           ^^^
+#              should be highlighted as strings
+#
+#     echo $"me{"\x7b"}\x7dme"
+#                ^--^
+#}}}
+syntax region vim9StringInterpolatedExpression
+    \ matchgroup=PreProc
+    \ start=/{{\@!/
+    \ end=/}/
+    \ contained
+    \ contains=@vim9Expr
+    \ extend
+    \ oneline
 
 # In a  syntax file, we  often build  syntax rules with  strings concatenations,
 # which we then `:execute`.  Highlight the tokens inside the strings.
