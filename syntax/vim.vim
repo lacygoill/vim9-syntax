@@ -777,12 +777,17 @@ syntax keyword vim9Repeat for
 
 # :for [name, ...]
 #      ^---------^
+# `contains=vim9DataType` to support the return type of a funcref:{{{
+#
+#     for [a: string, B: func(string): bool] in []
+#                                      ^--^
+#}}}
 syntax region vim9RepeatForListUnpackDeclaration
     \ matchgroup=vim9Sep
     \ start=/\[/
     \ end=/]/
     \ contained
-    \ contains=vim9RepeatForDeclareName
+    \ contains=vim9RepeatForDeclareName,vim9DataType
     \ nextgroup=vim9RepeatForIn
     \ oneline
     \ skipwhite
@@ -3572,6 +3577,8 @@ for lang: string in get(g:, 'vim9_syntax', {})->get('fenced_languages', [])
             \ start=/{cmdpat}\s\+<<$/
             \ end=/\.$/
             \ contains=@vim9{lang}Script
+
+        syntax cluster vim9CanBeAtStartOfLine add=vim9{lang}Region
     END
     code->join("\n")
         ->substitute('\n\s*\\', ' ', 'g')
