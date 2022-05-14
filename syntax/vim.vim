@@ -451,7 +451,6 @@ syntax cluster vim9IsCmd contains=
     \ vim9Highlight,
     \ vim9Import,
     \ vim9DeprecatedLet,
-    \ vim9LuaRegion,
     \ vim9Map,
     \ vim9MarkCmd,
     \ vim9Norm,
@@ -3564,21 +3563,28 @@ for lang: string in get(g:, 'vim9_syntax', {})->get('fenced_languages', [])
 
         syntax include @vim9{lang}Script syntax/{lang}.vim
 
+        syntax match vim9{lang}Cmd /{cmdpat}/ nextgroup=vim9{lang}Region skipwhite
+
         syntax region vim9{lang}Region
             \ matchgroup=vim9ScriptDelim
-            \ start=/{cmdpat}\s\+<<\s*\z(\S\+\)$/
+            \ start=/<<\s*\z(\S\+\)$/
             \ end=/^\z1$/
             \ matchgroup=vim9Error
             \ end=/^\s\+\z1$/
+            \ contained
             \ contains=@vim9{lang}Script
 
         syntax region vim9{lang}Region
             \ matchgroup=vim9ScriptDelim
-            \ start=/{cmdpat}\s\+<<$/
+            \ start=/<<$/
             \ end=/\.$/
+            \ contained
             \ contains=@vim9{lang}Script
 
-        syntax cluster vim9CanBeAtStartOfLine add=vim9{lang}Region
+        syntax cluster vim9CanBeAtStartOfLine add=vim9{lang}Cmd
+
+        highlight default link vim9{lang}Cmd vim9GenericCmd
+        highlight default link vim9{lang}Region vim9DeclareHereDoc
     END
     code->join("\n")
         ->substitute('\n\s*\\', ' ', 'g')
@@ -4234,7 +4240,7 @@ highlight default link vim9RepeatForDeclareName vim9Declare
 highlight default link vim9RepeatForIn vim9Repeat
 highlight default link vim9Return vim9DefKey
 highlight default link vim9SILB vim9String
-highlight default link vim9ScriptDelim Comment
+highlight default link vim9ScriptDelim vim9DeclareHereDoc
 highlight default link vim9Sep Delimiter
 highlight default link vim9Set vim9GenericCmd
 highlight default link vim9SetBracketEqual vim9OperAssign
