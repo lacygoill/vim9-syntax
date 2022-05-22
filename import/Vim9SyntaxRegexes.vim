@@ -31,6 +31,9 @@ const builtin_func_list: list<string> =<< trim END
     assert_true
     atan
     atan2
+    autocmd_add
+    autocmd_delete
+    autocmd_get
     balloon_gettext
     balloon_show
     balloon_split
