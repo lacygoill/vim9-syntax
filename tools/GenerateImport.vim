@@ -624,6 +624,8 @@ const most_operators: string = '"'
     ..     '\|' .. '??'
            # `?` in ternary operator
     ..     '\|' .. '?'
+           # bitwise shift operators
+    ..     '\|' .. '<<\|>>'
            # comparison operators
     ..     '\|' .. '\%(' .. '[=!]=\|[<>]=\=\|[=!]\~\|is\|isnot' .. '\)'
            # optional modifier to respect or ignore the case
