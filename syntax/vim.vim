@@ -1732,7 +1732,8 @@ syntax match vim9ProfileSubCmdInvalid /\S\+/
         \ nextgroup=vim9ProfileSubCmd,vim9ProfileSubCmdInvalid
         \ skipwhite
 
-syntax keyword vim9ProfileSubcmd continue file func pause start
+
+syntax keyword vim9ProfileSubcmd continue dump file func pause start stop
     \ contained
     \ nextgroup=vim9ProfilePat
     \ skipwhite
