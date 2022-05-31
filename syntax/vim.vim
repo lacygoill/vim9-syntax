@@ -979,7 +979,7 @@ syntax region vim9HereDocExpr
 execute 'syntax match vim9CmdModifier'
     .. ' /\<\%(' .. regex.command_modifier .. '\)\>/'
     .. ' contained'
-    .. ' nextgroup=@vim9CanBeAtStartOfLine,vim9CmdBangModifier'
+    .. ' nextgroup=@vim9CanBeAtStartOfLine,vim9CmdBangModifier,vim9Line12MissingColon'
     .. ' skipwhite'
 
 # A command modifier can be followed by a bang.
