@@ -500,6 +500,7 @@ const builtin_func_list: list<string> =<< trim END
     uniq
     values
     virtcol
+    virtcol2col
     visualmode
     wildmenumode
     win_execute
@@ -1466,7 +1467,7 @@ export const mark_valid: string = '[a-zA-Z''[\]<>0-9"^.(){}]'
 
 # maybe_dict_literal_key {{{1
 
-export const maybe_dict_literal_key: string = '/\%([{\n]\|[^ \t\n,{\\]\@1<!\s\)\@1<=[^ \t{(''"]\+\ze\%(:\s\)\@=/'
+export const maybe_dict_literal_key: string = '/\%([{\n]\|[^ \t\n,{\\]\@1<!\s\)\@1<=[^ \t{(''"]\+\ze\%(:\_s\)\@=/'
 
 # most_operators {{{1
 

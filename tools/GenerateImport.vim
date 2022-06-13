@@ -603,7 +603,7 @@ const maybe_dict_literal_key: string = '/'
     # the key itself
     .. '[^ \t{(''"]\+'
     # There must be a colon and a space afterward for this to have any chance of being a key.
-    .. '\ze\%(:\s\)\@='
+    .. '\ze\%(:\_s\)\@='
     .. '/'
 
 # most_operators {{{3
