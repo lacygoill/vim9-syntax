@@ -2169,6 +2169,12 @@ execute 'syntax match vim9WincmdArg ' .. regex.wincmd_valid .. ' contained'
 
 # :! {{{3
 
+# We need to match a filter command to avoid breaking the highlighting of the next line.{{{
+#
+# Indeed, a  shell command might  end with `-`  (stdin), which our  plugin could
+# conflate with an arithmetic operator; this could break the highlighting of the
+# first keyword on the next line (e.g. `:enddef`).
+#}}}
 # We do not support `:!` without a colon.{{{
 #
 # First, it would be too tricky to distinguish it from the logical NOT operator.
@@ -3574,6 +3580,7 @@ for lang: string in get(g:, 'vim9_syntax', {})->get('fenced_languages', [])
             \ end=/^\s\+\z1$/
             \ contained
             \ contains=@vim9{lang}Script
+            \ keepend
 
         syntax region vim9{lang}Region
             \ matchgroup=vim9ScriptDelim
@@ -3581,11 +3588,11 @@ for lang: string in get(g:, 'vim9_syntax', {})->get('fenced_languages', [])
             \ end=/\.$/
             \ contained
             \ contains=@vim9{lang}Script
+            \ keepend
 
         syntax cluster vim9CanBeAtStartOfLine add=vim9{lang}Cmd
 
         highlight default link vim9{lang}Cmd vim9GenericCmd
-        highlight default link vim9{lang}Region vim9DeclareHereDoc
     END
     code->join("\n")
         ->substitute('\n\s*\\', ' ', 'g')
