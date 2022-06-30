@@ -2536,6 +2536,7 @@ const option_terminal_list: list<string> =<< trim END
     t_Co
     t_Cs
     t_DL
+    t_Ds
     t_EC
     t_EI
     t_F1
@@ -2592,6 +2593,7 @@ const option_terminal_list: list<string> =<< trim END
     t_TI
     t_Te
     t_Ts
+    t_Us
     t_VS
     t_WP
     t_WS
@@ -2609,6 +2611,7 @@ const option_terminal_list: list<string> =<< trim END
     t_da
     t_db
     t_dl
+    t_ds
     t_ed
     t_el
     t_f1
