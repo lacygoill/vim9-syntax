@@ -2784,15 +2784,37 @@ syntax region vim9String
     \ start=/"/
     \ skip=/\\\\\|\\"/
     \ end=/"/
+    \ contains=vim9EscapeSequence
     \ keepend
     \ oneline
+
+# `:help string`
+syntax match vim9EscapeSequence /\\\%(\o\{3}\|\o\{1,2}\O\@=\)/ contained
+syntax match vim9EscapeSequence /\\[xX]\%(\x\{2}\|\x\X\@=\)/ contained
+syntax match vim9EscapeSequence /\\u\x\{1,4}/ contained
+syntax match vim9EscapeSequence /\\U\x\{1,8}/ contained
+syntax match vim9EscapeSequence /\\[befnrt\\"]/ contained
+highlight default link vim9EscapeSequence Special
+# TODO: Should we match them in patterns too?
+#
+#     vim9GlobalPat
+#     vim9RangePattern
+#     vim9SubstPat
+#     vim9SubstRep
+#     vim9SynRegPat
+#     vim9TryCatchPattern
+#     vim9VimGrepPat
+#
+# Note that  in patterns, `\o`,  `\x`, `\X`, `\u`,  `\U` must include  a percent
+# (`\%o`, `\%x`, ...). To avoid clashing with character classes.
+
 
 # `:help interp-string`
 syntax region vim9StringInterpolated
     \ start=/$"/
     \ skip=/\\\\\|\\"/
     \ end=/"/
-    \ contains=vim9StringInterpolatedExpression,vim9SILB,vim9SIUB
+    \ contains=vim9EscapeSequence,vim9StringInterpolatedExpression,vim9SILB,vim9SIUB
     \ keepend
     \ oneline
 
