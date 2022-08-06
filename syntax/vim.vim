@@ -47,7 +47,7 @@ endif
 # For example, right now, the legacy syntax plugin installs these groups:
 #
 #    - `vim9Comment`
-#    - `vim9CommentLine`
+#    - `vim9LineComment`
 #
 # There is no good  reason to want different colors between a  Vim9 comment in a
 # Vim9 script and a Vim9 comment in a legacy script.  That would be confusing.
@@ -226,22 +226,6 @@ execute 'syntax match vim9ExSpecialCharacters'
     .. ' contains=vim9BracketKey'
 
 syntax match vim9BracketKey /[<>]/ contained
-
-# Comment {{{2
-
-# This could break the highlighting of a pattern passed as argument to a command.{{{
-#
-# Example:
-#
-#     vimgrep #pattern# ...
-#             ^
-#             this is not the start of an inline comment;
-#             this is a delimiter surrounding a regex
-#
-# This can be avoided  if we install this rule early,  *and* highlight the regex
-# with another rule which will come later.
-#}}}
-syntax match vim9Comment /\s\@1<=#.*$/ contains=@vim9CommentGroup excludenl
 
 # Unbalanced paren {{{2
 
@@ -502,6 +486,7 @@ syntax cluster vim9CanBeAtStartOfLine contains=
     \ @vim9FuncCall,
     \ vim9Block,
     \ vim9Comment,
+    \ vim9DeprecatedDictLiteralLegacy,
     \ vim9DeprecatedScopes,
     \ vim9DisambiguatingColon,
     \ vim9FuncEnd,
@@ -2757,6 +2742,7 @@ syntax cluster vim9ExprExceptString contains=
     \ vim9Bool,
     \ vim9DataTypeCast,
     \ vim9Dict,
+    \ vim9DeprecatedDictLiteralLegacy,
     \ vim9Lambda,
     \ vim9LambdaArrow,
     \ vim9ListSlice,
@@ -3481,10 +3467,9 @@ syntax match vim9SpecFileMod /\%(:[phtreS]\)\+/ contained
 
 # Lower Priority Comments: after some vim commands... {{{1
 
-# inline comments
 # Warning: Do *not* use the `display` argument here.
 
-syntax match vim9Comment /^\s*#.*$/ contains=@vim9CommentGroup
+syntax match vim9Comment /#.*$/ contains=@vim9CommentGroup
 syntax match vim9CommentContinuation /#\\ /hs=s+1 contained
 # If you want to highlight a missing backslash in a line continuation comment, try this regex:{{{
 #
@@ -3516,8 +3501,6 @@ syntax match vim9CommentContinuation /#\\ /hs=s+1 contained
 syntax match vim9CtrlChar /[\x01-\x08\x0b\x0f-\x1f]/
 
 # Patterns matching at start of line {{{1
-
-syntax match vim9CommentLine /^[ \t]\+#.*$/ contains=@vim9CommentGroup
 
 # We've tweaked the original rule.{{{
 #
@@ -3570,7 +3553,6 @@ syntax cluster vim9CommentGroup contains=
     \ @Spell,
     \ vim9CommentContinuation,
     \ vim9CommentTitle,
-    \ vim9DeprecatedDictLiteralLegacy,
     \ vim9Todo
 
 # Fenced Languages  {{{1
@@ -4173,7 +4155,6 @@ highlight default link vim9BreakContinue vim9Repeat
 highlight default link vim9Cd vim9GenericCmd
 highlight default link vim9Comment Comment
 highlight default link vim9CommentContinuation vim9Continuation
-highlight default link vim9CommentLine vim9Comment
 highlight default link vim9CommentTitle PreProc
 highlight default link vim9Conditional Conditional
 highlight default link vim9Continuation Special
