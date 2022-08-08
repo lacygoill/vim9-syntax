@@ -3469,7 +3469,12 @@ syntax match vim9SpecFileMod /\%(:[phtreS]\)\+/ contained
 
 # Warning: Do *not* use the `display` argument here.
 
-syntax match vim9Comment /#.*$/ contains=@vim9CommentGroup
+# We need  to assert  the presence  of whitespace before  the comment  leader to
+# prevent matching some part of an autoload variable.
+#     foo = script#autoload_variable
+#                 ^----------------^
+#                 that's not a comment
+syntax match vim9Comment /\_s\@1<=#.*$/ contains=@vim9CommentGroup
 syntax match vim9CommentContinuation /#\\ /hs=s+1 contained
 # If you want to highlight a missing backslash in a line continuation comment, try this regex:{{{
 #
