@@ -164,7 +164,7 @@ endif
 
 # Imports {{{1
 
-import 'Vim9SyntaxRegexes.vim' as regex
+import 'vim9Language.vim' as lang
 #}}}1
 
 # Early {{{1
@@ -179,7 +179,7 @@ execute 'syntax match vim9BracketNotation'
     # possible modifiers; for `2-4`, see `:h <2-LeftMouse>`
     .. '\%([scmad2-4]-\)\{,3}'
     # key name
-    .. '\%(' .. regex.key_name .. '\)'
+    .. '\%(' .. lang.key_name .. '\)'
     # closing angle bracket
     .. '>'
     .. '/'
@@ -219,7 +219,7 @@ execute 'syntax match vim9ExSpecialCharacters'
     .. ' /\c'
     .. '<'
     ..     '\%('
-    ..         regex.ex_special_characters
+    ..         lang.ex_special_characters
     ..     '\)'
     .. '>'
     .. '/'
@@ -267,7 +267,7 @@ syntax match vim9SILB /{{\|}}/ contained
 syntax match vim9Increment /\%(++\|--\)\%(\h\|&\)\@=/ contained
 
 execute 'syntax match vim9IncrementError'
-    .. ' /' .. regex.increment_invalid .. '/'
+    .. ' /' .. lang.increment_invalid .. '/'
     .. ' contained'
 #}}}1
 
@@ -355,7 +355,7 @@ syntax match vim9RangeLnumNotation /\c<line[12]>/
     \ nextgroup=@vim9RangeAfterSpecifier
     \ skipwhite
 
-execute 'syntax match vim9RangeMark /' .. "'" .. regex.mark_valid .. '/'
+execute 'syntax match vim9RangeMark /' .. "'" .. lang.mark_valid .. '/'
     .. ' contained'
     .. ' nextgroup=@vim9RangeAfterSpecifier'
     .. ' skipwhite'
@@ -411,7 +411,7 @@ syntax match vim9RangeDelimiter /[,;]/
 #
 # First, as mentioned before, make sure it's listed in this cluster.
 # Second, make sure it's listed in `SPECIAL_CMDS` in `./tools/GenerateImport.vim`.
-# So that it's removed from `regex.command_name`, and in turn from the `vim9GenericCmd` rule.
+# So that it's removed from `lang.command_name`, and in turn from the `vim9GenericCmd` rule.
 #}}}
 syntax cluster vim9IsCmd contains=
     \ @vim9ControlFlow,
@@ -477,7 +477,7 @@ syntax match vim9MayBeCmd /\%(\<\h\w*\>\)\@=/
     # General case
     # Order: Must come after the previous rule handling the special case.
     execute 'syntax match vim9MayBeCmd'
-        .. ' /\%(' .. '\<\h\w*\>' .. '!\=' .. regex.command_can_be_before .. '\)\@=/'
+        .. ' /\%(' .. '\<\h\w*\>' .. '!\=' .. lang.command_can_be_before .. '\)\@=/'
         .. ' contained'
         .. ' nextgroup=@vim9IsCmd'
 
@@ -511,7 +511,7 @@ syntax match vim9CmdSep /|/ skipwhite nextgroup=@vim9CanBeAtStartOfLine
 
 # Generic {{{2
 
-execute 'syntax keyword vim9GenericCmd' .. ' ' .. regex.command_name .. ' contained'
+execute 'syntax keyword vim9GenericCmd' .. ' ' .. lang.command_name .. ' contained'
 
 syntax match vim9GenericCmd /\<z[-+^.=]\=\>/ contained
 
@@ -686,14 +686,14 @@ syntax case ignore
 if get(g:, 'vim9_syntax', {})
  ->get('errors', {})
  ->get('event_wrong_case', false)
-    execute 'syntax keyword vim9AutocmdEventBadCase' .. ' ' .. regex.event
+    execute 'syntax keyword vim9AutocmdEventBadCase' .. ' ' .. lang.event
         .. ' contained'
         .. ' nextgroup=vim9AutocmdPat,vim9AutocmdEndOfEventList'
         .. ' skipwhite'
     syntax case match
 endif
 # Order: Must come after `vim9AutocmdEventBadCase`.
-execute 'syntax keyword vim9AutocmdEventGoodCase' .. ' ' .. regex.event
+execute 'syntax keyword vim9AutocmdEventGoodCase' .. ' ' .. lang.event
     .. ' contained'
     .. ' nextgroup=vim9AutocmdPat,vim9AutocmdEndOfEventList'
     .. ' skipwhite'
@@ -828,7 +828,7 @@ syntax keyword vim9TryCatch throw contained nextgroup=@vim9Expr skipwhite
 syntax keyword vim9TryCatch catch contained nextgroup=vim9TryCatchPattern skipwhite
 execute 'syntax region vim9TryCatchPattern'
     .. ' matchgroup=vim9SubstDelim'
-    .. ' start=/\z(' .. regex.pattern_delimiter .. '\)/rs=s+1'
+    .. ' start=/\z(' .. lang.pattern_delimiter .. '\)/rs=s+1'
     .. ' skip=/\\\\\|\\\z1/'
     .. ' end=/\z1/'
     .. ' contained'
@@ -962,7 +962,7 @@ syntax region vim9HereDocExpr
 # Modifier {{{3
 
 execute 'syntax match vim9CmdModifier'
-    .. ' /\<\%(' .. regex.command_modifier .. '\)\>/'
+    .. ' /\<\%(' .. lang.command_modifier .. '\)\>/'
     .. ' contained'
     .. ' nextgroup=@vim9CanBeAtStartOfLine,vim9CmdBangModifier,vim9Line12MissingColon'
     .. ' skipwhite'
@@ -1064,7 +1064,7 @@ syntax match vim9UserCmdAttrName /-addr\>/
     \ nextgroup=vim9UserCmdAttrAddress,vim9UserCmdAttrErrorValue
 
 execute 'syntax match vim9UserCmdAttrAddress'
-    .. ' /=\%(' .. regex.command_address_type .. '\)\>/'
+    .. ' /=\%(' .. lang.command_address_type .. '\)\>/'
     .. ' contained'
     .. ' contains=vim9UserCmdAttrEqual'
     .. ' nextgroup=@vim9UserCmdAttr,vim9ContinuationBeforeUserCmd'
@@ -1082,7 +1082,7 @@ syntax match vim9UserCmdAttrName /-complete\>/
 # -complete=...
 execute 'syntax match vim9UserCmdAttrComplete'
     .. ' /'
-    ..     '=\%(' .. regex.command_complete_type .. '\)'
+    ..     '=\%(' .. lang.command_complete_type .. '\)'
     .. '/'
     .. ' contained'
     .. ' contains=vim9UserCmdAttrEqual'
@@ -1322,28 +1322,28 @@ syntax keyword vim9FTOption detect indent off on plugin contained
 
 # without a bang
 execute 'syntax match vim9Global'
-    .. ' /\<g\%[lobal]\>\ze\s*\(' .. regex.pattern_delimiter .. '\).\{-}\1/'
+    .. ' /\<g\%[lobal]\>\ze\s*\(' .. lang.pattern_delimiter .. '\).\{-}\1/'
     .. ' contained'
     .. ' nextgroup=vim9GlobalPat'
     .. ' skipwhite'
 
 # with a bang
 execute 'syntax match vim9Global'
-    .. ' /\<g\%[lobal]\>!\ze\s*\(' .. regex.pattern_delimiter .. '\).\{-}\1/he=e-1'
+    .. ' /\<g\%[lobal]\>!\ze\s*\(' .. lang.pattern_delimiter .. '\).\{-}\1/he=e-1'
     .. ' contained'
     .. ' nextgroup=vim9GlobalPat'
     .. ' skipwhite'
 
 # vglobal/pat/cmd
 execute 'syntax match vim9Global'
-    .. ' /\<v\%[global]\>\ze\s*\(' .. regex.pattern_delimiter .. '\).\{-}\1/'
+    .. ' /\<v\%[global]\>\ze\s*\(' .. lang.pattern_delimiter .. '\).\{-}\1/'
     .. ' contained'
     .. ' nextgroup=vim9GlobalPat'
     .. ' skipwhite'
 
 execute 'syntax region vim9GlobalPat'
     .. ' matchgroup=vim9SubstDelim'
-    .. ' start=/\z(' .. regex.pattern_delimiter .. '\)/rs=s+1'
+    .. ' start=/\z(' .. lang.pattern_delimiter .. '\)/rs=s+1'
     .. ' skip=/\\\\\|\\\z1/'
     .. ' end=/\z1/'
     .. ' contained'
@@ -1508,7 +1508,7 @@ syntax keyword vim9MarkCmd ma[rk]
     \ skipwhite
 
 syntax match vim9MarkCmdArgInvalid /[^ \t|]\+/ contained
-execute 'syntax match vim9MarkCmdArg /\s\@1<=' .. regex.mark_valid .. '\_s\@=/ contained'
+execute 'syntax match vim9MarkCmdArg /\s\@1<=' .. lang.mark_valid .. '\_s\@=/ contained'
 
 # :nnoremap {{{3
 
@@ -1796,13 +1796,13 @@ syntax cluster vim9SubstRepList contains=
 #    - `vim9Subst` is defined with `display`
 #}}}
 execute 'syntax match vim9Subst'
-    .. ' /\<s\%[ubstitute]\>\s*\ze\(' .. regex.pattern_delimiter .. '\).\{-}\1.\{-}\1/'
+    .. ' /\<s\%[ubstitute]\>\s*\ze\(' .. lang.pattern_delimiter .. '\).\{-}\1.\{-}\1/'
     .. ' contained'
     .. ' nextgroup=vim9SubstPat'
 
 execute 'syntax region vim9SubstPat'
     .. ' matchgroup=vim9SubstDelim'
-    .. ' start=/\z(' .. regex.pattern_delimiter .. '\)/rs=s+1'
+    .. ' start=/\z(' .. lang.pattern_delimiter .. '\)/rs=s+1'
     .. ' skip=/\\\\\|\\\z1/'
     .. ' end=/\z1/re=e-1,me=e-1'
     .. ' contained'
@@ -1847,7 +1847,7 @@ syntax match vim9CollationClassErr /\[:.\{-\}:\]/ contained
 
 execute 'syntax match vim9CollationClass'
     .. ' /\[:'
-    .. '\%(' .. regex.collation_class .. '\)'
+    .. '\%(' .. lang.collation_class .. '\)'
     .. ':\]/'
     .. ' contained'
     .. ' transparent'
@@ -2121,21 +2121,21 @@ syntax keyword vim9SyncNone NONE contained
 
 # without a bang
 execute 'syntax match vim9VimGrep'
-    .. ' /\<l\=vim\%[grep]\%(add\)\=\ze\s*\(' .. regex.pattern_delimiter .. '\).\{-}\1/'
+    .. ' /\<l\=vim\%[grep]\%(add\)\=\ze\s*\(' .. lang.pattern_delimiter .. '\).\{-}\1/'
     .. ' nextgroup=vim9VimGrepPat'
     .. ' contained'
     .. ' skipwhite'
 
 # with a bang
 execute 'syntax match vim9VimGrep'
-    .. ' /\<l\=vim\%[grep]\%(add\)\=!\ze\s*\(' .. regex.pattern_delimiter .. '\).\{-}\1/he=e-1'
+    .. ' /\<l\=vim\%[grep]\%(add\)\=!\ze\s*\(' .. lang.pattern_delimiter .. '\).\{-}\1/he=e-1'
     .. ' nextgroup=vim9VimGrepPat'
     .. ' contained'
     .. ' skipwhite'
 
 execute 'syntax region vim9VimGrepPat'
     .. ' matchgroup=vim9SubstDelim'
-    .. ' start=/\z(' .. regex.pattern_delimiter .. '\)/rs=s+1'
+    .. ' start=/\z(' .. lang.pattern_delimiter .. '\)/rs=s+1'
     .. ' skip=/\\\\\|\\\z1/'
     .. ' end=/\z1/'
     .. ' contained'
@@ -2150,7 +2150,7 @@ syntax keyword vim9Wincmd winc[md]
     \ skipwhite
 
 syntax match vim9WincmdArgInvalid /\S\+/ contained
-execute 'syntax match vim9WincmdArg ' .. regex.wincmd_valid .. ' contained'
+execute 'syntax match vim9WincmdArg ' .. lang.wincmd_valid .. ' contained'
 
 # :! {{{3
 
@@ -2532,11 +2532,11 @@ syntax match vim9FuncCallBuiltin /[:.]\@1<!\<\l\w*(\@=/ contains=vim9FuncNameBui
 # necessary regex would be too costly.
 #}}}
 execute 'syntax keyword vim9FuncNameBuiltin'
-    .. ' ' .. regex.builtin_func
+    .. ' ' .. lang.builtin_func
     .. ' contained'
 
 execute 'syntax match vim9FuncNameBuiltin'
-    .. ' /\<\%(' .. regex.builtin_func_ambiguous .. '\)(\@=/'
+    .. ' /\<\%(' .. lang.builtin_func_ambiguous .. '\)(\@=/'
     .. ' contained'
 
 # Lambda {{{2
@@ -2648,7 +2648,7 @@ syntax cluster vim9OperGroup contains=
 # block.
 #}}}
 execute 'syntax match vim9Oper'
-    .. ' ' .. regex.most_operators
+    .. ' ' .. lang.most_operators
     .. ' nextgroup=vim9SOLExpr'
     .. ' skipnl'
     .. ' skipwhite'
@@ -2668,7 +2668,7 @@ syntax match vim9OperAssign #\s\@1<=\%([-+*/%]\|\.\.\)\==\_s\@=#
 # methods
 syntax match vim9Oper /->\%(\_s*\h\)\@=/ skipwhite
 # logical not
-execute 'syntax match vim9Oper' .. ' ' .. regex.logical_not .. ' display skipwhite'
+execute 'syntax match vim9Oper' .. ' ' .. lang.logical_not .. ' display skipwhite'
 
 # support `:` when used inside conditional `?:` operator
 syntax match vim9Oper /\_s\@1<=:\_s\@=/
@@ -2953,7 +2953,7 @@ syntax region vim9Dict
 
 # In literal dictionary, highlight unquoted key names as strings.
 execute 'syntax match vim9DictMayBeLiteralKey'
-    .. ' ' .. regex.maybe_dict_literal_key
+    .. ' ' .. lang.maybe_dict_literal_key
     .. ' display'
     .. ' contained'
     .. ' contains=vim9DictIsLiteralKey'
@@ -2972,8 +2972,8 @@ syntax match vim9DictExprKey /\[.\{-}]\%(:\s\)\@=/
 
 execute 'syntax region vim9Lambda'
     .. ' matchgroup=vim9ParenSep'
-    .. ' start=/' .. regex.lambda_start .. '/'
-    .. ' end=/' .. regex.lambda_end .. '/'
+    .. ' start=/' .. lang.lambda_start .. '/'
+    .. ' end=/' .. lang.lambda_end .. '/'
     .. ' contains=@vim9DataTypeCluster,@vim9ErrorSpaceArgs,vim9LambdaArgs'
     .. ' keepend'
     .. ' nextgroup=@vim9DataTypeCluster'
@@ -3151,9 +3151,9 @@ syntax keyword vim9Set setl[ocal] setg[lobal] se[t]
 
 execute 'syntax match vim9MayBeOptionScoped'
     .. ' /'
-    ..     regex.option_can_be_after
-    ..     regex.option_sigil
-    ..     regex.option_valid
+    ..     lang.option_can_be_after
+    ..     lang.option_sigil
+    ..     lang.option_valid
     .. '/'
     .. ' display'
     .. ' contains=vim9IsOption,vim9OptionSigil'
@@ -3168,8 +3168,8 @@ execute 'syntax match vim9MayBeOptionScoped'
 #}}}
 execute 'syntax match vim9MayBeOptionSet'
     .. ' /'
-    ..     regex.option_can_be_after
-    ..     regex.option_valid
+    ..     lang.option_can_be_after
+    ..     lang.option_valid
     .. '/'
     .. ' contained'
     .. ' contains=vim9IsOption'
@@ -3199,7 +3199,7 @@ execute 'syntax match vim9MayBeOptionSet'
         #                 ^
         #                 ✘
         #}}}
-        ..        regex.option_modifier
+        ..        lang.option_modifier
         ..    '\)\@='
         .. '/'
         .. ' contained'
@@ -3207,19 +3207,19 @@ execute 'syntax match vim9MayBeOptionSet'
 syntax match vim9OptionSigil /&\%([gl]:\)\=/ contained
 
 execute 'syntax keyword vim9IsOption'
-    .. ' ' .. regex.option
+    .. ' ' .. lang.option
     .. ' contained'
     .. ' nextgroup=vim9MayBeOptionScoped,vim9SetEqual'
     .. ' skipwhite'
 
 execute 'syntax keyword vim9IsOption'
-    .. ' ' .. regex.option_terminal
+    .. ' ' .. lang.option_terminal
     .. ' contained'
     .. ' nextgroup=vim9MayBeOptionScoped,vim9SetEqual'
 
 execute 'syntax match vim9IsOption'
     .. ' /\V'
-    .. regex.option_terminal_special
+    .. lang.option_terminal_special
     .. '/'
     .. ' contained'
     .. ' nextgroup=vim9MayBeOptionScoped,vim9SetEqual'
@@ -3266,7 +3266,7 @@ syntax match vim9SetNumberValue /\d\+\_s\@=/
 # ? = show value
 # ! = invert value
 #}}}
-execute 'syntax match vim9SetMod /' .. regex.option_modifier .. '/'
+execute 'syntax match vim9SetMod /' .. lang.option_modifier .. '/'
     .. ' contained'
     .. ' nextgroup=vim9MayBeOptionScoped,vim9MayBeOptionSet'
     .. ' skipwhite'
@@ -3390,7 +3390,7 @@ syntax case match
 # Default highlighting groups {{{1
 
 syntax case ignore
-execute 'syntax keyword vim9HLGroup contained' .. ' ' .. regex.default_highlighting_group
+execute 'syntax keyword vim9HLGroup contained' .. ' ' .. lang.default_highlighting_group
 
 # Warning: Do *not* turn this `match` into  a `keyword` rule; `conceal` would be
 # wrongly interpreted as an argument to `:syntax`.

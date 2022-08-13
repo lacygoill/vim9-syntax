@@ -206,6 +206,7 @@ const builtin_func_list: list<string> =<< trim END
     iconv
     indent
     index
+    indexof
     input
     inputdialog
     inputlist

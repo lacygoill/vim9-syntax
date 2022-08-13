@@ -1080,7 +1080,7 @@ const option_terminal_special: list<string> =
         ->uniq()
 #}}}1
 
-const IMPORT_FILE: string = expand('<sfile>:p:h:h') .. '/import/Vim9SyntaxRegexes.vim'
+const IMPORT_FILE: string = expand('<sfile>:p:h:h') .. '/import/vim9Language.vim'
 var header: list<string> =<< trim END
     vim9script
 
