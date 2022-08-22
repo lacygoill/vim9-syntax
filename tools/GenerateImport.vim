@@ -231,14 +231,14 @@ def Shorten( #{{{2
             endtry
         endfor
         if cannot_be_shortened || len == cmd->strcharlen() - 1
-            shortened += [cmd]
+            shortened->add(cmd)
         else
-            shortened += [printf(
+            shortened->add(printf(
                 '%s%s[%s]',
                 cmd[: len],
                 for_match ? '\%' : '',
                 cmd[len + 1 :]
-            )]
+            ))
         endif
     endfor
     return shortened
@@ -278,7 +278,7 @@ def AppendSection(what: string, match_rule = false) #{{{2
             + ['export const ' .. what .. ': string = '
                 .. what .. '_list->join(' .. (match_rule ? '"\\|"' : '') .. ')']
     else
-        lines += ['export const ' .. what .. ': string = ' .. eval(what)->string()]
+        lines->add('export const ' .. what .. ': string = ' .. eval(what)->string())
     endif
     lines->writefile(IMPORT_FILE, 'a')
 enddef
@@ -863,7 +863,7 @@ def WincmdValid(): string
         ->filter((_, v: string): bool => v->len() == 2)
 
     # `|` is missing
-    one_char_cmds += ['|']
+    one_char_cmds->add('|')
 
     for problematic: string in ['-', ']']
         one_char_cmds->remove(one_char_cmds->index(problematic))
@@ -953,7 +953,7 @@ def CommandName(): list<string>
     var shortened: list<string> = to_shorten->Shorten()
 
     # this one is missing from `getcompletion()`
-    shortened += ['addd']
+    shortened->add('addd')
 
     return shortened
 enddef

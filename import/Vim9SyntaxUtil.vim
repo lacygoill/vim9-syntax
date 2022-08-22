@@ -72,7 +72,7 @@ export def Derive( #{{{3
     #}}}
     var hg: dict<any> = {new_group: new_group, from: from, new: new_attrs}
     if derived_hgs->index(hg) == -1
-        derived_hgs += [hg]
+        derived_hgs->add(hg)
     endif
 enddef
 
