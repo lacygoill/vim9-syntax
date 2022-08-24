@@ -4079,19 +4079,15 @@ highlight default link vim9GenericCmd Statement
 #
 #     vim9UserCmdExe      xxx cleared
 #
-# That's why we don't write this:
-#
-#     if execute('highlight vim9UserCmdExe') == ''
-#                                            ^---^
-#                                              ✘
+# That's why we need the `->get('cleared')`.
 #}}}
-if execute('highlight vim9UserCmdExe') =~ '\<cleared$'
+if hlget('vim9UserCmdExe')->get(0, {})->get('cleared')
     import 'Vim9SyntaxUtil.vim'
     const Derive: func = Vim9SyntaxUtil.Derive
-    Derive('vim9FuncCallUser', 'Function', 'term=bold cterm=bold gui=bold')
-    Derive('vim9UserCmdExe', 'vim9GenericCmd', 'term=bold cterm=bold gui=bold')
-    Derive('vim9FuncHeader', 'Function', 'term=bold cterm=bold gui=bold')
-    Derive('vim9CmdModifier', 'vim9GenericCmd', 'term=italic cterm=italic gui=italic')
+    Derive('vim9FuncCallUser', 'Function', {gui: {bold: true}, term: {bold: true}, cterm: {bold: true}})
+    Derive('vim9UserCmdExe', 'vim9GenericCmd', {gui: {bold: true}, term: {bold: true}, cterm: {bold: true}})
+    Derive('vim9FuncHeader', 'Function', {gui: {bold: true}, term: {bold: true}, cterm: {bold: true}})
+    Derive('vim9CmdModifier', 'vim9GenericCmd', {gui: {bold: true}, term: {bold: true}, cterm: {bold: true}})
 endif
 
 highlight default link vim9Error Error

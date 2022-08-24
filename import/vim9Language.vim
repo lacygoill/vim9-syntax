@@ -175,6 +175,7 @@ const builtin_func_list: list<string> =<< trim END
     getreg
     getreginfo
     getregtype
+    getscriptinfo
     gettabinfo
     gettabvar
     gettabwinvar
