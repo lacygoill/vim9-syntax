@@ -363,6 +363,7 @@ const builtin_func_list: list<string> =<< trim END
     setcellwidths
     setcharpos
     setcharsearch
+    setcmdline
     setcmdpos
     setcursorcharpos
     setenv
@@ -796,6 +797,7 @@ const command_name_list: list<string> =<< trim END
     echoe[rr]
     echom[sg]
     echon
+    echow[indow]
     e[dit]
     em[enu]
     endc[lass]
