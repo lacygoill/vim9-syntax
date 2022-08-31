@@ -836,6 +836,7 @@ const command_name_list: list<string> =<< trim END
     helpg[rep]
     helpt[ags]
     his[tory]
+    ho[rizontal]
     ij[ump]
     il[ist]
     ime[nu]
@@ -1142,6 +1143,7 @@ const default_highlighting_group_list: list<string> =<< trim END
     LineNrBelow
     MatchParen
     Menu
+    MessageWindow
     ModeMsg
     MoreMsg
     NonText
@@ -1150,6 +1152,7 @@ const default_highlighting_group_list: list<string> =<< trim END
     PmenuSbar
     PmenuSel
     PmenuThumb
+    PopupNotification
     Question
     QuickFixLine
     Scrollbar

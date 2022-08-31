@@ -4087,7 +4087,7 @@ if hlget('vim9UserCmdExe')->get(0, {})->get('cleared')
     Derive('vim9FuncCallUser', 'Function', {gui: {bold: true}, term: {bold: true}, cterm: {bold: true}})
     Derive('vim9UserCmdExe', 'vim9GenericCmd', {gui: {bold: true}, term: {bold: true}, cterm: {bold: true}})
     Derive('vim9FuncHeader', 'Function', {gui: {bold: true}, term: {bold: true}, cterm: {bold: true}})
-    Derive('vim9CmdModifier', 'vim9GenericCmd', {gui: {bold: true}, term: {bold: true}, cterm: {bold: true}})
+    Derive('vim9CmdModifier', 'vim9GenericCmd', {gui: {italic: true}, term: {italic: true}, cterm: {italic: true}})
 endif
 
 highlight default link vim9Error Error
