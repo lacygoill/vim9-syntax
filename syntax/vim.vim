@@ -4037,6 +4037,15 @@ syntax keyword vim9ReservedNames true false null this contained
 #}}}1
 # Synchronize (speed) {{{1
 
+# Need to define a pattern to sync on.{{{
+#
+# It doesn't need to match anything meaningful.
+# It just needs to exist so that Vim searches back for something.
+# This is useful – for example – when a heredoc is displayed from the middle
+# (i.e. its first text line is above the first screen line).
+#}}}
+syntax sync match vim9Sync grouphere NONE /^dummy_pattern$/
+# Don't look more than 60 lines back when looking for a pattern to sync on.
 syntax sync maxlines=60
 #}}}1
 
