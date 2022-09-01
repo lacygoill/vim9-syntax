@@ -4038,8 +4038,6 @@ syntax keyword vim9ReservedNames true false null this contained
 # Synchronize (speed) {{{1
 
 syntax sync maxlines=60
-syntax sync linecont /^\s\+\\/
-syntax sync match vim9AugroupSyncA groupthere NONE /\<aug\%[roup]\>\s\+END/
 #}}}1
 
 # Highlight Groups {{{1
