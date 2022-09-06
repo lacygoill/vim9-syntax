@@ -505,7 +505,7 @@ syntax match vim9StartOfLine /^/
     \ skipwhite
     # This rule  is useful to  disallow some constructs at  the start of  a line
     # where an expression is meant to be written.
-    syntax match vim9SOLExpr /^/ contained skipwhite
+    syntax match vim9SOLExpr /^/ contained skipwhite nextgroup=@vim9Expr
 
 syntax match vim9CmdSep /|/ skipwhite nextgroup=@vim9CanBeAtStartOfLine
 
@@ -2714,8 +2714,7 @@ syntax region vim9OperParen
     \ end=/)/
     \ contains=
     \     @vim9ErrorSpaceArgs,
-    \     @vim9OperGroup,
-    \     vim9Block
+    \     @vim9OperGroup
 
 # Data Types {{{1
 # `vim9Expr` {{{2
@@ -3273,7 +3272,7 @@ execute 'syntax match vim9SetMod /' .. lang.option_modifier .. '/'
 #}}}1
 # Blocks {{{1
 
-# at script-level or function-level
+# at start of line
 syntax region vim9Block
     \ matchgroup=Statement
     \ start=/^\s*{$/
@@ -3290,6 +3289,14 @@ syntax region vim9Block
 #     execute 'cmd ' .. name
 #             ^----^
 #}}}
+
+# possibly after a bar
+syntax region vim9Block
+    \ matchgroup=Statement
+    \ start=/\s*{$/
+    \ end=/^\s*}/
+    \ contains=TOP
+    \ contained
 
 # In a lambda, a dictionary must be surrounded by parens.{{{
 #
