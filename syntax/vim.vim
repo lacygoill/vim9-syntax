@@ -800,7 +800,9 @@ syntax region vim9RepeatForListUnpackDeclaration
 #         ^
 #         this is NOT an iteration variable
 #}}}
-syntax match vim9RepeatForDeclareName /\<\h\w*\>\%(\s*\%(:\s\|\<in\>\)\)\@=/
+# We also match  a possible comma or  closing bracket in case we  iterate over a
+# list of lists.
+syntax match vim9RepeatForDeclareName /\<\h\w*\>\%(\s*\%(:\s\|\<in\>\)\|,\|\s*\]\)\@=/
     \ contained
     \ nextgroup=@vim9DataTypeCluster,vim9RepeatForIn,vim9NoWhitespaceBeforeInit
     \ skipwhite
