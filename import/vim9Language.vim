@@ -233,6 +233,7 @@ const builtin_func_list: list<string> =<< trim END
     json_decode
     json_encode
     keys
+    keytrans
     last_buffer_nr
     len
     libcall
@@ -773,6 +774,7 @@ const command_name_list: list<string> =<< trim END
     debugg[reedy]
     def
     defc[ompile]
+    defe[r]
     delc[ommand]
     d[elete]
     delf[unction]
@@ -2283,6 +2285,10 @@ const option_list: list<string> =<< trim END
     spr
     nosplitright
     nospr
+    splitscroll
+    spsc
+    nosplitscroll
+    nospsc
     startofline
     sol
     nostartofline
