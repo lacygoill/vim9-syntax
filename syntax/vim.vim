@@ -2506,7 +2506,7 @@ execute 'syntax match vim9FuncCallUser'
     # because of the `\<` assertion.
     #}}}
     ..     '\.\w\+(\@='
-    .. '/'
+    .. '/ display'
 
 # Builtin Call {{{2
 
