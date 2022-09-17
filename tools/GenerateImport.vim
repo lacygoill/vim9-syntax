@@ -210,27 +210,16 @@ def Shorten( #{{{2
     var shortened: list<string>
     for cmd: string in to_shorten
         var len: number
-        var cannot_be_shortened: bool
         for l: number in strcharlen(cmd)->range()->reverse()
             if l == 0
                 continue
             endif
-            try
-                if cmd->slice(0, l)->fullcommand() != cmd
-                    len = l
-                    break
-                endif
-            # E1065: Command cannot be shortened: con
-            catch /^Vim\%((\a\+)\)\=:E1065:/
-                if l == cmd->strcharlen()
-                    cannot_be_shortened = true
-                else
-                    len = l
-                endif
+            if cmd->slice(0, l)->fullcommand() != cmd
+                len = l
                 break
-            endtry
+            endif
         endfor
-        if cannot_be_shortened || len == cmd->strcharlen() - 1
+        if len == cmd->strcharlen() - 1
             shortened->add(cmd)
         else
             shortened->add(printf(

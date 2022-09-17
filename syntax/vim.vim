@@ -2241,8 +2241,8 @@ execute 'syntax match vim9FuncHeader'
     .. ' /'
     .. '\<def!\=\s\+'
     .. '\%('
-        # function with explicit scope (global or script-local), or script-local function
-    .. '\|' .. '\%([gs]:\)\=\u\w*'
+        # global or script-local function
+    .. '\|' .. '\%(g:\)\=\u\w*'
                # *invalid* autoload function name{{{
                #
                # In a Vim9 autoload script, when declaring an autoload function,
@@ -2442,8 +2442,8 @@ syntax cluster vim9FuncCall contains=vim9FuncCallBuiltin,vim9FuncCallUser
 execute 'syntax match vim9FuncCallUser'
     .. ' /\<'
     .. '\%('
-    # function with explicit scope
-    ..     '[gs]:\u\w*'
+    # function with global scope
+    ..     'g:\u\w*'
     .. '\|'
     # function with implicit scope: its name must start with an uppercase
     ..     '\u\w*'
