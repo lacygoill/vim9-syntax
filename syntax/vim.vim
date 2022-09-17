@@ -2450,7 +2450,7 @@ execute 'syntax match vim9FuncCallUser'
     .. '\|'
     # autoload function
     # (even in a Vim9 script, we might need to call an autoload function with its legacy name)
-    ..     '\%(\w\|#\)*'
+    ..     '\%(\w\|#\)\+'
     .. '\|'
     # dict function: its name must contain a `.`
     # Why do you disallow `:`?{{{
