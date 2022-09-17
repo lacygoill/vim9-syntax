@@ -185,6 +185,7 @@ execute 'syntax match vim9BracketNotation'
     .. '/'
     .. ' contains=vim9BracketKey'
     .. ' nextgroup=vim9SetBracketEqual'
+    .. ' display'
     #     set <Up>=^[OA
     #             ^
     syntax match vim9SetBracketEqual /=[[:cntrl:]]\@=/ contained nextgroup=vim9SetBracketKeycode
@@ -2188,7 +2189,7 @@ syntax match vim9BangShellCmd /.*/ contained contains=vim9BangLastShellCmd
 #    > there is a backslash before the '!', then that
 #    > backslash is removed.
 #}}}
-syntax match vim9BangLastShellCmd /\\\@1<!!/ display contained
+syntax match vim9BangLastShellCmd /\\\@1<!!/ contained display
 #}}}1
 # Continuation {{{1
 
@@ -2670,7 +2671,7 @@ syntax match vim9OperAssign #\s\@1<=\%([-+*/%]\|\.\.\)\==\_s\@=#
 # methods
 syntax match vim9Oper /->\%(\_s*\h\)\@=/ skipwhite
 # logical not
-execute 'syntax match vim9Oper' .. ' ' .. lang.logical_not .. ' display skipwhite'
+execute 'syntax match vim9Oper' .. ' ' .. lang.logical_not .. ' skipwhite display'
 
 # support `:` when used inside conditional `?:` operator
 syntax match vim9Oper /\_s\@1<=:\_s\@=/
@@ -2759,11 +2760,11 @@ syntax cluster vim9Expr contains=@vim9ExprExceptString,vim9String,vim9StringInte
 
 # Booleans / null / v:none {{{2
 
-syntax match vim9Bool /\%(v:\)\=\<\%(false\|true\)\>:\@!/
-syntax match vim9Null /\%(v:\)\=\<null\>:\@!/
-syntax match vim9Null /\<null_\%(blob\|channel\|dict\|function\|job\|list\|partial\|string\)\>/
+syntax match vim9Bool /\%(v:\)\=\<\%(false\|true\)\>:\@!/ display
+syntax match vim9Null /\%(v:\)\=\<null\>:\@!/ display
+syntax match vim9Null /\<null_\%(blob\|channel\|dict\|function\|job\|list\|partial\|string\)\>/ display
 
-syntax match vim9None /\<v:none\>:\@!/
+syntax match vim9None /\<v:none\>:\@!/ display
 
 # Strings {{{2
 
@@ -2901,16 +2902,18 @@ syntax match vim9Registers /@[-"0-9a-z+.:%#/=]/
 syntax match vim9Number /\<\d\+\%(\.\d\+\%([eE][+-]\=\d\+\)\=\)\=\>/
     \ nextgroup=vim9Comment,vim9StrictWhitespace
     \ skipwhite
+    \ display
 
 syntax match vim9Number /-\d\+\%(\.\d\+\%([eE][+-]\=\d\+\)\=\)\=\>/
     \ nextgroup=vim9Comment,vim9StrictWhitespace
     \ skipwhite
+    \ display
 
-syntax match vim9Number /\<0[xX]\x\+\>/ nextgroup=vim9Comment,vim9StrictWhitespace skipwhite
+syntax match vim9Number /\<0[xX]\x\+\>/ nextgroup=vim9Comment,vim9StrictWhitespace skipwhite display
 syntax match vim9Number /\_A\zs#\x\{6}\>/ nextgroup=vim9Comment,vim9StrictWhitespace skipwhite
-syntax match vim9Number /\<0[zZ][a-fA-F0-9.]\+\>/ nextgroup=vim9Comment,vim9StrictWhitespace skipwhite
-syntax match vim9Number /\<0o[0-7]\+\>/ nextgroup=vim9Comment,vim9StrictWhitespace skipwhite
-syntax match vim9Number /\<0b[01]\+\>/ nextgroup=vim9Comment,vim9StrictWhitespace skipwhite
+syntax match vim9Number /\<0[zZ][a-fA-F0-9.]\+\>/ nextgroup=vim9Comment,vim9StrictWhitespace skipwhite display
+syntax match vim9Number /\<0o[0-7]\+\>/ nextgroup=vim9Comment,vim9StrictWhitespace skipwhite display
+syntax match vim9Number /\<0b[01]\+\>/ nextgroup=vim9Comment,vim9StrictWhitespace skipwhite display
 
 # It is possible to use single quotes inside numbers to make them easier to read:{{{
 #
@@ -2955,10 +2958,10 @@ syntax region vim9Dict
 # In literal dictionary, highlight unquoted key names as strings.
 execute 'syntax match vim9DictMayBeLiteralKey'
     .. ' ' .. lang.maybe_dict_literal_key
-    .. ' display'
     .. ' contained'
     .. ' contains=vim9DictIsLiteralKey'
     .. ' keepend'
+    .. ' display'
 
 # check the validity of the key
 syntax match vim9DictIsLiteralKey /\%(\w\|-\)\+/ contained
@@ -3110,8 +3113,8 @@ execute 'syntax match vim9ValidSubType'
     # support comma in `func(type1, type2)`
     .. '\|' .. ','
     .. '/'
-    .. ' display'
     .. ' contained'
+    .. ' display'
 
 # support `:help type-casting` for simple types
 execute 'syntax match vim9DataTypeCast'
@@ -3156,10 +3159,10 @@ execute 'syntax match vim9MayBeOptionScoped'
     ..     lang.option_sigil
     ..     lang.option_valid
     .. '/'
-    .. ' display'
     .. ' contains=vim9IsOption,vim9OptionSigil'
     # `vim9SetEqual` would be wrong here; we need spaces around `=`
     .. ' nextgroup=vim9OperAssign'
+    .. ' display'
 
 # Don't use `display` here.{{{
 #
@@ -3638,7 +3641,7 @@ endfor
 #     var d = {a: {} , b: {}}
 #                   ^
 #                   ✘
-syntax match vim9StrictWhitespace /\s\+\ze,/ contained containedin=vim9Dict,vim9ListSlice
+syntax match vim9StrictWhitespace /\s\+\ze,/ contained containedin=vim9Dict,vim9ListSlice display
 
 #     [a, b ; c] = ...
 #          ^
@@ -3647,7 +3650,7 @@ syntax match vim9StrictWhitespace /\s\+\ze,/ contained containedin=vim9Dict,vim9
 #     [a, b;c] = ...
 #          ^
 #          ✘
-syntax match vim9StrictWhitespace /\s\+\ze;\|;\ze\S/ contained containedin=vim9ListSlice
+syntax match vim9StrictWhitespace /\s\+\ze;\|;\ze\S/ contained containedin=vim9ListSlice display
 
 #     var l = [1,2]
 #               ^
@@ -3656,17 +3659,17 @@ syntax match vim9StrictWhitespace /\s\+\ze;\|;\ze\S/ contained containedin=vim9L
 #     var d = {a: 1,b: 2}
 #                  ^
 #                  ✘
-syntax match vim9StrictWhitespace /,\ze\S/ contained containedin=vim9Dict,vim9ListSlice
+syntax match vim9StrictWhitespace /,\ze\S/ contained containedin=vim9Dict,vim9ListSlice display
 
 #     var d = {'a' :1, 'b' :2}
 #                 ^       ^
 #                 ✘       ✘
-syntax match vim9StrictWhitespace /\s\+\ze:[^ \t\]]/ contained containedin=vim9Dict
+syntax match vim9StrictWhitespace /\s\+\ze:[^ \t\]]/ contained containedin=vim9Dict display
 
 #     var d = {a:1, b:2}
 #               ^    ^
 #               ✘    ✘
-syntax match vim9StrictWhitespace /\S\@1<=:\S\@=/ contained containedin=vim9Dict
+syntax match vim9StrictWhitespace /\S\@1<=:\S\@=/ contained containedin=vim9Dict display
     # `\S:\S` *might* be valid when it matches the start of a scoped variable.
     # Don't highlight its colon as an error then.
     # Why not just `\h`?{{{
@@ -3680,6 +3683,7 @@ syntax match vim9StrictWhitespace /\S\@1<=:\S\@=/ contained containedin=vim9Dict
         \ /\%(\<[bgstvw]\)\@1<=:\%(\h\|\_s\|[,;}\]]\)\@=/
         \ contained
         \ containedin=vim9Dict
+        \ display
 
 # TODO: Try to highlight missing whitespace around most binary operators as an error.
 # That's going to be tricky.
@@ -3714,7 +3718,7 @@ syntax keyword vim9DeprecatedLet let contained
 
 # In legacy Vim script, a literal dictionary starts with `#{`.
 # This syntax is no longer valid in Vim9.
-syntax match vim9DeprecatedDictLiteralLegacy /#{{\@!/ containedin=vim9ListSlice
+syntax match vim9DeprecatedDictLiteralLegacy /#{{\@!/ containedin=vim9ListSlice display
 
 # the scopes `a:`, `l:` and `s:` are no longer valid
 # But don't give any error in a string.{{{
@@ -3731,14 +3735,14 @@ syntax match vim9DeprecatedDictLiteralLegacy /#{{\@!/ containedin=vim9ListSlice
 #     let a:name = ...
 #         ^^
 #}}}
-syntax match vim9DeprecatedScopes /\<[as]:\w\@=/ containedin=@vim9ExprExceptString
-syntax match vim9DeprecatedScopes /&\@1<!\<l:\h\@=/ containedin=@vim9ExprExceptString
+syntax match vim9DeprecatedScopes /\<[as]:\w\@=/ containedin=@vim9ExprExceptString display
+syntax match vim9DeprecatedScopes /&\@1<!\<l:\h\@=/ containedin=@vim9ExprExceptString display
 
 # The `is#` operator worked in legacy, but didn't make sense.
 # It's no longer supported in Vim9.
-syntax match vim9DeprecatedIsOperator /\C\<\%(is\|isnot\)[#?]/ contained containedin=vim9Oper
+syntax match vim9DeprecatedIsOperator /\C\<\%(is\|isnot\)[#?]/ contained containedin=vim9Oper display
 
-syntax match vim9LegacyVarArgs /a:000/
+syntax match vim9LegacyVarArgs /a:000/ display
 
 # TODO: Handle other legacy constructs like:
 #
@@ -3836,6 +3840,7 @@ if get(g:, 'vim9_syntax', {})
         \ end=/)/
         \ contains=@vim9OperGroup
         \ contained
+        \ display
 
     #           ✘
     #           v
@@ -3843,7 +3848,7 @@ if get(g:, 'vim9_syntax', {})
     #     Func(1, 2)
     #            ^
     #            ✔
-    syntax match vim9SpaceMissingBetweenArgs /,\S\@=/ contained
+    syntax match vim9SpaceMissingBetweenArgs /,\S\@=/ contained display
 
     #           ✘
     #           v
@@ -3851,7 +3856,7 @@ if get(g:, 'vim9_syntax', {})
     #     Func(1, 2)
     #           ^
     #           ✔
-    syntax match vim9SpaceExtraBetweenArgs /\s\@1<=,/ display contained
+    syntax match vim9SpaceExtraBetweenArgs /\s\@1<=,/ contained display
 
     syntax cluster vim9ErrorSpaceArgs contains=
         \ vim9SpaceExtraBetweenArgs,
@@ -3885,6 +3890,7 @@ if get(g:, 'vim9_syntax', {})
         \ contains=@vim9CommentGroup
         \ excludenl
         \ oneline
+        \ display
 
     # In a slice, the colon separating the 2 indexes must be surrounded with spaces:{{{
     #
@@ -3919,9 +3925,9 @@ if get(g:, 'vim9_syntax', {})
         \     vim9ListSliceDelimiter,
         \     vim9SpaceMissingListSlice
     # If a colon is not prefixed with a space, it's an error.
-    syntax match vim9SpaceMissingListSlice /[^ \t[]\@1<=:/ display contained
+    syntax match vim9SpaceMissingListSlice /[^ \t[]\@1<=:/ contained display
     # If a colon is not followed with a space, it's an error.
-    syntax match vim9SpaceMissingListSlice /:[^ \t\]]\@=/ contained
+    syntax match vim9SpaceMissingListSlice /:[^ \t\]]\@=/ contained display
     # Corner Case: A colon can be used in a variable name.  Ignore it.{{{
     #
     #     b:name
@@ -3939,8 +3945,8 @@ if get(g:, 'vim9_syntax', {})
         ..     '->'
         .. '\)\@='
         .. '/'
-        .. ' display'
         .. ' contained'
+        .. ' display'
 endif
 
 # Octal numbers {{{2
@@ -3980,9 +3986,9 @@ if get(g:, 'vim9_syntax', {})
     #       this is a key to retrieve some value from a dictionary
     #}}}
     syntax match vim9NumberOctalWarn /\%(\d'\|\.\)\@2<!\<0[0-7]\+\>/he=s+1
-        \ display
         \ nextgroup=vim9Comment
         \ skipwhite
+        \ display
 endif
 
 # Range {{{2
@@ -4015,7 +4021,7 @@ if get(g:, 'vim9_syntax', {})
  ->get('errors', {})
  ->get('range_missing_space', false)
 
-    syntax match vim9RangeMissingSpace /\S\@1<=\a/ display contained
+    syntax match vim9RangeMissingSpace /\S\@1<=\a/ contained display
 endif
 
 # Discourage usage  of an  implicit line  specifier, because  it makes  the code
