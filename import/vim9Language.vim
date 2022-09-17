@@ -1480,7 +1480,7 @@ export const maybe_dict_literal_key: string = '/\%([{\n]\|[^ \t\n,{\\]\@1<!\s\)\
 
 # most_operators {{{1
 
-export const most_operators: string = '"\%(\_s\)\@1<=\%([-+*/%]\|\.\.\|||\|&&\|??\|?\|<<\|>>\|\%([=!]=\|[<>]=\=\|[=!]\~\|is\|isnot\)[?#]\=\)\_s\@=\%(\s*[|<]\)\@!"'
+export const most_operators: string = '"\%(\_s\)\@1<=\%([-+*/%]\|\.\.\|||\|&&\|??\=\|<<\|>>\|\%([=!]=\|[<>]=\=\|[=!]\~\|is\|isnot\)[?#]\=\)\_s\@=\%(\s*[|<]\)\@!"'
 
 # option {{{1
 

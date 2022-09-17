@@ -609,10 +609,8 @@ const most_operators: string = '"'
     ..     '\|' .. '\.\.'
            # logical operators
     ..     '\|' .. '||\|&&'
-           # null coalescing operator
-    ..     '\|' .. '??'
-           # `?` in ternary operator
-    ..     '\|' .. '?'
+           # null coalescing operator or `?` in ternary conditional operator
+    ..     '\|' .. '??\='
            # bitwise shift operators
     ..     '\|' .. '<<\|>>'
            # comparison operators

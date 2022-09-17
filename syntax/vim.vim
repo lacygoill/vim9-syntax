@@ -2519,7 +2519,7 @@ execute 'syntax match vim9FuncCallUser'
 # Where `repeat` comes from an imported `repeat.vim` script.
 # `repeat` would probably be wrongly highlighted as a builtin function.
 #}}}
-syntax match vim9FuncCallBuiltin /[:.]\@1<!\<\l\w*(\@=/ contains=vim9FuncNameBuiltin
+syntax match vim9FuncCallBuiltin /[:.]\@1<!\<\l\w*(\@=/ contains=vim9FuncNameBuiltin display
 
 # Install a `:syntax keyword` rule to highlight *most* function names.{{{
 #
