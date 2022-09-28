@@ -621,16 +621,16 @@ const command_complete_type_list: list<string> =<< trim END
     command
     compiler
     cscope
-    custom
     customlist
+    custom
     diff_buffer
     dir
     environment
     event
     expression
-    file
     file_in_path
     filetype
+    file
     function
     help
     highlight
@@ -647,8 +647,8 @@ const command_complete_type_list: list<string> =<< trim END
     sign
     syntax
     syntime
-    tag
     tag_listfiles
+    tag
     user
     var
 END

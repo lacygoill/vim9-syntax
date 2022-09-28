@@ -919,6 +919,8 @@ const command_address_type: list<string> = getcompletion('command -addr=', 'cmdl
 # command_complete_type {{{3
 
 const command_complete_type: list<string> = getcompletion('command -complete=', 'cmdline')
+    # https://github.com/lacygoill/vim9-syntax/issues/4
+    ->sort((i: string, j: string) => j->stridx(i) == 0 ? 1 : -1)
 
 # command_modifier {{{3
 
