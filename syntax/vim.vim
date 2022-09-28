@@ -776,6 +776,7 @@ syntax region vim9RepeatForListUnpackDeclaration
     \ nextgroup=vim9RepeatForIn
     \ oneline
     \ skipwhite
+    \ skipnl
 
 # :for name
 #      ^--^
@@ -1511,7 +1512,8 @@ syntax keyword vim9MarkCmd ma[rk]
     \ skipwhite
 
 syntax match vim9MarkCmdArgInvalid /[^ \t|]\+/ contained
-execute 'syntax match vim9MarkCmdArg /\s\@1<=' .. lang.mark_valid .. '\_s\@=/ contained'
+# Need to allow `<` for a bracketed keycode inside a mapping (e.g. `<Bar>`).
+execute 'syntax match vim9MarkCmdArg /\s\@1<=' .. lang.mark_valid .. '\%([ \t\n<]\)\@=/ contained'
 
 # :nnoremap {{{3
 

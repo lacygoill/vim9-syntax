@@ -19,13 +19,27 @@ vim9script
 #}}}
 
 export def Derive(
-    new_group: string,
-    from: string,
-    new_attrs: dict<any>,
-)
+        new_group: string,
+        from: string,
+        new_attrs: dict<any>,
+        )
     var from_def: dict<any> = hlget(from, true)->get(0,  {})
     if from_def->get('cleared')
         return
     endif
-    [from_def->extend({name: new_group})->extend(new_attrs)]->hlset()
+    highlights->add(from_def->extend({name: new_group})->extend(new_attrs))
+    highlights->hlset()
+
+    # Make sure  the derived highlight groups  persist even if the  color scheme
+    # changes, and the Vim syntax plugin is not re-sourced.
+    autocmd_add([{
+        cmd: 'highlights->hlset()',
+        event: 'ColorScheme',
+        group: 'DeriveHighlightGroups',
+        once: true,
+        pattern: '*',
+        replace: true,
+    }])
 enddef
+
+var highlights: list<dict<any>>
