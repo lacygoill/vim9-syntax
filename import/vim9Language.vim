@@ -1472,7 +1472,7 @@ export const logical_not: string = '/\w\@1<!![~=]\@!!*/'
 
 # mark_valid {{{1
 
-export const mark_valid: string = '[a-zA-Z''[\]<>0-9"^.(){}]'
+export const mark_valid: string = '[a-zA-Z''`[\]<>0-9"^.(){}]'
 
 # maybe_dict_literal_key {{{1
 

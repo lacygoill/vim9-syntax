@@ -539,7 +539,7 @@ const logical_not: string = '/'
 # This regex should match the names of all valid local marks (without the `'` prefix).
 # See `:help mark-motions`; the whole section, down to `:help jump-motions`.
 
-const mark_valid: string = '[a-zA-Z''[\]<>0-9"^.(){}]'
+const mark_valid: string = '[a-zA-Z''`[\]<>0-9"^.(){}]'
 
 # maybe_dict_literal_key {{{3
 
@@ -920,7 +920,7 @@ const command_address_type: list<string> = getcompletion('command -addr=', 'cmdl
 
 const command_complete_type: list<string> = getcompletion('command -complete=', 'cmdline')
     # https://github.com/lacygoill/vim9-syntax/issues/4
-    ->sort((i: string, j: string) => j->stridx(i) == 0 ? 1 : -1)
+    ->sort((i: string, j: string): number => j->stridx(i) == 0 ? 1 : -1)
 
 # command_modifier {{{3
 
