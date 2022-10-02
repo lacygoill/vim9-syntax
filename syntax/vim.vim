@@ -2202,7 +2202,6 @@ syntax match vim9BangLastShellCmd /\\\@1<!!/ contained display
 # latter.
 syntax match vim9Continuation /^\s*\\/
     \ nextgroup=
-    \     vim9SetStringValue,
     \     vim9SynContains,
     \     vim9SynContinuePattern,
     \     vim9SynMatchgroup,
@@ -3236,6 +3235,9 @@ execute 'syntax match vim9IsOption'
 syntax match vim9SetEqual /[-+^]\==/
     \ contained
     \ nextgroup=vim9SetNumberValue,vim9SetStringValue
+    \ skipnl
+    # `skipnl` to support an option value split on multiple lines:
+    # https://github.com/lacygoill/vim9-syntax/issues/5
 
 # Values + separators (`[,:]`) {{{2
 
@@ -3253,12 +3255,18 @@ execute 'syntax match vim9SetStringValue'
     .. ' contained'
     .. ' contains=vim9SetSep'
     # necessary to support the case where a single `:set` command sets several options
-    .. ' nextgroup=vim9MayBeOptionScoped,vim9MayBeOptionSet,vim9Continuation'
+    .. ' nextgroup=vim9MayBeOptionScoped,vim9MayBeOptionSet,vim9ContinuationBeforeOption'
     .. ' oneline'
     .. ' skipwhite'
-   # `skipnl` (and `nextgroup=vim9Continuation`) are necessary for an option value
-   # split on multiple lines: https://github.com/lacygoill/vim9-syntax/issues/5
+    # `skipnl` (and `nextgroup=vim9ContinuationBeforeOption`)  are necessary for
+    # an option value split on multiple lines:
+    # https://github.com/lacygoill/vim9-syntax/issues/5
     .. ' skipnl'
+
+    syntax match vim9ContinuationBeforeOption /\\/
+        \ contained
+        \ nextgroup=vim9SetStringValue
+    highlight default link vim9ContinuationBeforeOption vim9Continuation
 
 syntax match vim9SetSep /[,:]/ contained
 
