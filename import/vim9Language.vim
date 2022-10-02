@@ -2263,6 +2263,10 @@ const option_list: list<string> =<< trim END
     sta
     nosmarttab
     nosta
+    smoothscroll
+    sms
+    nosmoothscroll
+    nosms
     softtabstop
     sts
     spell

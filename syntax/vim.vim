@@ -2202,6 +2202,7 @@ syntax match vim9BangLastShellCmd /\\\@1<!!/ contained display
 # latter.
 syntax match vim9Continuation /^\s*\\/
     \ nextgroup=
+    \     vim9SetStringValue,
     \     vim9SynContains,
     \     vim9SynContinuePattern,
     \     vim9SynMatchgroup,
@@ -3252,9 +3253,12 @@ execute 'syntax match vim9SetStringValue'
     .. ' contained'
     .. ' contains=vim9SetSep'
     # necessary to support the case where a single `:set` command sets several options
-    .. ' nextgroup=vim9MayBeOptionScoped,vim9MayBeOptionSet'
+    .. ' nextgroup=vim9MayBeOptionScoped,vim9MayBeOptionSet,vim9Continuation'
     .. ' oneline'
     .. ' skipwhite'
+   # `skipnl` (and `nextgroup=vim9Continuation`) are necessary for an option value
+   # split on multiple lines: https://github.com/lacygoill/vim9-syntax/issues/5
+    .. ' skipnl'
 
 syntax match vim9SetSep /[,:]/ contained
 
