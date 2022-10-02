@@ -3234,10 +3234,15 @@ execute 'syntax match vim9IsOption'
 
 syntax match vim9SetEqual /[-+^]\==/
     \ contained
-    \ nextgroup=vim9SetNumberValue,vim9SetStringValue
+    \ nextgroup=vim9SetNumberValue,vim9SetStringValue,vim9ContinuationBeforeOption
     \ skipnl
     # `skipnl` to support an option value split on multiple lines:
     # https://github.com/lacygoill/vim9-syntax/issues/5
+
+syntax match vim9ContinuationBeforeOption /\\/
+    \ contained
+    \ nextgroup=vim9SetStringValue
+highlight default link vim9ContinuationBeforeOption vim9Continuation
 
 # Values + separators (`[,:]`) {{{2
 
@@ -3262,11 +3267,6 @@ execute 'syntax match vim9SetStringValue'
     # an option value split on multiple lines:
     # https://github.com/lacygoill/vim9-syntax/issues/5
     .. ' skipnl'
-
-    syntax match vim9ContinuationBeforeOption /\\/
-        \ contained
-        \ nextgroup=vim9SetStringValue
-    highlight default link vim9ContinuationBeforeOption vim9Continuation
 
 syntax match vim9SetSep /[,:]/ contained
 
