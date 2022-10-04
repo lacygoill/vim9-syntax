@@ -2285,14 +2285,11 @@ const option_list: list<string> =<< trim END
     sb
     nosplitbelow
     nosb
+    splitkeep
     splitright
     spr
     nosplitright
     nospr
-    splitscroll
-    spsc
-    nosplitscroll
-    nospsc
     startofline
     sol
     nostartofline
