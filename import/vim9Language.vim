@@ -139,6 +139,7 @@ const builtin_func_list: list<string> =<< trim END
     get
     getbufinfo
     getbufline
+    getbufoneline
     getbufvar
     getchangelist
     getchar
@@ -169,6 +170,7 @@ const builtin_func_list: list<string> =<< trim END
     getmarklist
     getmatches
     getmousepos
+    getmouseshape
     getpid
     getpos
     getqflist
@@ -283,6 +285,7 @@ const builtin_func_list: list<string> =<< trim END
     popup_dialog
     popup_filter_menu
     popup_filter_yesno
+    popup_findecho
     popup_findinfo
     popup_findpreview
     popup_getoptions
@@ -1301,6 +1304,7 @@ const event_list: list<string> =<< trim END
     TextChanged
     TextChangedI
     TextChangedP
+    TextChangedT
     TextYankPost
     User
     VimEnter
@@ -1313,6 +1317,7 @@ const event_list: list<string> =<< trim END
     WinEnter
     WinLeave
     WinNew
+    WinResized
     WinScrolled
 END
 
@@ -1721,6 +1726,10 @@ const option_list: list<string> =<< trim END
     noemo
     encoding
     enc
+    endoffile
+    eof
+    noendoffile
+    noeof
     endofline
     eol
     noendofline
@@ -1935,6 +1944,8 @@ const option_list: list<string> =<< trim END
     kmp
     keymodel
     km
+    keyprotocol
+    kpc
     keywordprg
     kp
     langmap
@@ -1964,6 +1975,8 @@ const option_list: list<string> =<< trim END
     lsp
     lisp
     nolisp
+    lispoptions
+    lop
     lispwords
     lw
     list
@@ -2286,6 +2299,7 @@ const option_list: list<string> =<< trim END
     nosplitbelow
     nosb
     splitkeep
+    spk
     splitright
     spr
     nosplitright
