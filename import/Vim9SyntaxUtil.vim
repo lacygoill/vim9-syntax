@@ -27,7 +27,7 @@ export def Derive(
     if from_def->get('cleared')
         return
     endif
-    highlights->add(from_def->extend({name: new_group})->extend(new_attrs))
+    highlights->add(from_def->extend({name: new_group, default: true})->extend(new_attrs))
     highlights->hlset()
 
     # Make sure  the derived highlight groups  persist even if the  color scheme
