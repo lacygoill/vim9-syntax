@@ -897,6 +897,14 @@ const builtin_func: list<string> = getcompletion('', 'function')
     ->map((_, v: string) => v->substitute('()\=$', '', ''))
     # if a function name can also be parsed as an Ex command, remove it
     ->filter((_, v: string): bool => ambiguous->index(v) == - 1)
+    # those functions are missing because they don't work in our Vim build:
+    # https://github.com/vim/vim/commit/90c2353365c5da40dec01b09e1f482983cf7f55d
+    + ['debugbreak',
+        'luaeval',
+        'mzeval',
+        'perleval',
+        'pyeval',
+        'rubyeval']
 
 # builtin_func_ambiguous {{{3
 

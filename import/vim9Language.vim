@@ -90,7 +90,6 @@ const builtin_func_list: list<string> =<< trim END
     count
     cscope_connection
     cursor
-    debugbreak
     deepcopy
     deletebufline
     did_filetype
@@ -141,6 +140,7 @@ const builtin_func_list: list<string> =<< trim END
     getbufline
     getbufoneline
     getbufvar
+    getcellwidths
     getchangelist
     getchar
     getcharmod
@@ -251,7 +251,6 @@ const builtin_func_list: list<string> =<< trim END
     localtime
     log
     log10
-    luaeval
     maparg
     mapcheck
     maplist
@@ -271,12 +270,10 @@ const builtin_func_list: list<string> =<< trim END
     menu_info
     min
     mkdir
-    mzeval
     nextnonblank
     nr2char
     or
     pathshorten
-    perleval
     popup_atcursor
     popup_beval
     popup_clear
@@ -320,7 +317,6 @@ const builtin_func_list: list<string> =<< trim END
     pum_getpos
     pumvisible
     py3eval
-    pyeval
     pyxeval
     rand
     range
@@ -346,7 +342,6 @@ const builtin_func_list: list<string> =<< trim END
     resolve
     reverse
     round
-    rubyeval
     screenattr
     screenchar
     screenchars
@@ -426,6 +421,7 @@ const builtin_func_list: list<string> =<< trim END
     strtrans
     strwidth
     submatch
+    swapfilelist
     swapinfo
     synID
     synIDattr
@@ -475,6 +471,7 @@ const builtin_func_list: list<string> =<< trim END
     test_getvalue
     test_gui_event
     test_ignore_error
+    test_mswin_event
     test_null_blob
     test_null_channel
     test_null_dict
@@ -535,6 +532,12 @@ const builtin_func_list: list<string> =<< trim END
     wordcount
     writefile
     xor
+    debugbreak
+    luaeval
+    mzeval
+    perleval
+    pyeval
+    rubyeval
 END
 
 export const builtin_func: string = builtin_func_list->join()
@@ -958,6 +961,7 @@ const command_name_list: list<string> =<< trim END
     ptp[revious]
     ptr[ewind]
     pts[elect]
+    pub[lic]
     pu[t]
     pw[d]
     py3
@@ -1070,6 +1074,7 @@ const command_name_list: list<string> =<< trim END
     te[aroff]
     ter[minal]
     tf[irst]
+    this
     tj[ump]
     tl[ast]
     tlm[enu]
@@ -2244,6 +2249,8 @@ const option_list: list<string> =<< trim END
     sc
     noshowcmd
     nosc
+    showcmdloc
+    sloc
     showfulltag
     sft
     noshowfulltag
@@ -2605,6 +2612,7 @@ const option_terminal_list: list<string> =<< trim END
     t_RC
     t_RF
     t_RI
+    t_RK
     t_RS
     t_RT
     t_RV
@@ -2625,6 +2633,7 @@ const option_terminal_list: list<string> =<< trim END
     t_VS
     t_WP
     t_WS
+    t_XM
     t_ZH
     t_ZR
     t_al
