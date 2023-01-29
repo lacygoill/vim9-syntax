@@ -49,8 +49,8 @@ export def HighlightUserTypes() # {{{2
     var buf: number = bufnr('%')
 
     # remove existing text properties to start from a clean state
-    if prop_type_list({bufnr: buf})->index('vim9_user_type') >= 0
-        {types: 'vim9_user_type', bufnr: buf, all: true}
+    if prop_type_list({bufnr: buf})->index('vim9UserType') >= 0
+        {type: 'vim9UserType', bufnr: buf, all: true}
             ->prop_remove(1, line('$'))
     endif
     # add property type
@@ -58,10 +58,16 @@ export def HighlightUserTypes() # {{{2
         prop_type_add('vim9UserType', {highlight: 'vim9UserType', bufnr: buf})
     endif
 
-    #    `:help :type`
-    #    `:help Vim9-using-interface`
-    #    > The interface name can be used as a type:
-    var pat: string = '\%(^\||\)\s*\%(type\|\%(export\s\+\)\=interface\)\s\+\zs\u\w*'
+    var pat: string = '\%(^\||\)\s*\%('
+        #    `:help :type`
+        .. 'type'
+        #    `:help Vim9-using-interface`
+        #    > The interface name can be used as a type:
+        # A class can also be used as a type:
+        # https://github.com/vim/vim/commit/eca2c5fff6f6ccad0df8824c4b4354d3f410d225
+        .. '\|' .. '\%(export\s\+\)\=interface'
+        .. '\|' .. '\%(\%(export\|abstract\|export\s\+abstract\)\s\+\)\=class'
+        .. '\)\s\+\zs\u\w*'
     var lines: list<string> = getline(1, '$')
     var user_types: string = lines
         ->copy()
@@ -71,6 +77,7 @@ export def HighlightUserTypes() # {{{2
     if user_types == ''
         return
     endif
+    user_types = $'var\s\+\S\+:\s\+\zs\<\%({user_types}\)\>'
 
     # let's find out the positions of all the user types
     var pos: list<list<number>>
@@ -88,14 +95,14 @@ export def HighlightUserTypes() # {{{2
                 break
             endif
 
-            # ignore a user type inside a comment or a string
-            if InCommentOrString(lnum, start)
-                continue
-            endif
-
             # remember  where the  last user  type started  (useful in  the next
             # iteration to find the next user type on the same line)
             old_start = start
+
+            # ignore a user type inside a comment or a string
+            if InCommentOrString(lnum + 1, start)
+                continue
+            endif
 
             # save position of text property
             pos->add([lnum + 1, start, lnum + 1, end + 1])

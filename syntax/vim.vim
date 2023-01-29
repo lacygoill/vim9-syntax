@@ -3373,81 +3373,6 @@ syntax region vim9BlockUserCmd
     \ contained
     \ contains=TOP
 
-# OOP {{{1
-
-syntax cluster vim9OOP contains=
-    \ vim9Abstract,
-    \ vim9Class,
-    \ vim9Enum,
-    \ vim9Interface,
-    \ vim9Public,
-    \ vim9Static,
-    \ vim9This,
-    \ vim9UserType
-
-# :class
-# :endclass
-syntax keyword vim9Class class endclass contained nextgroup=vim9ClassName skipwhite
-highlight default link vim9Class Keyword
-
-#           vvv
-#     class Foo
-#     endclass
-syntax match vim9ClassName /\u\w*/ contained nextgroup=vim9Extends,vim9Implements,vim9Specifies skipwhite
-#                          v------v           vvv
-#     class Foo implements Bar, Baz specifies Qux
-syntax match vim9InterfaceName /\u\w*\%(,\s\+\u\w*\)\=/ contained nextgroup=vim9Extends,vim9Implements,vim9Specifies skipwhite
-
-syntax keyword vim9Extends extends contained nextgroup=vim9ClassName skipwhite
-syntax keyword vim9Implements implements contained nextgroup=vim9InterfaceName skipwhite
-syntax keyword vim9Specifies specifies contained nextgroup=vim9InterfaceName skipwhite
-highlight default link vim9Extends Keyword
-highlight default link vim9Implements Keyword
-highlight default link vim9Specifies Keyword
-
-# :interface
-# :endinterface
-syntax keyword vim9Interface interface endinterface contained
-highlight default link vim9Interface Keyword
-
-# this
-syntax match vim9This /\<this\.\@=/ containedin=vim9FuncSignature
-highlight default link vim9This Structure
-
-# public
-# static
-# public static
-syntax keyword vim9Public public contained nextgroup=vim9Static skipwhite
-syntax keyword vim9Static static contained
-highlight default link vim9Public vim9Declare
-highlight default link vim9Static vim9Declare
-
-# abstract
-syntax keyword vim9Abstract abstract contained nextgroup=vim9Class skipwhite
-highlight default link vim9Abstract Special
-
-# :enum
-# :endenum
-syntax keyword vim9Enum enum endenum contained
-highlight default link vim9Enum Type
-
-# :type
-syntax keyword vim9UserType type contained nextgroup=vim9UserTypeName skipwhite
-syntax match vim9UserTypeName /\u\w*/ contained nextgroup=@vim9DataTypeCluster skipwhite
-highlight default link vim9UserType Type
-
-if get(g:, 'vim9_syntax', {})
- ->get('user_types', false)
-    HighlightUserTypes()
-    autocmd_add([{
-        cmd: 'HighlightUserTypes()',
-        event: 'BufWritePost',
-        group: 'vim9HighlightUserTypes',
-        pattern: '<buffer>',
-        replace: true,
-    }])
-endif
-
 # Highlight commonly used Groupnames {{{1
 
 syntax case ignore
@@ -4153,6 +4078,84 @@ syntax sync match vim9Sync grouphere NONE /^dummy pattern$/
 # Don't look more than 60 lines back when looking for a pattern to sync on.
 syntax sync maxlines=60
 #}}}1
+# OOP {{{1
+
+# Let's keep this section at the very end so that `HighlightUserTypes()` works properly.
+# The latter calls `synstack()` which needs the syntax to have been fully set.
+
+syntax cluster vim9OOP contains=
+    \ vim9Abstract,
+    \ vim9Class,
+    \ vim9Enum,
+    \ vim9Interface,
+    \ vim9Public,
+    \ vim9Static,
+    \ vim9This,
+    \ vim9UserType
+
+# :class
+# :endclass
+syntax keyword vim9Class class endclass contained nextgroup=vim9ClassName skipwhite
+highlight default link vim9Class Keyword
+
+#           vvv
+#     class Foo
+#     endclass
+syntax match vim9ClassName /\u\w*/ contained nextgroup=vim9Extends,vim9Implements,vim9Specifies skipwhite
+#                          v------v           vvv
+#     class Foo implements Bar, Baz specifies Qux
+syntax match vim9InterfaceName /\u\w*\%(,\s\+\u\w*\)\=/ contained nextgroup=vim9Extends,vim9Implements,vim9Specifies skipwhite
+
+syntax keyword vim9Extends extends contained nextgroup=vim9ClassName skipwhite
+syntax keyword vim9Implements implements contained nextgroup=vim9InterfaceName skipwhite
+syntax keyword vim9Specifies specifies contained nextgroup=vim9InterfaceName skipwhite
+highlight default link vim9Extends Keyword
+highlight default link vim9Implements Keyword
+highlight default link vim9Specifies Keyword
+
+# :interface
+# :endinterface
+syntax keyword vim9Interface interface endinterface contained
+highlight default link vim9Interface Keyword
+
+# this
+syntax match vim9This /\<this\.\@=/ containedin=vim9FuncSignature
+highlight default link vim9This Structure
+
+# public
+# static
+# public static
+syntax keyword vim9Public public contained nextgroup=vim9Static skipwhite
+syntax keyword vim9Static static contained
+highlight default link vim9Public vim9Declare
+highlight default link vim9Static vim9Declare
+
+# abstract
+syntax keyword vim9Abstract abstract contained nextgroup=vim9Class skipwhite
+highlight default link vim9Abstract Special
+
+# :enum
+# :endenum
+syntax keyword vim9Enum enum endenum contained
+highlight default link vim9Enum Type
+
+# :type
+syntax keyword vim9UserType type contained nextgroup=vim9UserTypeName skipwhite
+syntax match vim9UserTypeName /\u\w*/ contained nextgroup=@vim9DataTypeCluster skipwhite
+highlight default link vim9UserType Type
+
+if get(g:, 'vim9_syntax', {})
+ ->get('user_types', false)
+    HighlightUserTypes()
+    autocmd_add([{
+        cmd: 'HighlightUserTypes()',
+        event: 'BufWritePost',
+        group: 'vim9HighlightUserTypes',
+        pattern: '<buffer>',
+        replace: true,
+    }])
+endif
+# }}}1
 
 # Highlight Groups {{{1
 # All highlight groups need to be defined with the `default` argument.{{{
