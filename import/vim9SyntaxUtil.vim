@@ -81,17 +81,17 @@ export def HighlightUserTypes() # {{{2
     endif
 
     user_types = $'\zs\%({user_types}\)\ze'
-    #     def Func(obj: UserType, UserType): UserType
-    #                   ^------^  ^------^   ^------^
+    #     def Func(obj1: UserType, obj2: UserType): UserType
+    #                   ^------^   ^------------^   ^------^
     #     var Lambda = (): UserType => ...
     #                      ^------^
     user_types = $':\s\+{user_types}\%([,) \t]\|$\)'
-        #     list<UserType>
-        #          ^------^
+        #     var x: list<UserType>
+        #            ^------------^
         .. $'\|<{user_types}>'
         #     var x: func(..., UserType, ...)
         #                      ^------^
-        .. $'\|func(\%(\w*,\s*\)*{user_types}\%(,\s*\w*\)*)'
+        .. $'\|func(\%(\%(\.\.\.\|?\)\=\w*,\s*\)*{user_types}\%(,\s*\%(\.\.\.\|?\)\=\w*\)*)'
 
     # let's find out the positions of all the user types
     var pos: list<list<number>>
