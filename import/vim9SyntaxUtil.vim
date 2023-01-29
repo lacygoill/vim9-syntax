@@ -69,29 +69,29 @@ export def HighlightUserTypes() # {{{2
         .. '\|' .. '\%(\%(export\|abstract\|export\s\+abstract\)\s\+\)\=class'
         .. '\)\s\+\zs\u\w*'
     var lines: list<string> = getline(1, '$')
-    var user_types: string = lines
+    var user_type: string = lines
         ->copy()
         ->map((_, line: string) => line->matchstr(pat))
         ->filter((_, type: string): bool => type != '')
         ->sort()
         ->uniq()
         ->join('\|')
-    if user_types == ''
+    if user_type == ''
         return
     endif
 
-    user_types = $'\zs\%({user_types}\)\ze'
+    user_type = $'\zs\%({user_type}\)\ze'
     #     def Func(obj1: UserType, obj2: UserType): UserType
-    #                   ^------^   ^------------^   ^------^
+    #                    ^------^  ^------------^   ^------^
     #     var Lambda = (): UserType => ...
     #                      ^------^
-    user_types = $':\s\+{user_types}\%([,) \t]\|$\)'
+    user_type = $':\s\+{user_type}\%([,) \t]\|$\)'
         #     var x: list<UserType>
         #            ^------------^
-        .. $'\|<{user_types}>'
+        .. $'\|<{user_type}>'
         #     var x: func(..., UserType, ...)
         #                      ^------^
-        .. $'\|func(\%(\%(\.\.\.\|?\)\=\w*,\s*\)*{user_types}\%(,\s*\%(\.\.\.\|?\)\=\w*\)*)'
+        .. $'\|func(\%(\%(\.\.\.\|?\)\=\w*,\s*\)*{user_type}\%(,\s*\%(\.\.\.\|?\)\=\w*\)*)'
 
     # let's find out the positions of all the user types
     var pos: list<list<number>>
@@ -100,9 +100,9 @@ export def HighlightUserTypes() # {{{2
         var old_start: number = -1
         # iterate over user types on a given line
         while true
-            # look for a user type
-            var [user_type: string, start: number, end: number] =
-                matchstrpos(line, user_types, old_start + 1)
+            # look for a user type name
+            var [_, start: number, end: number] =
+                matchstrpos(line, user_type, old_start + 1)
 
             # bail out if there aren't (anymore)
             if start == -1
