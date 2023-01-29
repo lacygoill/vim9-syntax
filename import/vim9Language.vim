@@ -648,6 +648,7 @@ const command_complete_type_list: list<string> =<< trim END
     messages
     option
     packadd
+    runtime
     scriptnames
     shellcmd
     sign

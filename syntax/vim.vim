@@ -165,6 +165,10 @@ endif
 # Imports {{{1
 
 import 'vim9Language.vim' as lang
+
+import 'vim9SyntaxUtil.vim' as util
+const Derive: func = util.Derive
+const HighlightUserTypes: func = util.HighlightUserTypes
 #}}}1
 
 # Early {{{1
@@ -416,6 +420,7 @@ syntax match vim9RangeDelimiter /[,;]/
 #}}}
 syntax cluster vim9IsCmd contains=
     \ @vim9ControlFlow,
+    \ @vim9OOP,
     \ vim9AbbrevCmd,
     \ vim9Augroup,
     \ vim9Autocmd,
@@ -496,7 +501,8 @@ syntax cluster vim9CanBeAtStartOfLine contains=
     \ vim9IncrementError,
     \ vim9LegacyFunction,
     \ vim9MayBeCmd,
-    \ vim9RangeIntroducer
+    \ vim9RangeIntroducer,
+    \ vim9This
 
 # Let's use it in all relevant contexts.   We won't list them all here; only the
 # ones which  don't have a  dedicated section (i.e. start  of line, and  after a
@@ -1476,7 +1482,7 @@ syntax match vim9HiGuiRgb /#\x\{6}/ contained nextgroup=vim9HiGuiFgBg,vim9HiGui 
 # :import
 # :export
 syntax keyword vim9Import imp[ort] contained nextgroup=vim9ImportedScript,vim9ImportAutoload skipwhite
-syntax keyword vim9Export exp[ort] contained nextgroup=vim9Declare skipwhite
+syntax keyword vim9Export exp[ort] contained nextgroup=vim9Abstract,vim9Class,vim9Declare,vim9Interface skipwhite
 
 #        v------v
 # import autoload 'path/to/script.vim'
@@ -2272,6 +2278,9 @@ execute 'syntax match vim9FuncHeader'
                # We want to catch the error no matter what.
                #}}}
     .. '\|' .. '\h\w*#\%(\w\|#\)*'
+    # `:help object`
+    # `:help vim9class /Multiple constructors`
+    .. '\|' .. 'new\w*'
     .. '\)'
     .. '\ze\s*('
     .. '/'
@@ -2479,6 +2488,8 @@ execute 'syntax match vim9FuncCallUser'
     # In any case, the function is really `func()`, not whatever comes before.
     #}}}
     ..     ':\@1<!\w\+\.\%(\w\|\.\)\+'
+    .. '\|'
+    ..     'new\w*'
     .. '\)'
     # Do *not* allow whitespace between the function name and the open paren.{{{
     #
@@ -2522,7 +2533,9 @@ execute 'syntax match vim9FuncCallUser'
 # Where `repeat` comes from an imported `repeat.vim` script.
 # `repeat` would probably be wrongly highlighted as a builtin function.
 #}}}
-syntax match vim9FuncCallBuiltin /[:.]\@1<!\<\l\w*(\@=/ contains=vim9FuncNameBuiltin display
+syntax match vim9FuncCallBuiltin /[:.]\@1<!\%(new\)\@!\<\l\w*(\@=/ contains=vim9FuncNameBuiltin display
+#                                          ^---------^
+#                                          :help vim9class /new(
 
 # Install a `:syntax keyword` rule to highlight *most* function names.{{{
 #
@@ -3360,6 +3373,81 @@ syntax region vim9BlockUserCmd
     \ contained
     \ contains=TOP
 
+# OOP {{{1
+
+syntax cluster vim9OOP contains=
+    \ vim9Abstract,
+    \ vim9Class,
+    \ vim9Enum,
+    \ vim9Interface,
+    \ vim9Public,
+    \ vim9Static,
+    \ vim9This,
+    \ vim9UserType
+
+# :class
+# :endclass
+syntax keyword vim9Class class endclass contained nextgroup=vim9ClassName skipwhite
+highlight default link vim9Class Keyword
+
+#           vvv
+#     class Foo
+#     endclass
+syntax match vim9ClassName /\u\w*/ contained nextgroup=vim9Extends,vim9Implements,vim9Specifies skipwhite
+#                          v------v           vvv
+#     class Foo implements Bar, Baz specifies Qux
+syntax match vim9InterfaceName /\u\w*\%(,\s\+\u\w*\)\=/ contained nextgroup=vim9Extends,vim9Implements,vim9Specifies skipwhite
+
+syntax keyword vim9Extends extends contained nextgroup=vim9ClassName skipwhite
+syntax keyword vim9Implements implements contained nextgroup=vim9InterfaceName skipwhite
+syntax keyword vim9Specifies specifies contained nextgroup=vim9InterfaceName skipwhite
+highlight default link vim9Extends Keyword
+highlight default link vim9Implements Keyword
+highlight default link vim9Specifies Keyword
+
+# :interface
+# :endinterface
+syntax keyword vim9Interface interface endinterface contained
+highlight default link vim9Interface Keyword
+
+# this
+syntax match vim9This /\<this\.\@=/ containedin=vim9FuncSignature
+highlight default link vim9This Structure
+
+# public
+# static
+# public static
+syntax keyword vim9Public public contained nextgroup=vim9Static skipwhite
+syntax keyword vim9Static static contained
+highlight default link vim9Public vim9Declare
+highlight default link vim9Static vim9Declare
+
+# abstract
+syntax keyword vim9Abstract abstract contained nextgroup=vim9Class skipwhite
+highlight default link vim9Abstract Special
+
+# :enum
+# :endenum
+syntax keyword vim9Enum enum endenum contained
+highlight default link vim9Enum Type
+
+# :type
+syntax keyword vim9UserType type contained nextgroup=vim9UserTypeName skipwhite
+syntax match vim9UserTypeName /\u\w*/ contained nextgroup=@vim9DataTypeCluster skipwhite
+highlight default link vim9UserType Type
+
+if get(g:, 'vim9_syntax', {})
+ ->get('user_types', false)
+    HighlightUserTypes()
+    autocmd_add([{
+        cmd: 'HighlightUserTypes()',
+        event: 'BufWritePost',
+        group: 'vim9HighlightUserTypes',
+        pattern: '<buffer>',
+        replace: true,
+    }])
+endif
+
 # Highlight commonly used Groupnames {{{1
 
 syntax case ignore
@@ -4106,8 +4194,6 @@ highlight default link vim9GenericCmd Statement
 # That's why we need the `->get('cleared')`.
 #}}}
 if hlget('vim9UserCmdExe')->get(0, {})->get('cleared')
-    import 'Vim9SyntaxUtil.vim'
-    const Derive: func = Vim9SyntaxUtil.Derive
     Derive('vim9FuncCallUser', 'Function', {gui: {bold: true}, term: {bold: true}, cterm: {bold: true}})
     Derive('vim9UserCmdExe', 'vim9GenericCmd', {gui: {bold: true}, term: {bold: true}, cterm: {bold: true}})
     Derive('vim9FuncHeader', 'Function', {gui: {bold: true}, term: {bold: true}, cterm: {bold: true}})
