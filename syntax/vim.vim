@@ -4136,8 +4136,7 @@ highlight default link vim9Abstract Special
 
 # :enum
 # :endenum
-syntax keyword vim9Enum enum endenum contained
-highlight default link vim9Enum Type
+syntax region vim9Enum matchgroup=Type start=/\<enum\>\s\+\u\w*/ end=/\<endenum\>/
 
 # :type
 syntax keyword vim9UserType type contained nextgroup=vim9UserTypeName skipwhite

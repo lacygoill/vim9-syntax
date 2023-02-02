@@ -82,12 +82,12 @@ export def HighlightUserTypes() # {{{2
 
     user_type = $'\zs\%({user_type}\)\ze'
     #     def Func(obj1: UserType, obj2: UserType): UserType
-    #                    ^------^  ^------------^   ^------^
+    #                    ^------^        ^------^   ^------^
     #     var Lambda = (): UserType => ...
     #                      ^------^
     user_type = $':\s\+{user_type}\%([,) \t]\|$\)'
         #     var x: list<UserType>
-        #            ^------------^
+        #                 ^------^
         .. $'\|<{user_type}>'
         #     var x: func(..., UserType, ...)
         #                      ^------^

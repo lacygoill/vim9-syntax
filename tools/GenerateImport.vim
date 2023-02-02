@@ -150,6 +150,19 @@ const MODIFIER_CMDS: list<string> =<< trim END
     vim9cmd
 END
 
+const OOP: list<string> =<< trim END
+    class
+    endclass
+    interface
+    endinterface
+    enum
+    endenum
+    abstract
+    public
+    static
+    type
+END
+
 const VARIOUS_SPECIAL_CMDS: list<string> =<< trim END
     augroup
     autocmd
@@ -199,6 +212,7 @@ const SPECIAL_CMDS: list<string> =
     + DO_CMDS
     + MAPPING_CMDS
     + MODIFIER_CMDS
+    + OOP
     + VARIOUS_SPECIAL_CMDS
 
 # Util Functions {{{1

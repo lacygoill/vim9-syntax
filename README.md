@@ -23,7 +23,7 @@ Example of configuration:
     g:vim9_syntax = {
        builtin_functions: true,
        data_types: false,
-       user_types: true,
+       user_types: false,
        fenced_languages: ['lua', 'python'],
        errors: {
            event_wrong_case: false,

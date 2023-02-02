@@ -696,7 +696,6 @@ export const command_modifier: string = command_modifier_list->join("\\|")
 # command_name {{{1
 
 const command_name_list: list<string> =<< trim END
-    abs[tract]
     al[l]
     am[enu]
     an[oremenu]
@@ -754,7 +753,6 @@ const command_name_list: list<string> =<< trim END
     che[ckpath]
     checkt[ime]
     chi[story]
-    class
     cla[st]
     cle[arjumps]
     cl[ist]
@@ -809,13 +807,9 @@ const command_name_list: list<string> =<< trim END
     echow[indow]
     e[dit]
     em[enu]
-    endc[lass]
     enddef
-    ende[num]
     endf[unction]
-    endin[terface]
     ene[w]
-    enu[m]
     ev[al]
     ex
     exe[cute]
@@ -850,7 +844,6 @@ const command_name_list: list<string> =<< trim END
     il[ist]
     ime[nu]
     inoreme[nu]
-    inte[rface]
     int[ro]
     is[earch]
     isp[lit]
@@ -962,7 +955,6 @@ const command_name_list: list<string> =<< trim END
     ptp[revious]
     ptr[ewind]
     pts[elect]
-    pub[lic]
     pu[t]
     pw[d]
     py3
@@ -1041,7 +1033,6 @@ const command_name_list: list<string> =<< trim END
     startg[replace]
     star[tinsert]
     startr[eplace]
-    stat[ic]
     stj[ump]
     st[op]
     stopi[nsert]
@@ -1087,7 +1078,6 @@ const command_name_list: list<string> =<< trim END
     tr[ewind]
     ts[elect]
     tu[nmenu]
-    ty[pe]
     u[ndo]
     undoj[oin]
     undol[ist]
