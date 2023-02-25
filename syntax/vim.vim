@@ -6,7 +6,7 @@ vim9script noclear
 if (
     exists('b:current_syntax')
     # bail out for a file written in legacy Vim script
-    || "\n" .. getline(1, 10)->join("\n") !~ '\n\s*vim9\%[script]\>'
+    || "\n" .. getline(1, 10)->join("\n") !~ '\nvim9\%[script]\>'
     # Bail out if we're included from another filetype (e.g. `markdown`).{{{
     #
     # Rationale: If we're included, we don't know for which type codeblock.
@@ -4136,7 +4136,7 @@ highlight default link vim9Abstract Special
 
 # :enum
 # :endenum
-syntax region vim9Enum matchgroup=Type start=/\<enum\>\s\+\u\w*/ end=/\<endenum\>/
+syntax region vim9Enum matchgroup=Type start=/\<enum\>\s\+\u\w*/ end=/^\s*\<endenum\>/
 
 # :type
 syntax keyword vim9UserType type contained nextgroup=vim9UserTypeName skipwhite

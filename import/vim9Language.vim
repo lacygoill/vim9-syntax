@@ -1592,6 +1592,8 @@ const option_list: list<string> =<< trim END
     cmp
     cdhome
     cdh
+    nocdhome
+    nocdh
     cdpath
     cd
     cedit
@@ -2047,6 +2049,8 @@ const option_list: list<string> =<< trim END
     mousem
     mousemoveevent
     mousemev
+    nomousemoveevent
+    nomousemev
     mouseshape
     mouses
     mousetime
@@ -2360,6 +2364,8 @@ const option_list: list<string> =<< trim END
     tenc
     termguicolors
     tgc
+    notermguicolors
+    notgc
     termwinkey
     twk
     termwinscroll

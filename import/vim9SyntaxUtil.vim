@@ -58,9 +58,11 @@ export def HighlightUserTypes() # {{{2
         prop_type_add('vim9UserType', {highlight: 'vim9UserType', bufnr: buf})
     endif
 
-    var pat: string = '\%(^\||\)\s*\%('
+    var pat: string = '\%(^\|[^|]|\)\s*\%('
         #    `:help :type`
         .. 'type'
+        #    `:help :enum`
+        .. '\|' .. 'enum'
         #    `:help Vim9-using-interface`
         #    > The interface name can be used as a type:
         # A class can also be used as a type:
