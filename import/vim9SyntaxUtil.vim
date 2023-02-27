@@ -131,12 +131,8 @@ enddef
 # }}}1
 # Util {{{1
 def InCommentOrString(lnum: number, col: number): bool # {{{2
-    for synID: number in synstack(lnum, col)
-        if synIDattr(synID, 'name') =~ '\ccomment\|string\|heredoc'
-            return true
-        endif
-    endfor
-
-    return false
+    return synstack(lnum, col)
+        ->indexof((_, id: number): bool =>
+            synIDattr(id, 'name') =~ '\ccomment\|string\|heredoc') >= 0
 enddef
 
