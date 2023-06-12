@@ -402,7 +402,7 @@ syntax match vim9RangeDelimiter /[,;]/
 # Assert where Ex commands can match {{{2
 
 # `vim9GenericCmd` handles most Ex commands.
-# But some of  them are special.{{{
+# But some of them are special.{{{
 #
 # Either they  – or one  of their  arguments – need  to be highlighted  in a
 # certain way.   For example, `:if`  is a control  flow statement and  should be
@@ -2812,7 +2812,7 @@ highlight default link vim9EscapeSequence Special
 # (`\%o`, `\%x`, ...). To avoid clashing with character classes.
 
 
-# `:help interp-string`
+# `:help interpolated-string`
 syntax region vim9StringInterpolated
     \ start=/$"/
     \ skip=/\\\\\|\\"/
@@ -4063,7 +4063,7 @@ endif
 #     var this = []
 #     ...
 #}}}
-syntax keyword vim9ReservedNames true false null this contained
+syntax keyword vim9ReservedNames true false null this super contained
 #}}}1
 # Synchronize (speed) {{{1
 

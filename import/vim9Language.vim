@@ -251,6 +251,7 @@ const builtin_func_list: list<string> =<< trim END
     localtime
     log
     log10
+    luaeval
     maparg
     mapcheck
     maplist
@@ -419,6 +420,7 @@ const builtin_func_list: list<string> =<< trim END
     strptime
     strridx
     strtrans
+    strutf16len
     strwidth
     submatch
     swapfilelist
@@ -502,6 +504,7 @@ const builtin_func_list: list<string> =<< trim END
     undofile
     undotree
     uniq
+    utf16idx
     values
     virtcol
     virtcol2col
@@ -1150,6 +1153,10 @@ const default_highlighting_group_list: list<string> =<< trim END
     NonText
     Normal
     Pmenu
+    PmenuExtra
+    PmenuExtraSel
+    PmenuKind
+    PmenuKindSel
     PmenuSbar
     PmenuSel
     PmenuThumb
@@ -1174,6 +1181,8 @@ const default_highlighting_group_list: list<string> =<< trim END
     TabLineSel
     Terminal
     Title
+    ToolbarButton
+    ToolbarLine
     Tooltip
     User1
     User2
@@ -1191,6 +1200,7 @@ const default_highlighting_group_list: list<string> =<< trim END
     WildMenu
     debugBreakpoint
     debugPC
+    lCursor
 END
 
 export const default_highlighting_group: string = default_highlighting_group_list->join()
