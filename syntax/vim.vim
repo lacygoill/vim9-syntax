@@ -1695,7 +1695,11 @@ syntax match vim9MapCmdBar /\c<Bar>/
     \ nextgroup=@vim9CanBeAtStartOfLine
     \ skipwhite
 
-syntax match vim9MapRhsExtend /^\s*\\.*$/ contained contains=vim9Continuation
+syntax match vim9MapRhsExtend /^\s*\\.*$/
+    \ contained
+    \ contains=vim9Continuation,vim9BracketNotation
+    \ nextgroup=vim9MapRhsExtend
+    \ skipnl
 syntax match vim9MapRhsExtendExpr /^\s*\\.*$/
     \ contained
     \ contains=@vim9Expr,vim9Continuation
