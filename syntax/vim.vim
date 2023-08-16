@@ -2281,7 +2281,7 @@ execute 'syntax match vim9FuncHeader'
                #
                # We want to catch the error no matter what.
                #}}}
-    .. '\|' .. '\h\w*#\%(\w\|#\)*'
+    .. '\|' .. lang.legacy_autoload_invalid
     # `:help object`
     # `:help vim9class /Multiple constructors`
     .. '\|' .. 'new\w*'
@@ -2300,7 +2300,7 @@ syntax match vim9DefBang /!/ contained
 # but only for global functions
 syntax match vim9DefBangError /!\%(\s\+g:\)\@!/ contained
 
-syntax match vim9LegacyAutoloadInvalid /\h\w*#\%(\w\|#\)*/ contained
+execute $'syntax match vim9LegacyAutoloadInvalid /{lang.legacy_autoload_invalid}/ contained'
 
 # Ending the  signature at `enddef`  prevents a temporary unbalanced  paren from
 # causing havoc beyond the end of the function.
@@ -2350,10 +2350,10 @@ execute 'syntax match vim9LegacyFunction'
     .. ' /'
     .. '\<fu\%[nction]!\='
     .. '\s\+\%([gs]:\)\='
-    .. '\u\%(\w\|[.]\)*'
+    .. '\%(' .. '\u\%(\w\|[.]\)*' .. '\|' .. lang.legacy_autoload_invalid .. '\)'
     .. '\ze\s*('
     .. '/'
-    .. ' contains=vim9DefKey'
+    .. ' contains=vim9DefKey,vim9LegacyAutoloadInvalid'
     .. ' nextgroup=vim9LegacyFuncBody,vim9SpaceAfterLegacyFuncHeader'
     syntax match vim9SpaceAfterLegacyFuncHeader /\s\+\ze(/ contained nextgroup=vim9LegacyFuncBody
 

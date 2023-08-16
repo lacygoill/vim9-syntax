@@ -252,7 +252,6 @@ const builtin_func_list: list<string> =<< trim END
     localtime
     log
     log10
-    luaeval
     maparg
     mapcheck
     maplist
@@ -1477,6 +1476,10 @@ export const lambda_end: string = ')\ze\%(:.\{-}\)\=\s\+=>'
 # lambda_start {{{1
 
 export const lambda_start: string = '(\ze\%(\s*\h\w*\%([^(]\|\%(\<func\)\@4<=(\)*\|\s*\.\.\._\)\=)\%(:.\{-}\)\=\s\+=>'
+
+# legacy_autoload_invalid {{{1
+
+export const legacy_autoload_invalid: string = '\h\w*#\%(\w\|#\)*'
 
 # logical_not {{{1
 

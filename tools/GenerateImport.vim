@@ -531,6 +531,32 @@ const lambda_start: string = '('
 # inside another syntax item (`vim9OperParen`).
 #}}}
 
+# legacy autoload invalid {{{3
+
+# In a  Vim9 autoload script, when  declaring an autoload function,  we cannot
+# write `path#to#script#Func()`; `:export` must be used instead:
+#
+#     ✘
+#     def path#to#script#Func()
+#
+#     ✔
+#     export def Func()
+#
+# Let's highlight the old way as an error.
+#
+# ---
+#
+# Note that we use the `*` quantifier at the end, and not `+`.
+# That's  because  in  legacy,  it is  allowed  for  an  autoload
+# function name to be empty:
+#
+#     def path#to#script#()
+#                       ^
+#
+# We want to catch the error no matter what.
+
+const legacy_autoload_invalid: string = '\h\w*#\%(\w\|#\)*'
+
 # logical_not {{{3
 
 # This regex should match most binary operators.
@@ -1122,6 +1148,7 @@ AppendSection('increment_invalid')
 AppendSection('key_name', true)
 AppendSection('lambda_end')
 AppendSection('lambda_start')
+AppendSection('legacy_autoload_invalid')
 AppendSection('logical_not')
 AppendSection('mark_valid')
 AppendSection('maybe_dict_literal_key')
