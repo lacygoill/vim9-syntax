@@ -102,6 +102,7 @@ const builtin_func_list: list<string> =<< trim END
     echoraw
     empty
     environ
+    err_teapot
     escape
     eventhandler
     executable
@@ -1351,7 +1352,7 @@ export const ex_special_characters: string = ex_special_characters_list->join("\
 
 # increment_invalid {{{1
 
-export const increment_invalid: string = '\%(++\|--\)\%(\%(\%([bgstvw]:\)\=\h\w*\|&\%([lg]:\)\=[a-z]\{2,}\)\s*\_[[|.]\)\@!'
+export const increment_invalid: string = '\%(++\|--\)\%(\%(\%([bgstvw]:\)\=\h\w*\|&\%([lg]:\)\=[a-z]\{2,}\)\s*\_[[|.#]\)\@!'
 
 # key_name {{{1
 

@@ -2741,29 +2741,13 @@ syntax region vim9OperParen
 # Data Types {{{1
 # `vim9Expr` {{{2
 
-# Don't try to define `vim9Expr` first, and use `remove=`.  It wouldn't work.{{{
-#
-#     syntax cluster vim9Expr contains=...,vim9String,...
-#     syntax cluster vim9ExprExceptString contains=@vim9Expr
-#     syntax cluster vim9ExprExceptString remove=vim9String
-#                                         ^---------------^
-#                                                 ✘
-#
-# Vim  would  not  remove  `vim9String`,   because  the  latter  doesn't  appear
-# explicitly in the definition the `vim9ExprExceptString` cluster:
-#
-#     syntax cluster vim9ExprExceptString contains=@vim9Expr
-#                                                  ^-------^
-#                                                  no vim9String here
-#
-# IOW, Vim doesn't expand `@vim9Expr`.
-#}}}
-syntax cluster vim9ExprExceptString contains=
+syntax cluster vim9Expr contains=
     \ @vim9FuncCall,
     \ vim9Bool,
     \ vim9DataTypeCast,
     \ vim9Dict,
     \ vim9DeprecatedDictLiteralLegacy,
+    \ vim9DeprecatedScopes,
     \ vim9Lambda,
     \ vim9LambdaArrow,
     \ vim9ListSlice,
@@ -2773,9 +2757,9 @@ syntax cluster vim9ExprExceptString contains=
     \ vim9Number,
     \ vim9Oper,
     \ vim9OperParen,
-    \ vim9Registers
-
-syntax cluster vim9Expr contains=@vim9ExprExceptString,vim9String,vim9StringInterpolated
+    \ vim9Registers,
+    \ vim9String,
+    \ vim9StringInterpolated
 
 # Booleans / null / v:none {{{2
 
@@ -3740,22 +3724,15 @@ syntax keyword vim9DeprecatedLet let contained
 syntax match vim9DeprecatedDictLiteralLegacy /#{{\@!/ containedin=vim9ListSlice display
 
 # the scopes `a:`, `l:` and `s:` are no longer valid
-# But don't give any error in a string.{{{
-#
-# We have no way to determine the meaning of whatever it contains.
-#
-#     ... containedin=@vim9ExprExceptString
-#                              ^----------^
-#}}}
-# Don't use `contained` to limit these rules to `@vim9ExprExceptString`.{{{
+# Don't use `contained` to limit these rules to `@vim9Expr`.{{{
 #
 # Because then, they would fail to match this:
 #
 #     let a:name = ...
 #         ^^
 #}}}
-syntax match vim9DeprecatedScopes /\<[as]:\w\@=/ containedin=@vim9ExprExceptString display
-syntax match vim9DeprecatedScopes /&\@1<!\<l:\h\@=/ containedin=@vim9ExprExceptString display
+syntax match vim9DeprecatedScopes /\<[as]:\w\@=/ display
+syntax match vim9DeprecatedScopes /&\@1<!\<l:\h\@=/ display
 
 # The `is#` operator worked in legacy, but didn't make sense.
 # It's no longer supported in Vim9.

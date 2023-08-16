@@ -407,7 +407,7 @@ const command_can_be_before: string =
 const increment_invalid: string = '\%(++\|--\)'
     # let's assert what should *not* be matched
     .. '\%('
-    # from now on, we must describe what *is* valid
+    # that is, anything that is valid
     ..     '\%('
     # a simple variable identifier (`++name`)
     ..         '\%([bgstvw]:\)\=\h\w*'
@@ -415,7 +415,7 @@ const increment_invalid: string = '\%(++\|--\)'
     ..         '\|'
     ..         '&\%([lg]:\)\=[a-z]\{2,}'
     ..     '\)'
-    # it must be at the end of a line, or followed by a bracket/bar/dot{{{
+    # it must be at the end of a line, or followed by a bracket/bar/dot/number sign{{{
     #
     #     # bracket
     #           v
@@ -433,11 +433,17 @@ const increment_invalid: string = '\%(++\|--\)'
     #       ^------^
     #          ✔
     #
+    #     # number sign
+    #            v
+    #     ++num  # inline comment
+    #     ^---^
+    #       ✔
+    #
     # We don't try to describe what follows the bracket or dot, because it seems
     # too complex.   IOW, our regex  is not perfect,  but should be  good enough
     # most of the time.
     #}}}
-    ..     '\s*\_[[|.]'
+    ..     '\s*\_[[|.#]'
     .. '\)\@!'
 
 # lambda_start, lambda_end {{{3
