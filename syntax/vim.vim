@@ -3738,6 +3738,8 @@ syntax match vim9DeprecatedScopes /&\@1<!\<l:\h\@=/ display
 # It's no longer supported in Vim9.
 syntax match vim9DeprecatedIsOperator /\C\<\%(is\|isnot\)[#?]/ contained containedin=vim9Oper display
 
+syntax match vim9LegacyDotEqual /\s\.\%(=\s\)\@=/hs=s+1 display
+
 syntax match vim9LegacyVarArgs /a:000/ display
 
 # TODO: Handle other legacy constructs like:
@@ -4200,6 +4202,7 @@ highlight default link vim9IncrementError vim9Error
 highlight default link vim9LambdaDictMissingParen vim9Error
 highlight default link vim9LegacyAutoloadInvalid vim9Error
 highlight default link vim9LegacyConcatInvalid vim9Error
+highlight default link vim9LegacyDotEqual vim9Error
 highlight default link vim9LegacyFuncArgs vim9Error
 highlight default link vim9LegacyVarArgs vim9Error
 highlight default link vim9MapModErr vim9Error

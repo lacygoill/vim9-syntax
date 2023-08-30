@@ -217,6 +217,7 @@ const builtin_func_list: list<string> =<< trim END
     inputrestore
     inputsave
     inputsecret
+    instanceof
     interrupt
     invert
     isabsolutepath
