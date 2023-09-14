@@ -2256,7 +2256,7 @@ execute 'syntax match vim9FuncHeader'
     .. '\<def!\=\s\+'
     .. '\%('
         # global or script-local function
-    .. '\|' .. '\%(g:\)\=\u\w*'
+    .. '\%(g:\)\=\u\w*'
                # *invalid* autoload function name{{{
                #
                # In a Vim9 autoload script, when declaring an autoload function,
