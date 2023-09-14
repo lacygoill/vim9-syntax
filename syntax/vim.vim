@@ -15,8 +15,9 @@ if (
     #}}}
     || &filetype != 'vim'
    )
-   # provide an ad-hoc mechanism to let the user bypass the guard
-   && !get(b:, 'want_vim9_syntax')
+   # provide  an ad-hoc  mechanism to  let the  user disable  the plugin  on a
+   # per-buffer basis
+   || get(b:, 'force_legacy_syntax')
     finish
 endif
 
@@ -105,7 +106,7 @@ endif
 # TODO: The following  command will give  you the list  of all groups  for which
 # there is at least one item matching at the top level:
 #
-#     $ vim /tmp/md1.md +'let b:want_vim9_syntax = 1 | syntax include @Foo syntax/vim.vim | syntax list @Foo'
+#     $ vim /tmp/md1.md +'syntax include @Foo syntax/vim.vim | syntax list @Foo'
 #
 # Check whether those items should be contained to avoid spurious matches.
 # For example, right now, we match backtick expansions at the top level.
@@ -1168,7 +1169,7 @@ syntax match vim9UserCmdAttrRange /=\%(%\|-\=\d\+\)/
     \ skipnl
     \ skipwhite
 #}}}5
-# lhs {{{5
+# LHS {{{5
 
 syntax match vim9UserCmdLhs /\u\w*/
     \ contained
@@ -1189,12 +1190,12 @@ syntax match vim9UserCmdLhs /\u\w*/
 #                 ✔
 syntax match vim9Line12MissingColon /<line[12]>/ contained
 
-# escape sequences in rhs {{{5
+# escape sequences in RHS {{{5
 
-# We should limit this match to the rhs of a user command.{{{
+# We should limit this match to the RHS of a user command.{{{
 #
 # But that would add too much complexity, so we don't.
-# Besides, it's unlikely we would write something like `<line1>` outside the rhs
+# Besides, it's unlikely we would write something like `<line1>` outside the RHS
 # of a user command.
 #}}}
 execute 'syntax match vim9UserCmdRhsEscapeSeq'
@@ -1636,7 +1637,7 @@ syntax match vim9MapRhsExpr /.*/
 #}}}
 # TODO: Are there other regions where we should make sure to prevent a contained
 # match in its start/end?
-# We don't add `oneline` because it's convenient to break a rhs on multiple lines.{{{
+# We don't add `oneline` because it's convenient to break a RHS on multiple lines.{{{
 #
 #     nnoremap <key> <ScriptCmd>Foo(
 #       \ arg1,
@@ -2613,7 +2614,7 @@ syntax cluster vim9OperGroup contains=
 #     yank
 #     ^--^
 #     not matched by anything
-#     (because it could be a variable name used in the rhs of an assignment)
+#     (because it could be a variable name used in the RHS of an assignment)
 #
 #     # the lines are indented
 #         var name =
