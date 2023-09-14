@@ -1,6 +1,6 @@
 Syntax plugin for Vim9.  Work in progress.
 
----
+# Configuration
 
 The highlighting can be controlled via keys in the dictionary `g:vim9_syntax`:
 
@@ -33,3 +33,29 @@ Example of configuration:
            strict_whitespace: true,
        }
     }
+
+# Requirements
+
+A recent Vim version.
+
+# Installation
+## Linux
+
+Run this shell command:
+
+    git clone https://github.com/lacygoill/vim9-syntax.git ~/.vim/pack/vim9-syntax/opt/vim9-syntax
+
+Then, add this line in your vimrc:
+
+    packadd! vim9-syntax
+
+## Windows
+
+Run this shell command:
+
+    git clone https://github.com/lacygoill/vim9-syntax.git %USERPROFILE%\vimfiles\pack\vim9-syntax\opt\vim9-syntax
+
+Then, add this line in your vimrc:
+
+    packadd! vim9-syntax
+
