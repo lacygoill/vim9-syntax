@@ -4099,7 +4099,7 @@ highlight default link vim9Specifies Keyword
 
 # :interface
 # :endinterface
-syntax keyword vim9Interface interface endinterface contained
+syntax keyword vim9Interface interface endinterface contained nextgroup=vim9InterfaceName skipwhite
 highlight default link vim9Interface Keyword
 
 # this
