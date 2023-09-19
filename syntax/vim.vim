@@ -4111,7 +4111,7 @@ syntax keyword vim9Interface interface endinterface contained nextgroup=vim9Inte
 highlight default link vim9Interface Keyword
 
 # this
-syntax match vim9This /\<this\.\@=/ containedin=vim9FuncSignature
+syntax match vim9This /\<this\.\@=/ containedin=vim9FuncSignature,vim9OperParen
 highlight default link vim9This Structure
 
 # public
