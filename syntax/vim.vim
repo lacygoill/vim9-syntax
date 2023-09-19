@@ -2255,8 +2255,16 @@ execute 'syntax match vim9FuncHeader'
     .. ' /'
     .. '\<def!\=\s\+'
     .. '\%('
-        # global or script-local function
-    .. '\%(g:\)\=\u\w*'
+        # Global or script-local function.
+        # The possible underscore is for private methods:{{{
+        #
+        #    > If you want object methods to be accessible only from other methods of the
+        #    > same class and not used from outside the class, then you can make them
+        #    > private.  This is done by prefixing the method name with an underscore:
+        #
+        # Source: `:help E1366`.
+        #}}}
+    .. '\%(g:\)\=_\=\u\w*'
                # *invalid* autoload function name{{{
                #
                # In a Vim9 autoload script, when declaring an autoload function,
