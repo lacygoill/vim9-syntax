@@ -1952,6 +1952,8 @@ const option_list: list<string> =<< trim END
     js
     nojoinspaces
     nojs
+    jumpoptions
+    jop
     key
     keymap
     kmp
