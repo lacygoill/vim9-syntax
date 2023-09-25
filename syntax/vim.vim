@@ -3,21 +3,19 @@ vim9script noclear
 # Credits: Charles E. Campbell <NcampObell@SdrPchip.AorgM-NOSPAM>
 # Author of syntax plugin for Vim script legacy.
 
-if (
-    exists('b:current_syntax')
+if exists('b:current_syntax')
     # bail out for a file written in legacy Vim script
     || "\n" .. getline(1, 10)->join("\n") !~ '\nvim9\%[script]\>'
     # Bail out if we're included from another filetype (e.g. `markdown`).{{{
     #
-    # Rationale: If we're included, we don't know for which type codeblock.
-    # Legacy  or Vim9?   In doubt,  let the  legacy plugin  win, to  respect the
-    # principle of least astonishment.
+    # Rationale: If we're  included, we don't  know which type of  syntax does
+    # the codeblock  use.  Legacy or  Vim9?  In  doubt, let the  legacy plugin
+    # win, to respect the principle of least astonishment.
     #}}}
     || &filetype != 'vim'
-   )
-   # provide  an ad-hoc  mechanism to  let the  user disable  the plugin  on a
-   # per-buffer basis
-   || get(b:, 'force_legacy_syntax')
+    # provide  an ad-hoc  mechanism to  let the  user disable  the plugin  on a
+    # per-buffer basis
+    || get(b:, 'force_legacy_syntax')
     finish
 endif
 
@@ -106,7 +104,9 @@ endif
 # TODO: The following  command will give  you the list  of all groups  for which
 # there is at least one item matching at the top level:
 #
-#     $ vim /tmp/md1.md +'syntax include @Foo syntax/vim.vim | syntax list @Foo'
+#     $ vim +'set filetype=vim' \
+#         +'unlet! b:current_syntax' +'call setline(1, "vim9script")' \
+#         +'syntax include @Foo syntax/vim.vim | syntax list @Foo'
 #
 # Check whether those items should be contained to avoid spurious matches.
 # For example, right now, we match backtick expansions at the top level.
@@ -120,7 +120,7 @@ endif
 #                    as an assignment operator
 #                    v
 #     edit ++encoding=cp437
-#          ^--------^^
+#          ^--------^
 #          as a Vim option?
 #
 # Same thing with `+cmd`.
@@ -4096,7 +4096,10 @@ highlight default link vim9Class Keyword
 syntax match vim9ClassName /\u\w*/ contained nextgroup=vim9Extends,vim9Implements,vim9Specifies skipwhite
 #                          v------v           vvv
 #     class Foo implements Bar, Baz specifies Qux
-syntax match vim9InterfaceName /\u\w*\%(,\s\+\u\w*\)\=/ contained nextgroup=vim9Extends,vim9Implements,vim9Specifies skipwhite
+syntax match vim9InterfaceName /\u\w*\%(,\s\+\u\w*\)\=/
+    \ contained
+    \ nextgroup=vim9Extends,vim9Implements,vim9Specifies,vim9StrictWhitespace
+    \ skipwhite
 
 syntax keyword vim9Extends extends contained nextgroup=vim9ClassName skipwhite
 syntax keyword vim9Implements implements contained nextgroup=vim9InterfaceName skipwhite
