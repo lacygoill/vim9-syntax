@@ -2271,31 +2271,37 @@ execute 'syntax match vim9FuncHeader'
         # Source: `:help E1366`.
         #}}}
     .. '\%(g:\)\=_\=\u\w*'
-               # *invalid* autoload function name{{{
-               #
-               # In a Vim9 autoload script, when declaring an autoload function,
-               # we cannot write `path#to#script#Func()`; `:export` must be used
-               # instead:
-               #
-               #     ✘
-               #     def path#to#script#Func()
-               #
-               #     ✔
-               #     export def Func()
-               #
-               # Let's highlight the old way as an error.
-               #
-               # ---
-               #
-               # Note that we use the `*` quantifier at the end, and not `+`.
-               # That's  because  in  legacy,  it is  allowed  for  an  autoload
-               # function name to be empty:
-               #
-               #     def path#to#script#()
-               #                       ^
-               #
-               # We want to catch the error no matter what.
-               #}}}
+    # *invalid* autoload function name{{{
+    #
+    # In  a Vim9  autoload script,  when  declaring an  autoload function,  we
+    # cannot write `path#to#script#Func()`; `:export` must be used instead:
+    #
+    #     ✘
+    #     def path#to#script#Func()
+    #
+    #     ✔
+    #     export def Func()
+    #
+    # Let's highlight the old way as an error.
+    #
+    # ---
+    #
+    # Note that  we use  the `*` quantifier  at the end,  and not  `+`. That's
+    # because in  legacy, it is  allowed for an  autoload function name  to be
+    # empty:
+    #
+    #     def path#to#script#()
+    #                       ^
+    #
+    # We want to catch the error no matter what.
+    #}}}
+    # TODO: But  we  *can*  write  `path#to#script#Func()`  if  `function`  is
+    # preceded by `legacy`.   We should not highlight the function  name as an
+    # error then:
+    #
+    #     v----v          v-----------------v
+    #     legacy function path#to#script#func()
+    #     endfunction
     .. '\|' .. lang.legacy_autoload_invalid
     # `:help object`
     # `:help vim9class /Multiple constructors`
