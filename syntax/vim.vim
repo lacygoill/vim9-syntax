@@ -94,9 +94,9 @@ endif
 
 # TODO: Try to remove as many `Order:` requirements as possible.
 #
-# If such a requirement involves 2 rules in the same section, that should be fine.
-# But  not  if it  involves  2  rules in  different  sections;  because in  that
-# case,  you might  one day  re-order the  sections, and  unknowingly break  the
+# If such a requirement  involves 2 rules in the same  section, that should be
+# fine.  But not if it involves 2 rules in different sections; because in that
+# case, you  might one day  re-order the  sections, and unknowingly  break the
 # requirement.
 #
 # To remove such a requirement, try to improve some of your regexes.
@@ -108,11 +108,11 @@ endif
 #         +'unlet! b:current_syntax' +'call setline(1, "vim9script")' \
 #         +'syntax include @Foo syntax/vim.vim | syntax list @Foo'
 #
-# Check whether those items should be contained to avoid spurious matches.
-# For example, right now, we match backtick expansions at the top level.
-# That's wrong; this syntax is only valid where a command expects a filename.
-# In the future, make sure it's  contained.  You'll first need to match commands
-# expecting file arguments, then those arguments.
+# Check whether  those items  should be contained  to avoid  spurious matches.
+# For  example, right  now, we  match backtick  expansions at  the top  level.
+# That's wrong; this syntax is only  valid where a command expects a filename.
+# In  the future,  make  sure  it's contained.   You'll  first  need to  match
+# commands expecting file arguments, then those arguments.
 
 # TODO: Some commands accept a `++option` argument.
 # Highlight it properly.  Example:
@@ -155,12 +155,12 @@ endif
 # Highlight the latter properly.
 
 # TODO: Try to simplify the values of all the `contains=` arguments.
-# Remove what any cluster or syntax group which is useless.
-# Try to use intermediate clusters to  group related syntax groups, and use them
-# to reduce the verbosity of some `contains=`.
+# Remove  any  cluster  or  syntax  group   which  is  useless.   Try  to  use
+# intermediate clusters to group related syntax groups, and use them to reduce
+# the verbosity of some `contains=`.
 
-# TODO: Whenever we've used `syntax case ignore`, should we have enforced a specific case?
-# Similar to what we did for the names of autocmds events.
+# TODO: Whenever we've  used `syntax case ignore`,  should we have  enforced a
+# specific case?  Similar to what we did for the names of autocmds events.
 
 
 # Imports {{{1
@@ -1201,12 +1201,18 @@ syntax match vim9Line12MissingColon /<line[12]>/ contained
 execute 'syntax match vim9UserCmdRhsEscapeSeq'
     .. ' /'
     .. '<'
-    .. '\%(q-\)\='
+    .. '\%([fq]-\)\='
     # `:help <line1>`
-    .. '\%(line[12]\|range\|count\|bang\|mods\|reg\|args\|f-args\|f-mods\)'
+    .. '\%(args\|bang\|count\|line[12]\|mods\|range\|reg\)'
     .. '>'
     .. '/'
     .. ' contains=vim9BracketKey'
+    # An escape sequence might be embedded inside a string:{{{
+    #
+    #     command -nargs=1 Locate Wrap({source: 'locate <q-args>', options: '-m'})->Run()
+    #                                                   ^------^
+    #}}}
+    .. ' containedin=vim9String,vim9StringInterpolated'
 #}}}4
 # Execution {{{4
 
