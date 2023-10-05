@@ -2261,15 +2261,15 @@ execute 'syntax match vim9FuncHeader'
     .. ' /'
     .. '\<def!\=\s\+'
     .. '\%('
-        # Global or script-local function.
-        # The possible underscore is for private methods:{{{
-        #
-        #    > If you want object methods to be accessible only from other methods of the
-        #    > same class and not used from outside the class, then you can make them
-        #    > private.  This is done by prefixing the method name with an underscore:
-        #
-        # Source: `:help E1366`.
-        #}}}
+    # Global or script-local function.
+    # The possible underscore is for private methods:{{{
+    #
+    #    > If you want object methods to be accessible only from other methods of the
+    #    > same class and not used from outside the class, then you can make them
+    #    > private.  This is done by prefixing the method name with an underscore:
+    #
+    # Source: `:help E1366`.
+    #}}}
     .. '\%(g:\)\=_\=\u\w*'
     # *invalid* autoload function name{{{
     #
@@ -2295,13 +2295,6 @@ execute 'syntax match vim9FuncHeader'
     #
     # We want to catch the error no matter what.
     #}}}
-    # TODO: But  we  *can*  write  `path#to#script#Func()`  if  `function`  is
-    # preceded by `legacy`.   We should not highlight the function  name as an
-    # error then:
-    #
-    #     v----v          v-----------------v
-    #     legacy function path#to#script#func()
-    #     endfunction
     .. '\|' .. lang.legacy_autoload_invalid
     # `:help object`
     # `:help vim9class /Multiple constructors`
@@ -2321,7 +2314,20 @@ syntax match vim9DefBang /!/ contained
 # but only for global functions
 syntax match vim9DefBangError /!\%(\s\+g:\)\@!/ contained
 
-execute $'syntax match vim9LegacyAutoloadInvalid /{lang.legacy_autoload_invalid}/ contained'
+execute 'syntax match vim9LegacyAutoloadInvalid'
+    .. ' /'
+    # When `:function` is prefixed by `:legacy`, `path#to#script#func` is valid.
+    #
+    #     v----v          v-----------------v
+    #     legacy function path#to#script#func()
+    #     endfunction
+    #
+    # We should not  highlight the function name as an  error then; hence this
+    # negative lookbehind.
+    .. '\%(\<leg\%[acy]\s\+fu\%[nction]\s\+\)\@16<!'
+    .. '\<' .. lang.legacy_autoload_invalid
+    .. '/'
+    .. ' contained'
 
 # Ending the  signature at `enddef`  prevents a temporary unbalanced  paren from
 # causing havoc beyond the end of the function.
