@@ -1643,6 +1643,11 @@ syntax match vim9MapRhsExpr /.*/
 #}}}
 # TODO: Are there other regions where we should make sure to prevent a contained
 # match in its start/end?
+#
+# TODO: Try to highlight bracket keys even inside strings:
+#
+#     nnoremap <F3> <ScriptCmd>execute 'normal! <C-\><C-N>'<CR>
+#                                               ^--------^
 # We don't add `oneline` because it's convenient to break a RHS on multiple lines.{{{
 #
 #     nnoremap <key> <ScriptCmd>Foo(
