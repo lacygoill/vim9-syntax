@@ -3,19 +3,23 @@ vim9script noclear
 # Credits: Charles E. Campbell <NcampObell@SdrPchip.AorgM-NOSPAM>
 # Author of syntax plugin for Vim script legacy.
 
-if exists('b:current_syntax')
-    # bail out for a file written in legacy Vim script
-    || "\n" .. getline(1, 10)->join("\n") !~ '\nvim9\%[script]\>'
-    # Bail out if we're included from another filetype (e.g. `markdown`).{{{
-    #
-    # Rationale: If we're  included, we don't  know which type of  syntax does
-    # the codeblock  use.  Legacy or  Vim9?  In  doubt, let the  legacy plugin
-    # win, to respect the principle of least astonishment.
-    #}}}
-    || &filetype != 'vim'
-    # provide  an ad-hoc  mechanism to  let the  user disable  the plugin  on a
-    # per-buffer basis
-    || get(b:, 'force_legacy_syntax')
+if (exists('b:current_syntax')
+        # bail out for a file written in legacy Vim script
+        || "\n" .. getline(1, 10)->join("\n") !~ '\nvim9\%[script]\>'
+        # Bail out if we're included from another filetype (e.g. `markdown`).{{{
+        #
+        # Rationale: If we're  included, we don't  know which type of  syntax does
+        # the codeblock  use.  Legacy or  Vim9?  In  doubt, let the  legacy plugin
+        # win, to respect the principle of least astonishment.
+        #}}}
+        || &filetype != 'vim'
+        # provide  an ad-hoc  mechanism to  let the  user disable  the plugin  on a
+        # per-buffer basis
+        || get(b:, 'force_legacy_syntax'))
+        # provide   an  ad-hoc   mechanism   to  let   the   user  force   the
+        # plugin   on  a   per-buffer   basis  (useful   for  something   like
+        # `syntax include @vim9Script syntax/vim.vim`)
+        && !get(b:, 'force_vim9_syntax')
     finish
 endif
 
