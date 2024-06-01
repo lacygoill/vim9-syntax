@@ -899,7 +899,6 @@ const command_name_list: list<string> =<< trim END
     lr[ewind]
     ls
     lt[ag]
-    luad[o]
     luaf[ile]
     lw[indow]
     mak[e]
@@ -937,8 +936,6 @@ const command_name_list: list<string> =<< trim END
     packl[oadall]
     pc[lose]
     ped[it]
-    pe[rl]
-    perld[o]
     po[p]
     popu[p]
     pp[op]
@@ -962,12 +959,9 @@ const command_name_list: list<string> =<< trim END
     pu[t]
     pw[d]
     py3
-    py3d[o]
     py3f[ile]
-    pyd[o]
     pyf[ile]
     pyx
-    pyxd[o]
     pyxf[ile]
     qa[ll]
     q[uit]
@@ -984,8 +978,6 @@ const command_name_list: list<string> =<< trim END
     ret[ab]
     rew[ind]
     ri[ght]
-    rub[y]
-    rubyd[o]
     rubyf[ile]
     rund[o]
     ru[ntime]
@@ -1064,8 +1056,6 @@ const command_name_list: list<string> =<< trim END
     tabs
     ta[g]
     tags
-    tcl
-    tcld[o]
     tclf[ile]
     te[aroff]
     ter[minal]

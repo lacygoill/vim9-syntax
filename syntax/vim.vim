@@ -185,7 +185,7 @@ execute 'syntax match vim9BracketNotation'
     .. ' /\c'
     # opening angle bracket
     .. '<'
-    # possible modifiers; for `2-4`, see `:h <2-LeftMouse>`
+    # possible modifiers; for `2-4`, see `:help <2-LeftMouse>`
     .. '\%([scmad2-4]-\)\{,3}'
     # key name
     .. '\%(' .. lang.key_name .. '\)'
@@ -243,8 +243,9 @@ syntax match vim9OperError /[)\]}]/
 # This needs to be installed early because it could break `>` when used as a comparison operator.
 # We also want to disallow a hyphen before.{{{
 #
-# To prevent a  distracting highlighting while we're typing a  method call (wich
-# is quite frequent), and we haven't typed yet the name of the function afterward.
+# To  prevent a  distracting highlighting  while  we're typing  a method  call
+# (which is quite frequent), and we haven't typed yet the name of the function
+# afterward.
 #
 # Besides, the highlighting would be applied inconsistently.
 # That's because, if  the next non-whitespace character is a  head of word (even
@@ -269,8 +270,8 @@ syntax match vim9SILB /{{\|}}/ contained
 # increment/decrement
 # The `++` and `--` operators are implemented as Ex commands:{{{
 #
-#     echo getcompletion('[-+]', 'command')
-#     ['++', '--']˜
+#     :echo getcompletion('[-+]', 'command')
+#     ['++', '--']
 #
 # Which makes sense.  They can only appear at the start of a line.
 #}}}
@@ -1244,12 +1245,11 @@ syntax match vim9UserCmdArgs /\s*[^ \t|].\{-}[|\n]/ contained
 #}}}
 # But it breaks the highlighting of `:CompilerSet`.  It should be highlighted as a *user* command!{{{
 #
-# No, it should not.
-# The fact  that its name  starts with  an uppercase does  not mean it's  a user
-# command.  It's definitely not one:
+# No,  it  should not.   The  fact  that its  name  starts  with an  uppercase
+# character does not mean it's a user command.  It's definitely not one:
 #
 #     :command CompilerSet
-#     No user-defined commands found˜
+#     No user-defined commands found
 #}}}
 syntax keyword vim9Set CompilerSet contained nextgroup=vim9MayBeOptionSet skipwhite
 #}}}3
@@ -2277,7 +2277,7 @@ execute 'syntax match vim9FuncHeader'
     #    > same class and not used from outside the class, then you can make them
     #    > private.  This is done by prefixing the method name with an underscore:
     #
-    # Source: `:help E1366`.
+    # Source: `:help E1366`
     #}}}
     .. '\%(g:\)\=_\=\u\w*'
     # *invalid* autoload function name{{{
@@ -2434,8 +2434,8 @@ syntax match vim9LegacyComment /^\s*".*$/ contained
 syntax match vim9LegacyComment /\s\@1<="[^\-:.%#=*].*$/ contained
 
 # We need to match strings because they can contain arbitrary text, which can break other rules.
-syntax region vim9LegacyString start=/"/ skip=/\\\\\|\\"/ end=/"/  oneline keepend
-syntax region vim9LegacyString start=/'/ skip=/''/ end=/'/  oneline keepend
+syntax region vim9LegacyString start=/"/ skip=/\\\\\|\\"/ end=/"/ oneline keepend
+syntax region vim9LegacyString start=/'/ skip=/''/ end=/'/ oneline keepend
 
 # In a Vim9 script, `.` cannot be used for a concatenation (nor `.=`).  Only `..` is valid.
 # *Even* in a legacy function.{{{
@@ -3469,7 +3469,7 @@ syntax match vim9SpecFile /<\%([acs]file\|abuf\)>/ nextgroup=vim9SpecFileMod
 # Make sure the file name modifiers  are accepted only after `%`, `%%`, `%%123`,
 # `<cfile>`, `<sfile>`, `<afile>` and `<abuf>`.
 #
-# Update: We currently match `<cfile>` (&friends) with `vim9ExSpecialCharacters`.
+# Edit: We currently match `<cfile>` (&friends) with `vim9ExSpecialCharacters`.
 # Is that wrong?  Should we match them with `vim9SpecFile`?
 #
 # ---
@@ -3604,7 +3604,7 @@ syntax region vim9BacktickExpansionVimExpr
 
 # fixme/todo notices in comments {{{1
 
-syntax keyword vim9Todo FIXME TODO contained
+syntax keyword vim9Todo FIXME NOTE TODO contained
 syntax cluster vim9CommentGroup contains=
     \ @Spell,
     \ vim9CommentContinuation,
@@ -3614,46 +3614,72 @@ syntax cluster vim9CommentGroup contains=
 # Fenced Languages  {{{1
 
 # NOTE: This block uses string interpolation which requires patch 8.2.4883
-for lang: string in get(g:, 'vim9_syntax', {})->get('fenced_languages', [])
-    var cmdpat: string = {
+# Warning: Make sure not to use a variable name already used in an import.{{{
+#
+# For example, ATM, we already use `lang`:
+#
+#     import 'vim9Language.vim' as lang
+#                                  ^--^
+#
+# So, don't write:
+#
+#     for lang: string in ...
+#         ^--^
+#          ✘
+#}}}
+for language: string in get(g:, 'vim9_syntax', {})->get('fenced_languages', [])
+    var cmd_pat: string = {
         lua: 'lua',
         ruby: 'rub\%[y]',
         perl: 'pe\%[rl]',
         python: 'py\%[thon][3x]\=',
         tcl: 'tcl',
-    }->get(lang, '')
-    if cmdpat == ''
+    }->get(language, '')
+
+    if cmd_pat == ''
         continue
     endif
+
+    var do_pat: string = {
+        lua: 'luado\=',
+        ruby: 'rubydo\=',
+        perl: 'perldo\=',
+        python: 'py[3x]\=do\=',
+        tcl: 'tcldo\=',
+    }->get(language, '')
+
     var code: list<string> =<< trim eval END
         unlet! b:current_syntax
 
-        syntax include @vim9{lang}Script syntax/{lang}.vim
+        syntax include @vim9{language}Script syntax/{language}.vim
 
-        syntax match vim9{lang}Cmd /{cmdpat}/ nextgroup=vim9{lang}Region skipwhite
-
-        syntax region vim9{lang}Region
+        syntax match vim9{language}Cmd /\<{cmd_pat}\>/ contained nextgroup=vim9{language}CmdRegion skipwhite
+        syntax region vim9{language}CmdRegion
             \ matchgroup=vim9ScriptDelim
             \ start=/<<\s*\z(\S\+\)$/
             \ end=/^\z1$/
             \ matchgroup=vim9Error
             \ end=/^\s\+\z1$/
             \ contained
-            \ contains=@vim9{lang}Script
+            \ contains=@vim9{language}Script
             \ keepend
-
-        syntax region vim9{lang}Region
+        syntax region vim9{language}CmdRegion
             \ matchgroup=vim9ScriptDelim
             \ start=/<<$/
             \ end=/\.$/
             \ contained
-            \ contains=@vim9{lang}Script
+            \ contains=@vim9{language}Script
             \ keepend
 
-        syntax cluster vim9CanBeAtStartOfLine add=vim9{lang}Cmd
+        syntax match vim9{language}Do /\<{do_pat}\>/ contained nextgroup=vim9{language}DoLine skipwhite
+        syntax match vim9{language}DoLine /\S.*/ contained contains=@vim9{language}Script
 
-        highlight default link vim9{lang}Cmd vim9GenericCmd
+        syntax cluster vim9CanBeAtStartOfLine add=vim9{language}Cmd,vim9{language}Do
+
+        highlight default link vim9{language}Cmd vim9GenericCmd
+        highlight default link vim9{language}Do vim9GenericCmd
     END
+
     code->join("\n")
         ->substitute('\n\s*\\', ' ', 'g')
         ->split('\n')
@@ -3744,7 +3770,7 @@ syntax match vim9StrictWhitespace /\S\@1<=:\S\@=/ contained containedin=vim9Dict
 #
 #    - inside a `:function`
 #    - after `:legacy`
-#    - in the rhs of a mapping (except if it uses `<expr>` or `<ScriptCmd>`)
+#    - in the RHS of a mapping (except if it uses `<expr>` or `<ScriptCmd>`)
 #}}}
 #   Can't the next rules sometimes highlight a valid legacy syntax as an error?{{{
 #
@@ -4188,13 +4214,13 @@ endif
 #
 #    - removing all their attributes
 #
-#         $ vim --cmd 'highlight WillItSurvive ctermbg=green | highlight clear | highlight WillItSurvive | cquit'
-#         WillItSurvive  xxx cleared˜
+#         $ vim --cmd 'highlight WillItSurvive ctermbg=green | highlight clear | highlight WillItSurvive | quit'
+#         WillItSurvive  xxx cleared
 #
 #    - removing the links
 #
-#         $ vim --cmd 'highlight link WillItSurvive ErrorMsg | highlight clear | highlight WillItSurvive | cquit'
-#         WillItSurvive  xxx cleared˜
+#         $ vim --cmd 'highlight link WillItSurvive ErrorMsg | highlight clear | highlight WillItSurvive | quit'
+#         WillItSurvive  xxx cleared
 #}}}
 
 highlight default link vim9GenericCmd Statement

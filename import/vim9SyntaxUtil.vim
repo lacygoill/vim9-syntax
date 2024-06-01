@@ -135,4 +135,3 @@ def InCommentOrString(lnum: number, col: number): bool # {{{2
         ->indexof((_, id: number): bool =>
             synIDattr(id, 'name') =~ '\ccomment\|string\|heredoc') >= 0
 enddef
-

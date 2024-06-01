@@ -185,17 +185,27 @@ const VARIOUS_SPECIAL_CMDS: list<string> =<< trim END
     highlight
     import
     lua
+    luado
     mark
     move
     normal
+    perl
+    perldo
     python
     python3
     pythonx
+    pydo
+    py3do
+    pyxdo
+    ruby
+    rubydo
     set
     setglobal
     setlocal
     substitute
     syntax
+    tcl
+    tcldo
     vimgrep
     vimgrepadd
     lvimgrep
@@ -342,7 +352,7 @@ const command_can_be_before: string =
        '\%('
        ..     '[ \t\n]\@='
        .. '\|'
-       # Special Case: An Ex command in the rhs of a mapping, right after `<ScriptCmd>` or `<Bar>`.
+       # Special Case: An Ex command in the RHS of a mapping, right after `<ScriptCmd>` or `<Bar>`.
        ..     '\c<\%(bar\|cr\)>'
        .. '\)'
     # but there must *not* be a binary operator
