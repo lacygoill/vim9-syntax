@@ -93,6 +93,7 @@ const builtin_func_list: list<string> =<< trim END
     deepcopy
     deletebufline
     did_filetype
+    diff
     diff_filler
     diff_hlID
     digraph_get
@@ -148,9 +149,11 @@ const builtin_func_list: list<string> =<< trim END
     getcharpos
     getcharsearch
     getcharstr
+    getcmdcomplpat
     getcmdcompltype
     getcmdline
     getcmdpos
+    getcmdprompt
     getcmdscreenpos
     getcmdtype
     getcmdwintype
@@ -177,6 +180,8 @@ const builtin_func_list: list<string> =<< trim END
     getqflist
     getreg
     getreginfo
+    getregion
+    getregionpos
     getregtype
     getscriptinfo
     gettabinfo
@@ -295,6 +300,7 @@ const builtin_func_list: list<string> =<< trim END
     popup_menu
     popup_move
     popup_notification
+    popup_setbuf
     popup_setoptions
     popup_settext
     popup_show
