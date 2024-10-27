@@ -1797,6 +1797,8 @@ const option_list: list<string> =<< trim END
     ft
     fillchars
     fcs
+    findexpr
+    fexpr
     fixendofline
     fixeol
     nofixendofline
