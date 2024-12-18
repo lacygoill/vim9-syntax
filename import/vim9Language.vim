@@ -2039,6 +2039,8 @@ const option_list: list<string> =<< trim END
     mmt
     menuitems
     mis
+    messagesopt
+    mopt
     mkspellmem
     msm
     modeline
