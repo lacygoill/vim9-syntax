@@ -116,6 +116,7 @@ const builtin_func_list: list<string> =<< trim END
     extend
     extendnew
     feedkeys
+    filecopy
     file_readable
     filereadable
     filewritable
@@ -272,6 +273,7 @@ const builtin_func_list: list<string> =<< trim END
     matchfuzzypos
     matchlist
     matchstr
+    matchstrlist
     matchstrpos
     max
     menu_info
