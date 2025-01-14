@@ -38,6 +38,7 @@ const builtin_func_list: list<string> =<< trim END
     balloon_show
     balloon_split
     blob2list
+    blob2str
     browsedir
     bufadd
     bufexists
@@ -413,6 +414,7 @@ const builtin_func_list: list<string> =<< trim END
     sqrt
     srand
     state
+    str2blob
     str2float
     str2list
     str2nr
