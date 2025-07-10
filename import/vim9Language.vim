@@ -37,7 +37,11 @@ const builtin_func_list: list<string> =<< trim END
     balloon_gettext
     balloon_show
     balloon_split
+    base64_decode
+    base64_encode
+    bindtextdomain
     blob2list
+    blob2str
     browsedir
     bufadd
     bufexists
@@ -80,11 +84,13 @@ const builtin_func_list: list<string> =<< trim END
     charidx
     cindent
     clearmatches
+    cmdcomplete_info
     col
     complete
     complete_add
     complete_check
     complete_info
+    complete_match
     cos
     cosh
     count
@@ -93,6 +99,7 @@ const builtin_func_list: list<string> =<< trim END
     deepcopy
     deletebufline
     did_filetype
+    diff
     diff_filler
     diff_hlID
     digraph_get
@@ -116,6 +123,7 @@ const builtin_func_list: list<string> =<< trim END
     extendnew
     feedkeys
     file_readable
+    filecopy
     filereadable
     filewritable
     finddir
@@ -132,6 +140,7 @@ const builtin_func_list: list<string> =<< trim END
     foldlevel
     foldtext
     foldtextresult
+    foreach
     foreground
     fullcommand
     funcref
@@ -141,6 +150,7 @@ const builtin_func_list: list<string> =<< trim END
     getbufline
     getbufoneline
     getbufvar
+    getcellpixels
     getcellwidths
     getchangelist
     getchar
@@ -148,13 +158,16 @@ const builtin_func_list: list<string> =<< trim END
     getcharpos
     getcharsearch
     getcharstr
+    getcmdcomplpat
     getcmdcompltype
     getcmdline
     getcmdpos
+    getcmdprompt
     getcmdscreenpos
     getcmdtype
     getcmdwintype
     getcompletion
+    getcompletiontype
     getcurpos
     getcursorcharpos
     getcwd
@@ -177,8 +190,11 @@ const builtin_func_list: list<string> =<< trim END
     getqflist
     getreg
     getreginfo
+    getregion
+    getregionpos
     getregtype
     getscriptinfo
+    getstacktrace
     gettabinfo
     gettabvar
     gettabwinvar
@@ -208,6 +224,7 @@ const builtin_func_list: list<string> =<< trim END
     hlset
     hostname
     iconv
+    id
     indent
     index
     indexof
@@ -247,6 +264,7 @@ const builtin_func_list: list<string> =<< trim END
     lispindent
     list2blob
     list2str
+    list2tuple
     listener_add
     listener_flush
     listener_remove
@@ -261,18 +279,21 @@ const builtin_func_list: list<string> =<< trim END
     matchadd
     matchaddpos
     matcharg
+    matchbufline
     matchdelete
     matchend
     matchfuzzy
     matchfuzzypos
     matchlist
     matchstr
+    matchstrlist
     matchstrpos
     max
     menu_info
     min
     mkdir
     nextnonblank
+    ngettext
     nr2char
     or
     pathshorten
@@ -295,6 +316,7 @@ const builtin_func_list: list<string> =<< trim END
     popup_menu
     popup_move
     popup_notification
+    popup_setbuf
     popup_setoptions
     popup_settext
     popup_show
@@ -405,6 +427,7 @@ const builtin_func_list: list<string> =<< trim END
     sqrt
     srand
     state
+    str2blob
     str2float
     str2list
     str2nr
@@ -483,6 +506,7 @@ const builtin_func_list: list<string> =<< trim END
     test_null_list
     test_null_partial
     test_null_string
+    test_null_tuple
     test_option_not_set
     test_override
     test_refcount
@@ -501,10 +525,10 @@ const builtin_func_list: list<string> =<< trim END
     tr
     trim
     trunc
+    tuple2list
     typename
     undofile
     undotree
-    uniq
     utf16idx
     values
     virtcol
@@ -570,6 +594,7 @@ const builtin_func_ambiguous_list: list<string> =<< trim END
     substitute
     swapname
     type
+    uniq
 END
 
 export const builtin_func_ambiguous: string = builtin_func_ambiguous_list->join("\\|")
@@ -634,17 +659,20 @@ const command_complete_type_list: list<string> =<< trim END
     customlist
     custom
     diff_buffer
+    dir_in_path
     dir
     environment
     event
     expression
     file_in_path
+    filetypecmd
     filetype
     file
     function
     help
     highlight
     history
+    keymap
     locale
     mapclear
     mapping
@@ -654,6 +682,7 @@ const command_complete_type_list: list<string> =<< trim END
     packadd
     runtime
     scriptnames
+    shellcmdline
     shellcmd
     sign
     syntax
@@ -759,6 +788,7 @@ const command_name_list: list<string> =<< trim END
     chi[story]
     cla[st]
     cle[arjumps]
+    clip[reset]
     cl[ist]
     clo[se]
     cme[nu]
@@ -849,6 +879,7 @@ const command_name_list: list<string> =<< trim END
     ime[nu]
     inoreme[nu]
     int[ro]
+    ip[ut]
     is[earch]
     isp[lit]
     iunme[nu]
@@ -934,6 +965,7 @@ const command_name_list: list<string> =<< trim END
     ow[nsyntax]
     pa[ckadd]
     packl[oadall]
+    pb[uffer]
     pc[lose]
     ped[it]
     po[p]
@@ -973,6 +1005,7 @@ const command_name_list: list<string> =<< trim END
     redr[aw]
     redraws[tatus]
     redrawt[abline]
+    redrawtabp[anel]
     reg[isters]
     res[ize]
     ret[ab]
@@ -1076,6 +1109,7 @@ const command_name_list: list<string> =<< trim END
     undoj[oin]
     undol[ist]
     unh[ide]
+    uni[q]
     unlo[ckvar]
     unme[nu]
     up[date]
@@ -1093,6 +1127,7 @@ const command_name_list: list<string> =<< trim END
     wa[ll]
     winp[os]
     wi[nsize]
+    wl[restore]
     wn[ext]
     wp[revious]
     wq
@@ -1115,6 +1150,7 @@ export const command_name: string = command_name_list->join()
 
 const default_highlighting_group_list: list<string> =<< trim END
     ColorColumn
+    ComplMatchIns
     CurSearch
     Cursor
     CursorColumn
@@ -1127,6 +1163,7 @@ const default_highlighting_group_list: list<string> =<< trim END
     DiffChange
     DiffDelete
     DiffText
+    DiffTextAdd
     Directory
     EndOfBuffer
     ErrorMsg
@@ -1141,6 +1178,7 @@ const default_highlighting_group_list: list<string> =<< trim END
     MessageWindow
     ModeMsg
     MoreMsg
+    MsgArea
     NonText
     Normal
     Pmenu
@@ -1148,10 +1186,13 @@ const default_highlighting_group_list: list<string> =<< trim END
     PmenuExtraSel
     PmenuKind
     PmenuKindSel
+    PmenuMatch
+    PmenuMatchSel
     PmenuSbar
     PmenuSel
     PmenuThumb
     PopupNotification
+    PopupSelected
     Question
     QuickFixLine
     Scrollbar
@@ -1170,6 +1211,9 @@ const default_highlighting_group_list: list<string> =<< trim END
     TabLine
     TabLineFill
     TabLineSel
+    TabPanel
+    TabPanelFill
+    TabPanelSel
     Terminal
     Title
     ToolbarButton
@@ -1225,6 +1269,7 @@ const event_list: list<string> =<< trim END
     CmdlineChanged
     CmdlineEnter
     CmdlineLeave
+    CmdlineLeavePre
     CmdwinEnter
     CmdwinLeave
     ColorScheme
@@ -1235,6 +1280,7 @@ const event_list: list<string> =<< trim END
     CursorHold
     CursorHoldI
     CursorMoved
+    CursorMovedC
     CursorMovedI
     DiffUpdated
     DirChanged
@@ -1269,6 +1315,7 @@ const event_list: list<string> =<< trim END
     InsertEnter
     InsertLeave
     InsertLeavePre
+    KeyInputPre
     MenuPopup
     ModeChanged
     OptionSet
@@ -1279,6 +1326,7 @@ const event_list: list<string> =<< trim END
     SafeState
     SafeStateAgain
     SessionLoadPost
+    SessionWritePost
     ShellCmdPost
     ShellFilterPost
     SigUSR1
@@ -1291,11 +1339,13 @@ const event_list: list<string> =<< trim END
     SwapExists
     Syntax
     TabClosed
+    TabClosedPre
     TabEnter
     TabLeave
     TabNew
     TermChanged
     TermResponse
+    TermResponseAll
     TerminalOpen
     TerminalWinOpen
     TextChanged
@@ -1314,6 +1364,7 @@ const event_list: list<string> =<< trim END
     WinEnter
     WinLeave
     WinNew
+    WinNewPre
     WinResized
     WinScrolled
 END
@@ -1368,6 +1419,7 @@ const key_name_list: list<string> =<< trim END
     Ignore
     Ins
     Insert
+    JsbMouse
     LF
     Left
     LeftDrag
@@ -1393,6 +1445,7 @@ const key_name_list: list<string> =<< trim END
     PasteEnd
     PasteStart
     Plug
+    PtermMouse
     Return
     Right
     RightDrag
@@ -1507,14 +1560,6 @@ const option_list: list<string> =<< trim END
     anti
     noantialias
     noanti
-    autochdir
-    acd
-    noautochdir
-    noacd
-    autoshelldir
-    asd
-    noautoshelldir
-    noasd
     arabic
     arab
     noarabic
@@ -1523,6 +1568,10 @@ const option_list: list<string> =<< trim END
     arshape
     noarabicshape
     noarshape
+    autochdir
+    acd
+    noautochdir
+    noacd
     autoindent
     ai
     noautoindent
@@ -1531,6 +1580,10 @@ const option_list: list<string> =<< trim END
     ar
     noautoread
     noar
+    autoshelldir
+    asd
+    noautoshelldir
+    noasd
     autowrite
     aw
     noautowrite
@@ -1604,6 +1657,8 @@ const option_list: list<string> =<< trim END
     cedit
     charconvert
     ccv
+    chistory
+    chi
     cindent
     cin
     nocindent
@@ -1612,12 +1667,14 @@ const option_list: list<string> =<< trim END
     cink
     cinoptions
     cino
-    cinwords
-    cinw
     cinscopedecls
     cinsd
+    cinwords
+    cinw
     clipboard
     cb
+    clipmethod
+    cpm
     cmdheight
     ch
     cmdwinheight
@@ -1638,12 +1695,16 @@ const option_list: list<string> =<< trim END
     cpt
     completefunc
     cfu
-    completeslash
-    csl
+    completefuzzycollect
+    cfc
+    completeitemalign
+    cia
     completeopt
     cot
     completepopup
     cpp
+    completeslash
+    csl
     concealcursor
     cocu
     conceallevel
@@ -1757,6 +1818,8 @@ const option_list: list<string> =<< trim END
     noek
     eventignore
     ei
+    eventignorewin
+    eiw
     expandtab
     et
     noexpandtab
@@ -1781,6 +1844,8 @@ const option_list: list<string> =<< trim END
     ft
     fillchars
     fcs
+    findfunc
+    ffu
     fixendofline
     fixeol
     nofixendofline
@@ -1926,6 +1991,8 @@ const option_list: list<string> =<< trim END
     inf
     noinfercase
     noinf
+    isexpand
+    ise
     insertmode
     im
     noinsertmode
@@ -1971,6 +2038,8 @@ const option_list: list<string> =<< trim END
     lz
     nolazyredraw
     nolz
+    lhistory
+    lhi
     linebreak
     lbr
     nolinebreak
@@ -2021,6 +2090,8 @@ const option_list: list<string> =<< trim END
     mmt
     menuitems
     mis
+    messagesopt
+    mopt
     mkspellmem
     msm
     modeline
@@ -2062,10 +2133,10 @@ const option_list: list<string> =<< trim END
     mouses
     mousetime
     mouset
-    mzschemedll
-    mzschemegcdll
     mzquantum
     mzq
+    mzschemedll
+    mzschemegcdll
     nrformats
     nf
     number
@@ -2131,6 +2202,8 @@ const option_list: list<string> =<< trim END
     noprompt
     pumheight
     ph
+    pummaxwidth
+    pmw
     pumwidth
     pw
     pythondll
@@ -2267,6 +2340,8 @@ const option_list: list<string> =<< trim END
     nosmd
     showtabline
     stal
+    showtabpanel
+    stpl
     sidescroll
     ss
     sidescrolloff
@@ -2335,10 +2410,16 @@ const option_list: list<string> =<< trim END
     smc
     syntax
     syn
+    tabclose
+    tcl
     tabline
     tal
     tabpagemax
     tpm
+    tabpanel
+    tpl
+    tabpanelopt
+    tplo
     tabstop
     ts
     tagbsearch
@@ -2502,8 +2583,8 @@ const option_list: list<string> =<< trim END
     wcr
     window
     wi
-    winheight
-    wh
+    winfixbuf
+    wfb
     winfixheight
     wfh
     nowinfixheight
@@ -2512,6 +2593,8 @@ const option_list: list<string> =<< trim END
     wfw
     nowinfixwidth
     nowfw
+    winheight
+    wh
     winminheight
     wmh
     winminwidth
@@ -2519,6 +2602,14 @@ const option_list: list<string> =<< trim END
     winptydll
     winwidth
     wiw
+    wlseat
+    wse
+    wlsteal
+    wst
+    nowlsteal
+    nowst
+    wltimeoutlen
+    wtm
     wrap
     nowrap
     wrapmargin
@@ -2569,6 +2660,7 @@ const option_terminal_list: list<string> =<< trim END
     t_AU
     t_BD
     t_BE
+    t_CF
     t_CS
     t_CV
     t_Ce
@@ -2715,6 +2807,7 @@ const option_terminal_list: list<string> =<< trim END
     t_vi
     t_vs
     t_xn
+    t_xo
     t_xs
 END
 
