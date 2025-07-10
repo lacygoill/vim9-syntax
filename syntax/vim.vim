@@ -675,7 +675,7 @@ syntax match vim9AutocmdAllEvents /\*\_s\@=/
 #                                                 ^
 #                                                 this is not a pattern
 #}}}
-syntax match vim9AutocmdPat /[^ \t|]\S*/
+syntax match vim9AutocmdPat /[^[:blank:]|]\S*/
     \ contained
     \ nextgroup=@vim9CanBeAtStartOfLine,
     \     vim9AutocmdMod,
@@ -916,7 +916,7 @@ syntax region vim9ListUnpackDeclaration
 syntax region vim9DeclareName
     \ contained
     \ contains=@vim9DataTypeCluster,vim9NoWhitespaceBeforeInit
-    \ start=/[^ \t[]/
+    \ start=/[^[:blank:][]/
     \ end=/=\@=/
     \ oneline
 
@@ -1053,7 +1053,7 @@ syntax match vim9UserCmdAttrErrorValue /\S\+/
     \ skipwhite
 
 # an invalid attribute name is an error
-syntax match vim9UserCmdAttrError /-[^ \t=]\+/
+syntax match vim9UserCmdAttrError /-[^[:blank:]=]\+/
     \ contained
     \ contains=vim9UserCmdAttrName
     \ nextgroup=@vim9UserCmdAttr,vim9ContinuationBeforeUserCmd
@@ -1234,7 +1234,7 @@ syntax match vim9UserCmdExe /\u\w*/ contained nextgroup=vim9SpaceExtraAfterFuncn
 #                 there is no error here;
 #                 no missing whitespace after a comma between items in a dictionary
 #}}}
-syntax match vim9UserCmdArgs /\s*[^ \t|].\{-}[|\n]/ contained
+syntax match vim9UserCmdArgs /\s*[^[:blank:]|].\{-}[|\n]/ contained
 
 # This lets Vim highlight the name of an option and its value, when we set it with `:CompilerSet`.{{{
 #
@@ -1301,7 +1301,7 @@ syntax match vim9DigraphsCharsInvalid /\S\+/
 # A valid `characters` argument is any sequence of 2 non-whitespace characters.
 # Special Case:  a bar must  be escaped,  so that it's  not parsed as  a command
 # termination.
-syntax match vim9DigraphsChars /\s\@<=\%([^ \t|]\|\\|\)\{2}\_s\@=/
+syntax match vim9DigraphsChars /\s\@<=\%([^[:blank:]|]\|\\|\)\{2}\_s\@=/
     \ contained
     \ nextgroup=vim9DigraphsNumber
     \ skipwhite
@@ -1528,9 +1528,9 @@ syntax keyword vim9MarkCmd ma[rk]
     \ nextgroup=vim9MarkCmdArg,vim9MarkCmdArgInvalid
     \ skipwhite
 
-syntax match vim9MarkCmdArgInvalid /[^ \t|]\+/ contained
+syntax match vim9MarkCmdArgInvalid /[^[:blank:]|]\+/ contained
 # Need to allow `<` for a bracketed keycode inside a mapping (e.g. `<Bar>`).
-execute 'syntax match vim9MarkCmdArg /\s\@1<=' .. lang.mark_valid .. '\%([ \t\n<]\)\@=/ contained'
+execute 'syntax match vim9MarkCmdArg /\s\@1<=' .. lang.mark_valid .. '\%([[:blank:]\n<]\)\@=/ contained'
 
 # :nnoremap {{{3
 
@@ -1681,7 +1681,7 @@ syntax region vim9MapInsertExpr
     \ contains=@vim9Expr,vim9BracketNotation,vim9EvalExpr
     \ keepend
     \ oneline
-syntax match vim9EvalExpr /\%(<C-R>\)\@6<==/ contained
+syntax match vim9EvalExpr /\%(<C-R>\)\@5<==/ contained
 
 # We don't use  `oneline` here, because it  might be convenient to  split a long
 # expression on multiple lines (with explicit continuation lines).
@@ -1885,7 +1885,7 @@ execute 'syntax match vim9CollationClass'
 
 syntax match vim9SubstSubstr /\\z\=\d/ contained
 syntax match vim9SubstTwoBS /\\\\/ contained
-syntax match vim9SubstFlagErr /[^< \t\r|]\+/ contained contains=vim9SubstFlags
+syntax match vim9SubstFlagErr /[^<[:blank:]\r|]\+/ contained contains=vim9SubstFlags
 syntax match vim9SubstFlags /[&cegiIlnpr#]\+/ contained
 
 # :syntax {{{3
@@ -1904,11 +1904,11 @@ syntax match vim9Syntax /\<sy\%[ntax]\>/
 #                  ^
 #                  not part of a group name
 #}}}
-syntax match vim9GroupList /@\=[^ \t,|']\+/
+syntax match vim9GroupList /@\=[^[:blank:],|']\+/
     \ contained
     \ contains=vim9GroupSpecial,vim9PatSep
 
-syntax match vim9GroupList /@\=[^ \t,|']*,/
+syntax match vim9GroupList /@\=[^[:blank:],|']*,/
     \ contained
     \ contains=vim9GroupSpecial,vim9PatSep
     \ nextgroup=vim9GroupList
@@ -2875,7 +2875,7 @@ if expand('%:p:h:t') == 'syntax'
         \ oneline
     syntax match vim9SynExeCmd /\<sy\%[ntax]\>/  contained nextgroup=vim9SynExeType skipwhite
     syntax keyword vim9SynExeType keyword match region contained nextgroup=vim9SynExeGroupName skipwhite
-    syntax match vim9SynExeGroupName /[^' \t]\+/ contained
+    syntax match vim9SynExeGroupName /[^'[:blank:]]\+/ contained
 else
     # Order: Must come before `vim9Number`.
     # We must not allow a digit to match after the ending quote.{{{
@@ -3279,7 +3279,7 @@ execute 'syntax match vim9SetStringValue'
     .. ' /'
     .. '\%('
                # match characters with no special meaning
-    ..         '[^\\ \t]'
+    ..         '[^\\[:blank:]]'
                # match whitespace escaped with an odd number of backslashes
     .. '\|' .. '\%(\\\\\)*\\\s'
                # match backslash escaping sth else than a whitespace
@@ -3504,7 +3504,7 @@ syntax match vim9SpecFile /\s%:/ms=s+1,me=e-1 nextgroup=vim9SpecFileMod
 #              ^
 #}}}
 syntax match vim9SpecFile /\s%\%($\|\s*[|<]\)\@=/ms=s+1 nextgroup=vim9SpecFileMod
-syntax match vim9SpecFile /\s%<\%([^ \t<>]*>\)\@!/ms=s+1,me=e-1 nextgroup=vim9SpecFileMod
+syntax match vim9SpecFile /\s%<\%([^[:blank:]<>]*>\)\@!/ms=s+1,me=e-1 nextgroup=vim9SpecFileMod
 # TODO: The negative lookahead is necessary to prevent a match in a mapping:{{{
 #
 #     nnoremap x <ScriptCmd>argedit %<CR>
@@ -3513,7 +3513,7 @@ syntax match vim9SpecFile /\s%<\%([^ \t<>]*>\)\@!/ms=s+1,me=e-1 nextgroup=vim9Sp
 # Make tests.
 # Try to avoid code repetition; import a regex if necessary.
 #}}}
-syntax match vim9SpecFile /%%\d\+\|%<\%([^ \t<>]*>\)\@!\|%%</ nextgroup=vim9SpecFileMod
+syntax match vim9SpecFile /%%\d\+\|%<\%([^[:blank:]<>]*>\)\@!\|%%</ nextgroup=vim9SpecFileMod
 syntax match vim9SpecFileMod /\%(:[phtreS]\)\+/ contained
 
 # Lower Priority Comments: after some vim commands... {{{1
@@ -3729,7 +3729,7 @@ syntax match vim9StrictWhitespace /,\ze\S/ contained containedin=vim9Dict,vim9Li
 #     var d = {'a' :1, 'b' :2}
 #                 ^       ^
 #                 ✘       ✘
-syntax match vim9StrictWhitespace /\s\+\ze:[^ \t\]]/ contained containedin=vim9Dict display
+syntax match vim9StrictWhitespace /\s\+\ze:[^[:blank:]\]]/ contained containedin=vim9Dict display
 
 #     var d = {a:1, b:2}
 #               ^    ^
@@ -3927,8 +3927,8 @@ if get(g:, 'vim9_syntax', {})
     #     var name = 123# Error!
     # We need to match a whitespace to avoid reporting spurious errors:{{{
     #
-    #     start=/[^ \t]\@1<=#\s/
-    #                        ^^
+    #     start=/[^[:blank:]]\@1<=#\s/
+    #                              ^^
     #
     #     g:autoload#name = 123
     #               ^
@@ -3945,7 +3945,7 @@ if get(g:, 'vim9_syntax', {})
     #}}}
     syntax region vim9Comment
         \ matchgroup=vim9Error
-        \ start=/[^ \t@]\@1<=#\s\@=/
+        \ start=/[^[:blank:]@]\@1<=#\s\@=/
         \ end=/$/
         \ contains=@vim9CommentGroup
         \ excludenl
@@ -3985,9 +3985,9 @@ if get(g:, 'vim9_syntax', {})
         \     vim9ListSliceDelimiter,
         \     vim9SpaceMissingListSlice
     # If a colon is not prefixed with a space, it's an error.
-    syntax match vim9SpaceMissingListSlice /[^ \t[]\@1<=:/ contained display
+    syntax match vim9SpaceMissingListSlice /[^[:blank:][]\@1<=:/ contained display
     # If a colon is not followed with a space, it's an error.
-    syntax match vim9SpaceMissingListSlice /:[^ \t\]]\@=/ contained display
+    syntax match vim9SpaceMissingListSlice /:[^[:blank:]\]]\@=/ contained display
     # Corner Case: A colon can be used in a variable name.  Ignore it.{{{
     #
     #     b:name
@@ -4093,7 +4093,7 @@ if get(g:, 'vim9_syntax', {})
         \ contained
         \ nextgroup=@vim9Range
 
-    syntax match vim9RangeMissingSpecifier2 /[,;][a-zA-Z \t]\@=/
+    syntax match vim9RangeMissingSpecifier2 /[,;][a-zA-Z[:blank:]]\@=/
         \ contained
         \ nextgroup=@vim9CanBeAtStartOfLine
         \ skipwhite

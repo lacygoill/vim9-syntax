@@ -617,7 +617,7 @@ export const command_address_type: string = command_address_type_list->join("\\|
 
 # command_can_be_before {{{1
 
-export const command_can_be_before: string = '\%([ \t\n]\@=\|\c<\%(bar\|cr\)>\)\%(\s*\%([-+*/%]=\|=\s\|=<<\|\.\.=\)\|\_s*\%(->\|[-+*/%]\%(\s\+\)\@>[^|<]\)\)\@!'
+export const command_can_be_before: string = '\%([[:blank:]\n]\@=\|\c<\%(bar\|cr\)>\)\%(\s*\%([-+*/%]=\|=\s\|=<<\|\.\.=\)\|\_s*\%(->\|[-+*/%]\%(\s\+\)\@>[^|<]\)\)\@!'
 
 # command_complete_type {{{1
 
@@ -1482,7 +1482,7 @@ export const mark_valid: string = '[a-zA-Z''`[\]<>0-9"^.(){}]'
 
 # maybe_dict_literal_key {{{1
 
-export const maybe_dict_literal_key: string = '/\%([{\n]\|[^ \t\n,{\\]\@1<!\s\)\@1<=[^ \t{(''"]\+\ze\%(:\_s\)\@=/'
+export const maybe_dict_literal_key: string = '/\%([{\n]\|[^[:blank:]\n,{\\]\@1<!\s\)\@1<=[^[:blank:]{(''"]\+\ze\%(:\_s\)\@=/'
 
 # most_operators {{{1
 

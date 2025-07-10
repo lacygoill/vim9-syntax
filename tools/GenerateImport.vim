@@ -348,9 +348,9 @@ enddef
 #}}}
 
 const command_can_be_before: string =
-    # after a command, we know there must be a whitespace or a newline
+    # after a command, we know there must be some whitespace
        '\%('
-       ..     '[ \t\n]\@='
+       ..     '[[:blank:]\n]\@='
        .. '\|'
        # Special Case: An Ex command in the RHS of a mapping, right after `<ScriptCmd>` or `<Bar>`.
        ..     '\c<\%(bar\|cr\)>'
@@ -643,10 +643,10 @@ const maybe_dict_literal_key: string = '/'
     # comma  (separating items),  a  curly  brace (start  of  dictionary), or  a
     # backslash (continuation line).
     #}}}
-    ..    '[^ \t\n,{\\]\@1<!' .. '\s'
+    ..    '[^[:blank:]\n,{\\]\@1<!' .. '\s'
     .. '\)\@1<='
     # the key itself
-    .. '[^ \t{(''"]\+'
+    .. '[^[:blank:]{(''"]\+'
     # There must be a colon and a space afterward for this to have any chance of being a key.
     .. '\ze\%(:\_s\)\@='
     .. '/'

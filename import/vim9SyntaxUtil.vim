@@ -87,7 +87,7 @@ export def HighlightUserTypes() # {{{2
     #                    ^------^        ^------^   ^------^
     #     var Lambda = (): UserType => ...
     #                      ^------^
-    user_type = $':\s\+{user_type}\%([,) \t]\|$\)'
+    user_type = $':\s\+{user_type}\%([,)[:blank:]]\|$\)'
         #     var x: list<UserType>
         #                 ^------^
         .. $'\|<{user_type}>'
