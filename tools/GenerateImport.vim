@@ -311,7 +311,7 @@ enddef
 #
 #     set option=value
 #     ^^^
-#     vim9Set ⊂ vim9MayBeCmd
+#     vi9Set ⊂ vi9MayBeCmd
 #
 # This  creates a  stack which  might be  problematic for  a group  defined with
 # `nextgroup=`.  Suppose that `B ⊂ A`:
@@ -538,7 +538,7 @@ const lambda_start: string = '('
 #               this should be highlighted as a data type
 #
 # This is a special case, because the  lambda has no arguments, and is contained
-# inside another syntax item (`vim9OperParen`).
+# inside another syntax item (`vi9OperParen`).
 #}}}
 
 # legacy autoload invalid {{{3

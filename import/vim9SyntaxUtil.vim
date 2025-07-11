@@ -49,13 +49,13 @@ export def HighlightUserTypes() # {{{2
     var buf: number = bufnr('%')
 
     # remove existing text properties to start from a clean state
-    if prop_type_list({bufnr: buf})->index('vim9UserType') >= 0
-        {type: 'vim9UserType', bufnr: buf, all: true}
+    if prop_type_list({bufnr: buf})->index('vi9UserType') >= 0
+        {type: 'vi9UserType', bufnr: buf, all: true}
             ->prop_remove(1, line('$'))
     endif
     # add property type
-    if prop_type_get('vim9UserType', {bufnr: buf}) == {}
-        prop_type_add('vim9UserType', {highlight: 'vim9UserType', bufnr: buf})
+    if prop_type_get('vi9UserType', {bufnr: buf}) == {}
+        prop_type_add('vi9UserType', {highlight: 'vi9UserType', bufnr: buf})
     endif
 
     var pat: string = '\%(^\|[^|]|\)\s*\%('
@@ -126,7 +126,7 @@ export def HighlightUserTypes() # {{{2
     endfor
 
     # finally, add text properties
-    prop_add_list({bufnr: buf, type: 'vim9UserType'}, pos)
+    prop_add_list({bufnr: buf, type: 'vi9UserType'}, pos)
 enddef
 # }}}1
 # Util {{{1
