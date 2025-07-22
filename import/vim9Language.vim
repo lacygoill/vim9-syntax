@@ -535,6 +535,7 @@ const builtin_func_list: list<string> =<< trim END
     virtcol2col
     visualmode
     wildmenumode
+    wildtrigger
     win_execute
     win_findbuf
     win_getid
@@ -680,6 +681,7 @@ const command_complete_type_list: list<string> =<< trim END
     messages
     option
     packadd
+    retab
     runtime
     scriptnames
     shellcmdline
@@ -1766,6 +1768,8 @@ const option_list: list<string> =<< trim END
     dict
     diff
     nodiff
+    dia
+    diffanchors
     dex
     diffexpr
     dip
@@ -2088,6 +2092,8 @@ const option_list: list<string> =<< trim END
     mmp
     maxmemtot
     mmt
+    maxsearchcount
+    msc
     menuitems
     mis
     messagesopt
