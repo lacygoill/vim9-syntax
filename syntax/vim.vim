@@ -2366,7 +2366,6 @@ syntax region vi9GenericFunction
     \ matchgroup=vi9ParenSep
     \ start=/</
     \ end=/>/
-    \ matchgroup=NONE
     \ contained
     \ contains=@vi9ErrorSpaceArgs,vi9GenericTypes
     \ nextgroup=vi9FuncSignature
@@ -2561,7 +2560,6 @@ syntax region vi9GenericFunctionCall
     \ matchgroup=vi9ParenSep
     \ start=/</
     \ end=/>/
-    \ matchgroup=NONE
     \ contained
     \ contains=@vi9ErrorSpaceArgs,vi9GenericFunctionCallDataType,vi9DataTypeListDict
     \ skipwhite
