@@ -764,8 +764,8 @@ syntax keyword vi9Repeat for
 #}}}
 syntax region vi9RepeatForListUnpackDeclaration
     \ matchgroup=vi9Sep
-    \ start=/\[/
-    \ end=/]/
+    \ start=/[[(]/
+    \ end=/[])]/
     \ contained
     \ contains=vi9RepeatForDeclareName,vi9DataType
     \ nextgroup=vi9RepeatForIn
@@ -799,7 +799,7 @@ syntax region vi9RepeatForListUnpackDeclaration
 #}}}
 # We also match  a possible comma or  closing bracket in case we  iterate over a
 # list of lists.
-syntax match vi9RepeatForDeclareName /\<\h\w*\>\%(\s*\%(:\s\|\<in\>\)\|,\|\s*\]\)\@=/
+syntax match vi9RepeatForDeclareName /\<\h\w*\>\%(\s*\%(:\s\|\<in\>\)\|,\|\s*[)\]]\)\@=/
     \ contained
     \ nextgroup=@vi9DataTypeCluster,vi9RepeatForIn,vi9NoWhitespaceBeforeInit
     \ skipwhite
@@ -2292,11 +2292,11 @@ execute 'syntax match vi9FuncHeader'
     # `:help vim9class /Multiple constructors`
     .. '\|' .. 'new\w*'
     .. '\)'
-    .. '\ze\s*('
+    .. '\ze\s*[(<]'
     .. '/'
     .. ' contains=vi9DefKey,vi9LegacyAutoloadInvalid'
-    .. ' nextgroup=vi9FuncSignature,vi9SpaceAfterFuncHeader'
-    syntax match vi9SpaceAfterFuncHeader /\s\+\ze(/ contained nextgroup=vi9FuncSignature
+    .. ' nextgroup=vi9FuncSignature,vi9GenericFunction,vi9SpaceAfterFuncHeader'
+    syntax match vi9SpaceAfterFuncHeader /\s\+\ze[(<]/ contained nextgroup=vi9FuncSignature,vi9GenericFunction
 
 syntax keyword vi9DefKey def fu[nction]
     \ contained
@@ -2337,7 +2337,6 @@ syntax region vi9FuncSignature
     \     vi9Comment,
     \     vi9FuncArgs,
     \     vi9OperAssign
-    \ nextgroup=vi9LegacyFuncArgs
     \ skipwhite
 
     syntax match vi9LegacyFuncArgs /\%(:\s*\)\=\%(abort\|closure\|dict<\@!\|range\)/
@@ -2362,6 +2361,18 @@ execute 'syntax match vi9FuncArgs'
     .. ' contained'
 
 syntax match vi9FuncEnd /^\s*enddef\ze\s*\%(#.*\)\=$/
+
+syntax region vi9GenericFunction
+    \ matchgroup=vi9ParenSep
+    \ start=/</
+    \ end=/>/
+    \ matchgroup=NONE
+    \ contained
+    \ contains=@vi9ErrorSpaceArgs,vi9GenericTypes
+    \ nextgroup=vi9FuncSignature
+    \ skipwhite
+
+syntax match vi9GenericTypes /\u\w*/ contained
 
 # Legacy {{{3
 
@@ -2526,7 +2537,7 @@ execute 'syntax match vi9FuncCallUser'
     #     ^--^
     #     this should not be highlighted as a function, but as a command
     #}}}
-    .. '(\@='
+    .. '[(<]\@='
     .. '\|'
     # Special Case:{{{
     #
@@ -2544,6 +2555,20 @@ execute 'syntax match vi9FuncCallUser'
     #}}}
     ..     '\.\w\+(\@='
     .. '/ display'
+    .. ' nextgroup=vi9GenericFunctionCall'
+
+syntax region vi9GenericFunctionCall
+    \ matchgroup=vi9ParenSep
+    \ start=/</
+    \ end=/>/
+    \ matchgroup=NONE
+    \ contained
+    \ contains=@vi9ErrorSpaceArgs,vi9GenericFunctionCallDataType,vi9DataTypeListDict
+    \ skipwhite
+
+syntax match vi9GenericFunctionCallDataType
+    \ /\<\%(any\|blob\|bool\|channel\|float\|func\|job\|number\|string\)\>/
+    \ contained
 
 # Builtin Call {{{2
 
@@ -2784,7 +2809,7 @@ syntax cluster vi9Expr contains=
 
 syntax match vi9Bool /\%(v:\)\=\<\%(false\|true\)\>:\@!/ display
 syntax match vi9Null /\%(v:\)\=\<null\>:\@!/ display
-syntax match vi9Null /\<null_\%(blob\|channel\|dict\|function\|job\|list\|partial\|string\)\>/ display
+syntax match vi9Null /\<null_\%(blob\|channel\|dict\|function\|job\|list\|partial\|string\|tuple\)\>/ display
 
 syntax match vi9None /\<v:none\>:\@!/ display
 
@@ -2996,12 +3021,14 @@ syntax match vi9DictExprKey /\[.\{-}]\%(:\s\)\@=/
 
 # Lambdas {{{2
 
+# Warning: Don't add `keepend` here; it would break this:
+#
+#     return (F_: func(U): func(V): W) => (Y_: V) => (X_: U) => F_(X_)(Y_)
 execute 'syntax region vi9Lambda'
     .. ' matchgroup=vi9ParenSep'
     .. ' start=/' .. lang.lambda_start .. '/'
     .. ' end=/' .. lang.lambda_end .. '/'
     .. ' contains=@vi9DataTypeCluster,@vi9ErrorSpaceArgs,vi9LambdaArgs'
-    .. ' keepend'
     .. ' nextgroup=@vi9DataTypeCluster'
     .. ' oneline'
 
@@ -3050,10 +3077,12 @@ syntax cluster vi9DataTypeCluster contains=
 #}}}
 execute 'syntax match vi9DataType'
     .. ' /'
-    .. '\%(' .. ':\s\+' .. '\)'
+    .. '\%(' .. '[:,]\s\+' .. '\)'
     .. '\%('
                # match simple types
     ..         'any\|blob\|bool\|channel\|float\|func\|job\|number\|string\|void'
+               # match generic types
+    ..         '\|\u\w*'
     .. '\)\>'
     # positive lookahead
     .. '\%('
@@ -3080,7 +3109,7 @@ execute 'syntax match vi9DataType'
 
 # Composite data types need to be handled separately.
 # First, let's deal with their leading colon.
-syntax match vi9DataTypeCompositeLeadingColon /:\s\+\%(\%(list\|dict\)<\|func(\)\@=/
+syntax match vi9DataTypeCompositeLeadingColon /:\s\+\%(\%(list\|dict\|tuple\)<\|func(\)\@=/
     \ nextgroup=vi9DataTypeListDict,vi9DataTypeFuncref
 
 # Now, we can deal with the rest.
@@ -3089,7 +3118,7 @@ syntax match vi9DataTypeCompositeLeadingColon /:\s\+\%(\%(list\|dict\)<\|func(\)
 # possible recursion with a region which can contain itself.
 syntax region vi9DataTypeListDict
     \ matchgroup=vi9ValidSubType
-    \ start=/\<\%(list\|dict\)</
+    \ start=/\<\%(list\|dict\|tuple\)</
     \ end=/>/
     \ contained
     \ contains=vi9DataTypeFuncref,vi9DataTypeListDict,vi9ValidSubType
@@ -3119,6 +3148,8 @@ execute 'syntax match vi9ValidSubType'
     .. '\|number'
     .. '\|string'
     .. '\|void'
+    # generic type
+    .. '\|\u\w*'
     .. '\)\>'
     # the lookbehinds are  necessary to avoid breaking the nesting  of the outer
     # region;  which would  prevent some  trailing `>`  or `)`  to be  correctly
@@ -3127,11 +3158,12 @@ execute 'syntax match vi9ValidSubType'
     .. '?\=\<\%('
     ..         'd\@1<=ict<'
     .. '\|' .. 'l\@1<=ist<'
+    .. '\|' .. 't\@1<=uple<'
     .. '\|' .. 'f\@1<=unc(\|)'
     .. '\)'
     .. '\|'
     # support triple dot in `func(...list<type>)`
-    .. '\.\.\.\%(list<\)\@='
+    .. '\.\.\.\%(\%(list\|tuple\)<\)\@='
     # support comma in `func(type1, type2)`
     .. '\|' .. ','
     .. '/'
@@ -3153,7 +3185,7 @@ execute 'syntax match vi9DataTypeCast'
 # support `:help type-casting` for composite types
 syntax region vi9DataTypeCastComposite
     \ matchgroup=vi9ValidSubType
-    \ start=/<\%(list\|dict\)</
+    \ start=/<\%(list\|dict\|tuple\)</
     \ end=/>>/
     \ contains=vi9DataTypeFuncref,vi9DataTypeListDict,vi9ValidSubType
     \ oneline
@@ -4327,6 +4359,8 @@ highlight default link vi9FTOption vi9SynType
 highlight default link vi9Finish vi9Return
 highlight default link vi9FuncArgs Identifier
 highlight default link vi9FuncEnd vi9DefKey
+highlight default link vi9GenericFunctionCallDataType Type
+highlight default link vi9GenericTypes Type
 highlight default link vi9Global vi9GenericCmd
 highlight default link vi9GlobalPat vi9String
 highlight default link vi9Group Type
