@@ -2563,7 +2563,7 @@ syntax region vi9GenericFunctionCall
     \ start=/</
     \ end=/>/
     \ contained
-    \ contains=@vi9ErrorSpaceArgs,vi9GenericFunctionCallDataType,vi9DataTypeListDict
+    \ contains=@vi9ErrorSpaceArgs,vi9DataTypeListDict,vi9GenericFunctionCallDataType,vi9GenericTypes
     \ skipwhite
 
 syntax match vi9GenericFunctionCallDataType
@@ -4182,7 +4182,7 @@ syntax keyword vi9Interface interface endinterface contained nextgroup=vi9Interf
 highlight default link vi9Interface Keyword
 
 # this
-syntax match vi9This /\<this\.\@=/ containedin=vi9FuncSignature,vi9OperParen
+syntax match vi9This /\<this\>/ containedin=vi9FuncSignature,vi9OperParen
 highlight default link vi9This Structure
 
 # public
@@ -4203,7 +4203,16 @@ syntax region vi9Enum
     \ matchgroup=Type
     \ start=/\<enum\>\s\+\u\w*/
     \ end=/^\s*\<endenum\>/
-    \ contains=vi9DataType,vi9Declare,vi9FuncCallUser,vi9FuncEnd,vi9FuncHeader,vi9Implements,vi9OperParen,vi9This
+    \ contains=
+    \ vi9DataType,
+    \ vi9Declare,
+    \ vi9FuncCallUser,
+    \ vi9FuncEnd,
+    \ vi9FuncHeader,
+    \ vi9Implements,
+    \ vi9OperParen,
+    \ vi9Return,
+    \ vi9This
 
 # :type
 syntax keyword vi9UserType type contained nextgroup=vi9UserTypeName skipwhite
