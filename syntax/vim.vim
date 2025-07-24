@@ -2291,6 +2291,8 @@ execute 'syntax match vi9FuncHeader'
     # `:help object`
     # `:help vim9class /Multiple constructors`
     .. '\|' .. 'new\w*'
+    # `:help E1412`
+    .. '\|' .. '\%(empty\|len\|string\)'
     .. '\)'
     .. '\ze\s*[(<]'
     .. '/'
@@ -4186,8 +4188,8 @@ highlight default link vi9This Structure
 # public
 # static
 # public static
-syntax keyword vi9Public public contained nextgroup=vi9Static skipwhite
-syntax keyword vi9Static static contained
+syntax keyword vi9Public public contained nextgroup=vi9Static,vi9Declare skipwhite
+syntax keyword vi9Static static contained nextgroup=vi9Declare skipwhite
 highlight default link vi9Public vi9Declare
 highlight default link vi9Static vi9Declare
 
@@ -4197,7 +4199,11 @@ highlight default link vi9Abstract Special
 
 # :enum
 # :endenum
-syntax region vi9Enum matchgroup=Type start=/\<enum\>\s\+\u\w*/ end=/^\s*\<endenum\>/
+syntax region vi9Enum
+    \ matchgroup=Type
+    \ start=/\<enum\>\s\+\u\w*/
+    \ end=/^\s*\<endenum\>/
+    \ contains=vi9DataType,vi9Declare,vi9FuncCallUser,vi9FuncEnd,vi9FuncHeader,vi9Implements,vi9OperParen,vi9This
 
 # :type
 syntax keyword vi9UserType type contained nextgroup=vi9UserTypeName skipwhite
