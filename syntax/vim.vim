@@ -2497,7 +2497,7 @@ execute 'syntax match vi9FuncCallUser'
     .. '\|'
     # autoload function
     # (even in a Vim9 script, we might need to call an autoload function with its legacy name)
-    ..     '\%(\w\|#\)\+'
+    ..     '\w\+#\w\%(\w\|#\)*'
     .. '\|'
     # dict function: its name must contain a `.`
     # Why do you disallow `:`?{{{
@@ -2821,7 +2821,6 @@ syntax region vi9String
     \ end=/"/
     \ contains=vi9EscapeSequence
     \ keepend
-    \ oneline
 
 # `:help string`
 syntax match vi9EscapeSequence /\\\%(\o\{3}\|\o\{1,2}\O\@=\)/ contained
