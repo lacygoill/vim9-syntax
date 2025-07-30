@@ -55,7 +55,7 @@ export def HighlightUserTypes() # {{{2
     endif
     # add property type
     if prop_type_get('vi9UserType', {bufnr: buf}) == {}
-        prop_type_add('vi9UserType', {highlight: 'vi9UserType', bufnr: buf})
+        prop_type_add('vi9UserType', {highlight: 'Type', bufnr: buf})
     endif
 
     var pat: string = '\%(^\|[^|]|\)\s*\%('
