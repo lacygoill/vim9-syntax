@@ -1476,7 +1476,7 @@ syntax match vi9HiGuiRgb /#\x\{6}/ contained nextgroup=vi9HiGuiFgBg,vi9HiGui ski
 # :import
 # :export
 syntax keyword vi9Import imp[ort] contained nextgroup=vi9ImportedScript,vi9ImportAutoload skipwhite
-syntax keyword vi9Export exp[ort] contained nextgroup=vi9Abstract,vi9Class,vi9Declare,vi9Interface skipwhite
+syntax keyword vi9Export exp[ort] contained nextgroup=vi9Abstract,vi9Class,vi9Declare,vi9Interface,vi9UserType skipwhite
 
 #        v------v
 # import autoload 'path/to/script.vim'
