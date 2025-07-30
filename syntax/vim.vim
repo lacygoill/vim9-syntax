@@ -2828,7 +2828,6 @@ syntax match vi9EscapeSequence /\\[xX]\%(\x\{2}\|\x\X\@=\)/ contained
 syntax match vi9EscapeSequence /\\u\x\{1,4}/ contained
 syntax match vi9EscapeSequence /\\U\x\{1,8}/ contained
 syntax match vi9EscapeSequence /\\[befnrt\\"]/ contained
-highlight default link vi9EscapeSequence Special
 # TODO: Should we match them in patterns too?
 #
 #     vi9GlobalPat
@@ -4155,7 +4154,6 @@ syntax cluster vi9OOP contains=
 # :class
 # :endclass
 syntax keyword vi9Class class endclass contained nextgroup=vi9ClassName skipwhite
-highlight default link vi9Class Keyword
 
 #           vvv
 #     class Foo
@@ -4171,30 +4169,22 @@ syntax match vi9InterfaceName /\u\w*\%(,\s\+\u\w*\)\=/
 syntax keyword vi9Extends extends contained nextgroup=vi9ClassName skipwhite
 syntax keyword vi9Implements implements contained nextgroup=vi9InterfaceName skipwhite
 syntax keyword vi9Specifies specifies contained nextgroup=vi9InterfaceName skipwhite
-highlight default link vi9Extends Keyword
-highlight default link vi9Implements Keyword
-highlight default link vi9Specifies Keyword
 
 # :interface
 # :endinterface
 syntax keyword vi9Interface interface endinterface contained nextgroup=vi9InterfaceName skipwhite
-highlight default link vi9Interface Keyword
 
 # this
 syntax match vi9This /\<this\>/ containedin=vi9FuncSignature,vi9OperParen
-highlight default link vi9This Structure
 
 # public
 # static
 # public static
 syntax keyword vi9Public public contained nextgroup=vi9Static,vi9Declare skipwhite
 syntax keyword vi9Static static contained nextgroup=vi9Declare skipwhite
-highlight default link vi9Public vi9Declare
-highlight default link vi9Static vi9Declare
 
 # abstract
 syntax keyword vi9Abstract abstract contained nextgroup=vi9Class skipwhite
-highlight default link vi9Abstract Special
 
 # :enum
 # :endenum
@@ -4215,8 +4205,8 @@ syntax region vi9Enum
 
 # :type
 syntax keyword vi9UserType type contained nextgroup=vi9UserTypeName skipwhite
-syntax match vi9UserTypeName /\u\w*/ contained nextgroup=@vi9DataTypeCluster skipwhite
-highlight default link vi9UserType Type
+syntax match vi9UserTypeName /\u\w*/ contained nextgroup=vi9UserTypeAssignment skipwhite
+syntax match vi9UserTypeAssignment /=/ contained nextgroup=@vi9DataTypeCluster skipwhite
 
 if get(g:, 'vim9_syntax', {})
  ->get('user_types', false)
@@ -4279,7 +4269,9 @@ endif
 
 highlight default link vi9Error Error
 
+highlight default link vi9Abstract Special
 highlight default link vi9AutocmdEventBadCase vi9Error
+highlight default link vi9Class Keyword
 highlight default link vi9CollationClassErr vi9Error
 highlight default link vi9DeclareError vi9Error
 highlight default link vi9DefBangError vi9Error
@@ -4289,8 +4281,12 @@ highlight default link vi9DeprecatedLet vi9Error
 highlight default link vi9DeprecatedScopes vi9Error
 highlight default link vi9DictMayBeLiteralKey vi9Error
 highlight default link vi9DigraphsCharsInvalid vi9Error
+highlight default link vi9EscapeSequence Special
+highlight default link vi9Extends Keyword
 highlight default link vi9FTError vi9Error
+highlight default link vi9Implements Keyword
 highlight default link vi9IncrementError vi9Error
+highlight default link vi9Interface Keyword
 highlight default link vi9LambdaDictMissingParen vi9Error
 highlight default link vi9LegacyAutoloadInvalid vi9Error
 highlight default link vi9LegacyConcatInvalid vi9Error
@@ -4304,6 +4300,7 @@ highlight default link vi9NumberOctalWarn vi9Error
 highlight default link vi9OperError vi9Error
 highlight default link vi9PatSepErr vi9Error
 highlight default link vi9ProfileSubCmdInvalid vi9Error
+highlight default link vi9Public vi9Declare
 highlight default link vi9RangeMissingSpace vi9Error
 highlight default link vi9RangeMissingSpecifier1 vi9Error
 highlight default link vi9RangeMissingSpecifier2 vi9Error
@@ -4315,13 +4312,18 @@ highlight default link vi9SpaceAfterLegacyFuncHeader vi9Error
 highlight default link vi9SpaceExtraBetweenArgs vi9Error
 highlight default link vi9SpaceMissingBetweenArgs vi9Error
 highlight default link vi9SpaceMissingListSlice vi9Error
+highlight default link vi9Specifies Keyword
+highlight default link vi9Static vi9Declare
 highlight default link vi9StrictWhitespace vi9Error
 highlight default link vi9SubstFlagErr vi9Error
 highlight default link vi9SynCaseError vi9Error
 highlight default link vi9SynCaseError vi9Error
 highlight default link vi9SynError vi9Error
 highlight default link vi9SyncError vi9Error
+highlight default link vi9This Structure
 highlight default link vi9UserCmdAttrError vi9Error
+highlight default link vi9UserType Identifier
+highlight default link vi9UserTypeAssignment Identifier
 highlight default link vi9WincmdArgInvalid vi9Error
 
 highlight default link vi9AbbrevCmd vi9GenericCmd
