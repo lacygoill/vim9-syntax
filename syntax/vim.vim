@@ -4322,7 +4322,7 @@ highlight default link vi9SynError vi9Error
 highlight default link vi9SyncError vi9Error
 highlight default link vi9This Structure
 highlight default link vi9UserCmdAttrError vi9Error
-highlight default link vi9UserType Identifier
+highlight default link vi9UserType Type
 highlight default link vi9UserTypeAssignment Identifier
 highlight default link vi9WincmdArgInvalid vi9Error
 
