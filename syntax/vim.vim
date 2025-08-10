@@ -1238,7 +1238,7 @@ syntax keyword vi9Set CompilerSet contained nextgroup=vi9MayBeOptionSet skipwhit
 #}}}3
 # :cd {{{3
 
-syntax keyword vi9Cd cd lc[d] tc[d] chd[ir] lch[dir] tch[dir] nextgroup=vi9CdPreviousDir
+syntax keyword vi9Cd cd lc[d] tc[d] chd[ir] lch[dir] tch[dir] contained nextgroup=vi9CdPreviousDir
 
 # For `:cd`, `-` stands for the previous working directory.
 # Let's make sure it's not matched as an arithmetic operator.{{{
