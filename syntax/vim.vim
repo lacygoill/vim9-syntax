@@ -3076,6 +3076,11 @@ syntax cluster vi9DataTypeCluster contains=
 execute 'syntax match vi9DataType'
     .. ' /'
     .. '\%(' .. '[:,]\s\+' .. '\)'
+    #     def new(this.from, this.to)
+    #                        ^-----^
+    # Source: https://github.com/vim/vim/wiki/Vim9-enumerations-with-a-dash-of-jam-and-pickles
+    # (example 6)
+    .. '\%(this\.\)\@!'
     .. '\%('
                # match simple types
     ..         'any\|blob\|bool\|channel\|float\|func\|job\|number\|string\|void'
@@ -4204,13 +4209,13 @@ syntax region vi9Enum
     \ start=/\<enum\>\s\+\u\w*/
     \ end=/^\s*\<endenum\>/
     \ contains=
-    \ @vi9DataTypeCluster,
     \ @vi9Expr,
     \ @vi9OOP,
     \ vi9Comment,
     \ vi9Declare,
     \ vi9FuncEnd,
     \ vi9FuncHeader,
+    \ vi9OperAssign,
     \ vi9Return
 
 # :type
