@@ -3737,7 +3737,7 @@ syntax match vi9StrictWhitespace /\s\+\ze;\|;\ze\S/ contained containedin=vi9Lis
 #     var d = {a: 1,b: 2}
 #                  ^
 #                  ✘
-syntax match vi9StrictWhitespace /,\ze\S/ contained containedin=vi9Dict,vi9ListSlice display
+syntax match vi9StrictWhitespace /,\ze[^[:blank:])]/ contained containedin=vi9Dict,vi9ListSlice display
 
 #     var d = {'a' :1, 'b' :2}
 #                 ^       ^
@@ -3921,7 +3921,7 @@ if get(g:, 'vim9_syntax', {})
     #     Func(1, 2)
     #            ^
     #            ✔
-    syntax match vi9SpaceMissingBetweenArgs /,\S\@=/ contained display
+    syntax match vi9SpaceMissingBetweenArgs /,[^[:blank:])]\@=/ contained display
 
     #           ✘
     #           v
