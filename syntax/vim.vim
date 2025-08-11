@@ -4145,6 +4145,7 @@ syntax cluster vi9OOP contains=
     \ vi9Abstract,
     \ vi9Class,
     \ vi9Enum,
+    \ vi9Implements,
     \ vi9Interface,
     \ vi9Public,
     \ vi9Static,
@@ -4193,15 +4194,12 @@ syntax region vi9Enum
     \ start=/\<enum\>\s\+\u\w*/
     \ end=/^\s*\<endenum\>/
     \ contains=
-    \ vi9DataType,
+    \ @vi9CanBeAtStartOfLine,
+    \ @vi9DataTypeCluster,
+    \ @vi9OOP,
     \ vi9Declare,
     \ vi9FuncCallUser,
-    \ vi9FuncEnd,
-    \ vi9FuncHeader,
-    \ vi9Implements,
-    \ vi9OperParen,
-    \ vi9Return,
-    \ vi9This
+    \ vi9OperParen
 
 # :type
 syntax keyword vi9UserType type contained nextgroup=vi9UserTypeName skipwhite
