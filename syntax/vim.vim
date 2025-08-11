@@ -3081,6 +3081,11 @@ execute 'syntax match vi9DataType'
     ..         'any\|blob\|bool\|channel\|float\|func\|job\|number\|string\|void'
                # match generic types
     ..         '\|\u\w*'
+    #           export const NO_MONTH: common.Text = NoMonth.ONLY
+    #                                  ^---------^
+    #           Source: https://github.com/vim/vim/wiki/Vim9-enumerations-with-a-dash-of-jam-and-pickles
+    #           (example 4B)
+    ..         '\|\w\+\.\w\+'
     .. '\)\>'
     # positive lookahead
     .. '\%('
@@ -3148,6 +3153,11 @@ execute 'syntax match vi9ValidSubType'
     .. '\|void'
     # generic type
     .. '\|\u\w*'
+    #     export const RETROGRADE_FROM_WINTER_SOLSTICE: list<common.Text> = copy(Month.values)
+    #                                                        ^---------^
+    # Source: https://github.com/vim/vim/wiki/Vim9-enumerations-with-a-dash-of-jam-and-pickles
+    # (example 4B)
+    .. '\|\w\+\.\w\+'
     .. '\)\>'
     # the lookbehinds are  necessary to avoid breaking the nesting  of the outer
     # region;  which would  prevent some  trailing `>`  or `)`  to be  correctly
@@ -4194,12 +4204,14 @@ syntax region vi9Enum
     \ start=/\<enum\>\s\+\u\w*/
     \ end=/^\s*\<endenum\>/
     \ contains=
-    \ @vi9CanBeAtStartOfLine,
     \ @vi9DataTypeCluster,
+    \ @vi9Expr,
     \ @vi9OOP,
+    \ vi9Comment,
     \ vi9Declare,
-    \ vi9FuncCallUser,
-    \ vi9OperParen
+    \ vi9FuncEnd,
+    \ vi9FuncHeader,
+    \ vi9Return
 
 # :type
 syntax keyword vi9UserType type contained nextgroup=vi9UserTypeName skipwhite
