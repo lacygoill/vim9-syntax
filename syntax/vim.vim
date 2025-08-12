@@ -2211,6 +2211,7 @@ syntax match vi9BangLastShellCmd /\\\@1<!!/ contained display
 # latter.
 syntax match vi9Continuation /^\s*\\/
     \ nextgroup=
+    \     @vi9OOP,
     \     vi9SynContains,
     \     vi9SynContinuePattern,
     \     vi9SynMatchgroup,
@@ -4160,6 +4161,8 @@ syntax cluster vi9OOP contains=
     \ vi9Abstract,
     \ vi9Class,
     \ vi9Enum,
+    \ vi9EnumName,
+    \ vi9Extends,
     \ vi9Implements,
     \ vi9Interface,
     \ vi9Public,
@@ -4209,17 +4212,17 @@ syntax region vi9Enum
     \ start=/\<enum\>\s\+\%(\u\w*\)\@=/
     \ end=/^\s*\<endenum\>/
     \ contains=
-    \ @vi9Expr,
     \ @vi9OOP,
     \ vi9Comment,
+    \ vi9Continuation,
+    \ vi9DataTypeListDict,
     \ vi9Declare,
-    \ vi9EnumName,
     \ vi9FuncEnd,
     \ vi9FuncHeader,
     \ vi9OperAssign,
     \ vi9Return
 
-syntax match vi9EnumName /\%(enum\s\)\@5<=\u\w*/ contained
+syntax match vi9EnumName /\%(\<enum\s\)\@5<=\u\w*/ contained
 
 # :type
 syntax keyword vi9UserType type contained nextgroup=vi9UserTypeName skipwhite
