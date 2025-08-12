@@ -4205,18 +4205,21 @@ syntax keyword vi9Abstract abstract contained nextgroup=vi9Class skipwhite
 # :enum
 # :endenum
 syntax region vi9Enum
-    \ matchgroup=Type
-    \ start=/\<enum\>\s\+\u\w*/
+    \ matchgroup=Statement
+    \ start=/\<enum\>\s\+\%(\u\w*\)\@=/
     \ end=/^\s*\<endenum\>/
     \ contains=
     \ @vi9Expr,
     \ @vi9OOP,
     \ vi9Comment,
     \ vi9Declare,
+    \ vi9EnumName,
     \ vi9FuncEnd,
     \ vi9FuncHeader,
     \ vi9OperAssign,
     \ vi9Return
+
+syntax match vi9EnumName /\%(enum\s\)\@5<=\u\w*/ contained
 
 # :type
 syntax keyword vi9UserType type contained nextgroup=vi9UserTypeName skipwhite
@@ -4296,6 +4299,7 @@ highlight default link vi9DeprecatedLet vi9Error
 highlight default link vi9DeprecatedScopes vi9Error
 highlight default link vi9DictMayBeLiteralKey vi9Error
 highlight default link vi9DigraphsCharsInvalid vi9Error
+highlight default link vi9EnumName Type
 highlight default link vi9EscapeSequence Special
 highlight default link vi9Extends Keyword
 highlight default link vi9FTError vi9Error
