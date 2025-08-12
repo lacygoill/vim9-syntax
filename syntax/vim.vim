@@ -462,7 +462,7 @@ syntax cluster vi9IsCmd contains=
 #}}}
 
 # Special Case: `:!`
-syntax match vi9MayBeCmd /!\@=/ contained nextgroup=@vi9Iscmd
+syntax match vi9MayBeCmd /!\@=/ contained nextgroup=@vi9IsCmd
 
 # Special Case: Some commands (like `:g` and `:s`) *can* be followed by a non-whitespace.
 syntax match vi9MayBeCmd /\%(\<\h\w*\>\)\@=/
@@ -4212,17 +4212,23 @@ syntax region vi9Enum
     \ start=/\<enum\>\s\+\%(\u\w*\)\@=/
     \ end=/^\s*\<endenum\>/
     \ contains=
+    \ @vi9Expr,
     \ @vi9OOP,
     \ vi9Comment,
     \ vi9Continuation,
     \ vi9DataTypeListDict,
     \ vi9Declare,
+    \ vi9EnumValue,
     \ vi9FuncEnd,
     \ vi9FuncHeader,
+    \ vi9MayBeCmd,
     \ vi9OperAssign,
     \ vi9Return
+    \ nextgroup=vi9EnumName
+    \ skipwhite
 
 syntax match vi9EnumName /\%(\<enum\s\)\@5<=\u\w*/ contained
+syntax match vi9EnumValue /\<\a\w*[(,]\@=\|\%(,\s\)\@2<=\<\a\w*$/ contained
 
 # :type
 syntax keyword vi9UserType type contained nextgroup=vi9UserTypeName skipwhite
@@ -4303,6 +4309,7 @@ highlight default link vi9DeprecatedScopes vi9Error
 highlight default link vi9DictMayBeLiteralKey vi9Error
 highlight default link vi9DigraphsCharsInvalid vi9Error
 highlight default link vi9EnumName Type
+highlight default link vi9EnumValue Constant
 highlight default link vi9EscapeSequence Special
 highlight default link vi9Extends Keyword
 highlight default link vi9FTError vi9Error
