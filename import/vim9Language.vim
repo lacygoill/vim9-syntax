@@ -1574,6 +1574,12 @@ const option_list: list<string> =<< trim END
     acd
     noautochdir
     noacd
+    autocomplete
+    ac
+    noautocomplete
+    noac
+    autocompletedelay
+    acl
     autoindent
     ai
     noautoindent
