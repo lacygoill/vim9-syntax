@@ -896,12 +896,9 @@ syntax region vi9ListUnpackDeclaration
     \ keepend
     \ oneline
 
-syntax region vi9DeclareName
+syntax match vi9DeclareName /\<\h\w*\>/
     \ contained
-    \ contains=@vi9DataTypeCluster,vi9NoWhitespaceBeforeInit
-    \ start=/[^[:blank:][]/
-    \ end=/=\@=/
-    \ oneline
+    \ nextgroup=@vi9DataTypeCluster,vi9NoWhitespaceBeforeInit
 
 #     var name : string = 'value'
 #             ^
@@ -4212,18 +4209,18 @@ syntax region vi9Enum
     \ start=/\<enum\>\s\+\%(\u\w*\)\@=/
     \ end=/^\s*\<endenum\>/
     \ contains=
-    \ @vi9Expr,
-    \ @vi9OOP,
-    \ vi9Comment,
-    \ vi9Continuation,
-    \ vi9DataTypeListDict,
-    \ vi9Declare,
-    \ vi9EnumValue,
-    \ vi9FuncEnd,
-    \ vi9FuncHeader,
-    \ vi9MayBeCmd,
-    \ vi9OperAssign,
-    \ vi9Return
+    \     @vi9Expr,
+    \     @vi9OOP,
+    \     vi9Comment,
+    \     vi9Continuation,
+    \     vi9DataTypeListDict,
+    \     vi9Declare,
+    \     vi9EnumValue,
+    \     vi9FuncEnd,
+    \     vi9FuncHeader,
+    \     vi9MayBeCmd,
+    \     vi9OperAssign,
+    \     vi9Return
     \ nextgroup=vi9EnumName
     \ skipwhite
 
