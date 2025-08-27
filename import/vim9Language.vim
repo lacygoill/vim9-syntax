@@ -529,6 +529,8 @@ const builtin_func_list: list<string> =<< trim END
     typename
     undofile
     undotree
+    uri_decode
+    uri_encode
     utf16idx
     values
     virtcol
@@ -1580,6 +1582,8 @@ const option_list: list<string> =<< trim END
     noac
     autocompletedelay
     acl
+    autocompletetimeout
+    act
     autoindent
     ai
     noautoindent
@@ -1713,6 +1717,8 @@ const option_list: list<string> =<< trim END
     cpp
     completeslash
     csl
+    completetimeout
+    cto
     concealcursor
     cocu
     conceallevel
@@ -2714,6 +2720,7 @@ const option_terminal_list: list<string> =<< trim END
     t_KJ
     t_KK
     t_KL
+    t_Ms
     t_PE
     t_PS
     t_RB
