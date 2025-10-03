@@ -321,6 +321,7 @@ const builtin_func_list: list<string> =<< trim END
     popup_settext
     popup_show
     pow
+    preinserted
     prevnonblank
     printf
     prompt_getprompt
@@ -1197,6 +1198,7 @@ const default_highlighting_group_list: list<string> =<< trim END
     PmenuThumb
     PopupNotification
     PopupSelected
+    PreInsert
     Question
     QuickFixLine
     Scrollbar
@@ -2171,6 +2173,8 @@ const option_list: list<string> =<< trim END
     noodev
     operatorfunc
     opfunc
+    osctimeoutlen
+    ost
     osfiletype
     oft
     packpath
@@ -2720,7 +2724,6 @@ const option_terminal_list: list<string> =<< trim END
     t_KJ
     t_KK
     t_KL
-    t_Ms
     t_PE
     t_PS
     t_RB
