@@ -434,6 +434,7 @@ syntax cluster vi9IsCmd contains=
     \ vi9MarkCmd,
     \ vi9Norm,
     \ vi9ProfileCmd,
+    \ vi9Registers,
     \ vi9Set,
     \ vi9Subst,
     \ vi9Syntax,
@@ -1747,6 +1748,13 @@ syntax keyword vi9ProfileSubcmd continue dump file func pause start stop
 #        ...
 #}}}
 syntax match vi9ProfilePat '\S\+' contained
+
+# :registers {{{3
+
+# We want to match  a register name so that it's  not conflated with something
+# else (e.g. in `registers "`, `"` is not the start of a string).
+syntax keyword vi9Registers reg[isters] nextgroup=vi9RegisterNames contained skipwhite
+syntax match vi9RegisterNames /.*/ contained
 
 # :substitute {{{3
 
@@ -4465,6 +4473,7 @@ highlight default link vi9RangePattern String
 highlight default link vi9RangePatternBwdDelim Delimiter
 highlight default link vi9RangePatternFwdDelim Delimiter
 highlight default link vi9RangeSpecialSpecifier Special
+highlight default link vi9Registers vi9GenericCmd
 highlight default link vi9Repeat Repeat
 highlight default link vi9RepeatForDeclareName vi9Declare
 highlight default link vi9RepeatForIn vi9Repeat
