@@ -1754,7 +1754,8 @@ syntax match vi9ProfilePat '\S\+' contained
 # We want to match  a register name so that it's  not conflated with something
 # else (e.g. in `registers "`, `"` is not the start of a string).
 syntax keyword vi9RegistersCmd reg[isters] nextgroup=vi9RegisterNames contained skipwhite
-syntax match vi9RegisterNames /.\{-}\%(|\)\@=/ contained
+syntax keyword vi9RegistersCmd di[splay] nextgroup=vi9RegisterNames contained skipwhite
+syntax match vi9RegisterNames /[-"*+.:%#/=0-9a-z]\+/ nextgroup=vi9RegisterNames contained skipwhite
 
 # :substitute {{{3
 

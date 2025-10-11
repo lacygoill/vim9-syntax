@@ -1187,6 +1187,7 @@ const default_highlighting_group_list: list<string> =<< trim END
     NonText
     Normal
     Pmenu
+    PmenuBorder
     PmenuExtra
     PmenuExtraSel
     PmenuKind
@@ -1195,6 +1196,7 @@ const default_highlighting_group_list: list<string> =<< trim END
     PmenuMatchSel
     PmenuSbar
     PmenuSel
+    PmenuShadow
     PmenuThumb
     PopupNotification
     PopupSelected
@@ -1222,6 +1224,8 @@ const default_highlighting_group_list: list<string> =<< trim END
     TabPanelSel
     Terminal
     Title
+    TitleBar
+    TitleBarNC
     ToolbarButton
     ToolbarLine
     Tooltip
@@ -2222,6 +2226,8 @@ const option_list: list<string> =<< trim END
     popt
     prompt
     noprompt
+    pumborder
+    pb
     pumheight
     ph
     pummaxwidth
