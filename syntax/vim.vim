@@ -2816,7 +2816,7 @@ syntax cluster vi9Expr contains=
 
 syntax match vi9Bool /\%(v:\)\=\<\%(false\|true\)\>:\@!/ display
 syntax match vi9Null /\%(v:\)\=\<null\>:\@!/ display
-syntax match vi9Null /\<null_\%(blob\|channel\|dict\|function\|job\|list\|partial\|string\|tuple\)\>/ display
+syntax match vi9Null /\<null_\%(blob\|channel\|dict\|function\|job\|list\|partial\|string\|tuple\|object\)\>/ display
 
 syntax match vi9None /\<v:none\>:\@!/ display
 
@@ -3124,7 +3124,7 @@ execute 'syntax match vi9DataType'
 
 # Composite data types need to be handled separately.
 # First, let's deal with their leading colon.
-syntax match vi9DataTypeCompositeLeadingColon /:\s\+\%(\%(list\|dict\|tuple\)<\|func(\)\@=/
+syntax match vi9DataTypeCompositeLeadingColon /:\s\+\%(\%(list\|dict\|tuple\|object\)<\|func(\)\@=/
     \ nextgroup=vi9DataTypeListDict,vi9DataTypeFuncref
 
 # Now, we can deal with the rest.
@@ -3133,7 +3133,7 @@ syntax match vi9DataTypeCompositeLeadingColon /:\s\+\%(\%(list\|dict\|tuple\)<\|
 # possible recursion with a region which can contain itself.
 syntax region vi9DataTypeListDict
     \ matchgroup=vi9ValidSubType
-    \ start=/\<\%(list\|dict\|tuple\)</
+    \ start=/\<\%(list\|dict\|tuple\|object\)</
     \ end=/>/
     \ contained
     \ contains=vi9DataTypeFuncref,vi9DataTypeListDict,vi9ValidSubType
@@ -3205,7 +3205,7 @@ execute 'syntax match vi9DataTypeCast'
 # support `:help type-casting` for composite types
 syntax region vi9DataTypeCastComposite
     \ matchgroup=vi9ValidSubType
-    \ start=/<\%(list\|dict\|tuple\)</
+    \ start=/<\%(list\|dict\|tuple\|object\)</
     \ end=/>>/
     \ contains=vi9DataTypeFuncref,vi9DataTypeListDict,vi9ValidSubType
     \ oneline
