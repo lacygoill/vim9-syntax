@@ -2347,6 +2347,7 @@ syntax region vi9FuncSignature
     \     vi9FuncArgs,
     \     vi9OperAssign
     \ skipwhite
+    \ nextgroup=vi9DataType
 
     syntax match vi9LegacyFuncArgs /\%(:\s*\)\=\%(abort\|closure\|dict<\@!\|range\)/
         \ contained
@@ -4234,7 +4235,7 @@ syntax region vi9Enum
     \ skipwhite
 
 syntax match vi9EnumName /\%(\<enum\s\)\@5<=\u\w*/ contained
-syntax match vi9EnumValue /\<\a\w*[(,]\@=\|\%(,\s\)\@2<=\<\a\w*$/ contained
+syntax match vi9EnumValue /\<\a\w*[(,]\@=\|\%(,\s\)\@2<=\<\a\w*$\|^\s*\u\w*$/ contained
 
 # :type
 syntax keyword vi9UserType type contained nextgroup=vi9UserTypeName skipwhite
