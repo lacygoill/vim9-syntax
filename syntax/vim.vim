@@ -3092,12 +3092,6 @@ execute 'syntax match vi9DataType'
     .. '\%('
                # match simple types
     ..         'any\|blob\|bool\|channel\|float\|func\|job\|number\|string\|void'
-               # match generic types
-    ..         '\|\u\w*'
-    #           export const NO_MONTH: common.Text = NoMonth.ONLY
-    #                                  ^---------^
-    #           Source: https://github.com/vim/vim/wiki/Vim9-enumerations-with-a-dash-of-jam-and-pickles
-    #           (example 4B)
     ..         '\|\w\+\.\w\+'
     .. '\)\>'
     # positive lookahead

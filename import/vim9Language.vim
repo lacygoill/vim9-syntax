@@ -90,7 +90,6 @@ const builtin_func_list: list<string> =<< trim END
     complete_add
     complete_check
     complete_info
-    complete_match
     cos
     cosh
     count
@@ -349,6 +348,8 @@ const builtin_func_list: list<string> =<< trim END
     readdir
     readdirex
     readfile
+    redraw_listener_add
+    redraw_listener_remove
     reduce
     reg_executing
     reg_recording
@@ -1450,6 +1451,7 @@ const key_name_list: list<string> =<< trim END
     NewLine
     Nop
     Nul
+    OSC
     PageDown
     PageUp
     PasteEnd
@@ -1513,6 +1515,7 @@ const key_name_list: list<string> =<< trim END
     xF4
     xHome
     xLeft
+    xOSC
     xRight
     xUp
     zEnd
@@ -2013,8 +2016,6 @@ const option_list: list<string> =<< trim END
     inf
     noinfercase
     noinf
-    isexpand
-    ise
     insertmode
     im
     noinsertmode
