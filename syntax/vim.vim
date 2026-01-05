@@ -6,6 +6,11 @@ vim9script noclear
 if (exists('b:current_syntax')
         # bail out for a file written in legacy Vim script
         || "\n" .. getline(1, 10)->join("\n") !~ '\nvim9\%[script]\>'
+        # Or if legacy Vim script comment used at the start of the script
+        # vim9 scripts can start with legacy script to check for vim9 support
+        # This avoids highlighting much of the file as a single vim9 string
+        || "\n" .. getline(1, 10)->join("\n") =~ '\n\s*".*\nvim9\%[script]\>'
+        #
         # Bail out if we're included from another filetype (e.g. `markdown`).{{{
         #
         # Rationale: If we're  included, we don't  know which type of  syntax does
