@@ -1337,6 +1337,7 @@ const event_list: list<string> =<< trim END
     SafeState
     SafeStateAgain
     SessionLoadPost
+    SessionLoadPre
     SessionWritePost
     ShellCmdPost
     ShellFilterPost
@@ -2423,6 +2424,8 @@ const option_list: list<string> =<< trim END
     nosol
     statusline
     stl
+    statuslineopt
+    stlo
     suffixes
     su
     suffixesadd
@@ -2624,6 +2627,8 @@ const option_list: list<string> =<< trim END
     nowfw
     winheight
     wh
+    winhighlight
+    whl
     winminheight
     wmh
     winminwidth
