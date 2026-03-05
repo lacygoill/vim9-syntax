@@ -2486,6 +2486,8 @@ const option_list: list<string> =<< trim END
     tgc
     notermguicolors
     notgc
+    termsync
+    tsy
     termwinkey
     twk
     termwinscroll
@@ -2694,6 +2696,7 @@ const option_terminal_list: list<string> =<< trim END
     t_AU
     t_BD
     t_BE
+    t_BS
     t_CF
     t_CS
     t_CV
@@ -2704,6 +2707,7 @@ const option_terminal_list: list<string> =<< trim END
     t_Ds
     t_EC
     t_EI
+    t_ES
     t_F1
     t_F2
     t_F3
