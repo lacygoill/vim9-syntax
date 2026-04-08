@@ -67,6 +67,7 @@ const builtin_func_list: list<string> =<< trim END
     ch_getbufnr
     ch_getjob
     ch_info
+    ch_listen
     ch_log
     ch_logfile
     ch_open
@@ -2234,6 +2235,7 @@ const option_list: list<string> =<< trim END
     ph
     pummaxwidth
     pmw
+    pumopt
     pumwidth
     pw
     pythondll
@@ -2486,6 +2488,8 @@ const option_list: list<string> =<< trim END
     tgc
     notermguicolors
     notgc
+    termresize
+    trz
     termsync
     tsy
     termwinkey
