@@ -1241,6 +1241,7 @@ const default_highlighting_group_list: list<string> =<< trim END
     User8
     User9
     VertSplit
+    VertSplitNC
     Visual
     VisualNOS
     WarningMsg
@@ -2131,6 +2132,10 @@ const option_list: list<string> =<< trim END
     nomle
     modelines
     mls
+    modelinestrict
+    mlst
+    nomodelinestrict
+    nomlst
     modifiable
     ma
     nomodifiable
@@ -2302,6 +2307,8 @@ const option_list: list<string> =<< trim END
     sj
     scrolloff
     so
+    scrolloffpad
+    sop
     scrollopt
     sbo
     sections
