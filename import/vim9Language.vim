@@ -462,6 +462,8 @@ const builtin_func_list: list<string> =<< trim END
     tabpagebuflist
     tabpagenr
     tabpagewinnr
+    tabpanel_getinfo
+    tabpanel_scroll
     tagfiles
     taglist
     tan
@@ -880,7 +882,7 @@ const command_name_list: list<string> =<< trim END
     helpg[rep]
     helpt[ags]
     his[tory]
-    ho[rizontal]
+    hor[izontal]
     ij[ump]
     il[ist]
     ime[nu]
@@ -1200,8 +1202,11 @@ const default_highlighting_group_list: list<string> =<< trim END
     PmenuSel
     PmenuShadow
     PmenuThumb
+    Popup
+    PopupBorder
     PopupNotification
     PopupSelected
+    PopupTitle
     PreInsert
     Question
     QuickFixLine
@@ -1366,6 +1371,8 @@ const event_list: list<string> =<< trim END
     TextChangedI
     TextChangedP
     TextChangedT
+    TextPutPost
+    TextPutPre
     TextYankPost
     User
     VimEnter
@@ -2479,6 +2486,10 @@ const option_list: list<string> =<< trim END
     notr
     tags
     tag
+    tagsecure
+    tsc
+    notagsecure
+    notsc
     tagstack
     tgst
     notagstack
