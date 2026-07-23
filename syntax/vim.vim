@@ -3133,7 +3133,7 @@ syntax match vi9DataTypeCompositeLeadingColon /:\s\+\%(\%(list\|dict\|tuple\|obj
 # possible recursion with a region which can contain itself.
 syntax region vi9DataTypeListDict
     \ matchgroup=vi9ValidSubType
-    \ start=/\<\%(list\|dict\|tuple\|object\|\u\w*\)</
+    \ start=/\<\%(list\|dict\|tuple\|object\)</
     \ end=/>/
     \ contained
     \ contains=vi9DataTypeFuncref,vi9DataTypeListDict,vi9ValidSubType
@@ -4183,9 +4183,7 @@ syntax keyword vi9Class class endclass contained nextgroup=vi9ClassName skipwhit
 #           vvv
 #     class Foo
 #     endclass
-syntax match vi9ClassName /\u\w*/ contained nextgroup=
-    \ vi9GenericFunction,vi9Extends,vi9Implements,vi9Specifies skipwhite
-
+syntax match vi9ClassName /\u\w*/ contained nextgroup=vi9Extends,vi9Generics,vi9Implements,vi9Specifies skipwhite
 #                          v------v           vvv
 #     class Foo implements Bar, Baz specifies Qux
 syntax match vi9InterfaceName /\u\w*\%(,\s\+\u\w*\)\=/
