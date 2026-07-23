@@ -146,6 +146,7 @@ const builtin_func_list: list<string> =<< trim END
     funcref
     garbagecollect
     get
+    getbgcolor
     getbufinfo
     getbufline
     getbufoneline
