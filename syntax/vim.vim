@@ -3098,6 +3098,13 @@ execute 'syntax match vi9DataType'
                # match simple types
     ..         'any\|blob\|bool\|channel\|float\|func\|job\|number\|string\|void'
     ..         '\|\w\+\.\w\+'
+    #     class Foo<T>
+    #         final X: T
+    #                  ^
+    #         ...
+    #     endclass
+    # See script at: https://github.com/vim/vim/pull/18910#issuecomment-3730788239
+    ..         '\|\u\w*'
     .. '\)\>'
     # positive lookahead
     .. '\%('
@@ -4183,7 +4190,8 @@ syntax keyword vi9Class class endclass contained nextgroup=vi9ClassName skipwhit
 #           vvv
 #     class Foo
 #     endclass
-syntax match vi9ClassName /\u\w*/ contained nextgroup=vi9Extends,vi9Generics,vi9Implements,vi9Specifies skipwhite
+syntax match vi9ClassName /\u\w*/ contained nextgroup=
+    \ vi9ClassGenerics,vi9Extends,vi9Implements,vi9Specifies skipwhite
 #                          v------v           vvv
 #     class Foo implements Bar, Baz specifies Qux
 syntax match vi9InterfaceName /\u\w*\%(,\s\+\u\w*\)\=/
@@ -4194,6 +4202,17 @@ syntax match vi9InterfaceName /\u\w*\%(,\s\+\u\w*\)\=/
 syntax keyword vi9Extends extends contained nextgroup=vi9ClassName skipwhite
 syntax keyword vi9Implements implements contained nextgroup=vi9InterfaceName skipwhite
 syntax keyword vi9Specifies specifies contained nextgroup=vi9InterfaceName skipwhite
+
+syntax region vi9ClassGenerics
+    \ matchgroup=vi9ParenSep
+    \ start=/</
+    \ end=/>/
+    \ contains=vi9ClassGenericsParameters
+    \ nextgroup=vi9Extends,vi9Implements,vi9Specifies
+    \ skipwhite
+
+syntax match vi9ClassGenericsParameters /\u\w*/ contained
+highlight default link vi9ClassGenericsParameters Type
 
 # :interface
 # :endinterface
