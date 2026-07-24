@@ -4249,14 +4249,24 @@ syntax region vi9Enum
     \     vi9EnumValue,
     \     vi9FuncEnd,
     \     vi9FuncHeader,
-    \     vi9MayBeCmd,
     \     vi9OperAssign,
     \     vi9Return
     \ nextgroup=vi9EnumName
     \ skipwhite
 
+# TODO:
+#
+#     const _OvertimePayer: func(number, number): number
+#                                                 ^----^
+#                                                 not highlighted
+#
+# To fix this, we could include `vi9DataType` inside the `vi9Enum` region.
+# But it would wrongly highlight these as `vi9DataType`:
+#
+#     enum Month implements common.Position, common.Order, common.Text
+#                                            ^----------^  ^---------^
 syntax match vi9EnumName /\%(\<enum\s\)\@5<=\u\w*/ contained
-syntax match vi9EnumValue /\%(->\)\@2<!\<\a\w*[(,]\@=\|\%(,\s\)\@2<=\<\a\w*$\|^\s*\u\w*$/ contained
+syntax match vi9EnumValue /\%(^\s*\|,\s*\)\@8<=\%(enddef\)\@!\a\w*\ze\%(,\|(\|$\)/ contained
 
 # :type
 syntax keyword vi9UserType type contained nextgroup=vi9UserTypeName skipwhite
