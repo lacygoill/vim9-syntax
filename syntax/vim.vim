@@ -3133,20 +3133,6 @@ execute 'syntax match vi9DataType'
 syntax match vi9DataTypeCompositeLeadingColon /:\s\+\%(\%(list\|dict\|tuple\|object\)<\|func(\)\@=/
     \ nextgroup=vi9DataTypeListDict,vi9DataTypeFuncref
 
-# Now, we can deal with the rest.
-# But a list/dict/funcref type can contain  itself; this is too tricky to handle
-# with a  match and a  single regex.   It's much simpler  to let Vim  handle the
-# possible recursion with a region which can contain itself.
-syntax region vi9DataTypeListDict
-    \ matchgroup=vi9ValidSubType
-    \ start=/\<\%(list\|dict\|tuple\|object\)</
-    \ end=/>/
-    \ contained
-    \ contains=vi9DataTypeFuncref,vi9DataTypeListDict,vi9ValidSubType
-    \ nextgroup=vi9RepeatForIn
-    \ oneline
-    \ skipwhite
-
 syntax region vi9DataTypeFuncref
     \ matchgroup=vi9ValidSubType
     \ start=/\<func(/
@@ -3193,6 +3179,22 @@ execute 'syntax match vi9ValidSubType'
     .. '/'
     .. ' contained'
     .. ' display'
+
+    # Order: This must come *after* `vi9ValidSubType`.
+    #
+    # Now, we can deal with the rest.
+    # But a list/dict/funcref  type can contain itself; this is  too tricky to
+    # handle with a  match and a single  regex.  It's much simpler  to let Vim
+    # handle the possible recursion with a region which can contain itself.
+    syntax region vi9DataTypeListDict
+        \ matchgroup=vi9ValidSubType
+        \ start=/\<\%(list\|dict\|tuple\|object\|\u\w*\)</
+        \ end=/>/
+        \ contained
+        \ contains=vi9DataTypeFuncref,vi9DataTypeListDict,vi9ValidSubType
+        \ nextgroup=vi9RepeatForIn
+        \ oneline
+        \ skipwhite
 
 # support `:help type-casting` for simple types
 execute 'syntax match vi9DataTypeCast'
