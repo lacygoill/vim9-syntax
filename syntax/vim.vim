@@ -4194,7 +4194,7 @@ syntax keyword vi9Class class endclass contained nextgroup=vi9ClassName skipwhit
 #     class Foo
 #     endclass
 syntax match vi9ClassName /\u\w*/ contained
-    \ nextgroup=ClassGenerics,vi9Extends,vi9Implements,vi9Specifies
+    \ nextgroup=vi9ClassGenerics,vi9Extends,vi9Implements,vi9Specifies
     \ skipwhite
 #                          v------v           vvv
 #     class Foo implements Bar, Baz specifies Qux
@@ -4203,7 +4203,7 @@ syntax match vi9InterfaceName /\u\w*\%(,\s\+\u\w*\)\=/
     \ nextgroup=vi9Extends,vi9Implements,vi9Specifies,vi9StrictWhitespace
     \ skipwhite
 
-syntax region ClassGenerics
+syntax region vi9ClassGenerics
     \ matchgroup=Delimiter
     \ start=/</
     \ end=/>/
