@@ -4256,7 +4256,7 @@ syntax region vi9Enum
     \ skipwhite
 
 syntax match vi9EnumName /\%(\<enum\s\)\@5<=\u\w*/ contained
-syntax match vi9EnumValue /\<\a\w*[(,]\@=\|\%(,\s\)\@2<=\<\a\w*$\|^\s*\u\w*$/ contained
+syntax match vi9EnumValue /\%(->\)\@2<!\<\a\w*[(,]\@=\|\%(,\s\)\@2<=\<\a\w*$\|^\s*\u\w*$/ contained
 
 # :type
 syntax keyword vi9UserType type contained nextgroup=vi9UserTypeName skipwhite
