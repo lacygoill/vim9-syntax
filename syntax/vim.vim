@@ -3186,6 +3186,10 @@ execute 'syntax match vi9ValidSubType'
     # But a list/dict/funcref  type can contain itself; this is  too tricky to
     # handle with a  match and a single  regex.  It's much simpler  to let Vim
     # handle the possible recursion with a region which can contain itself.
+    #
+    # ---
+    #
+    # `\u\w*`: generic types
     syntax region vi9DataTypeListDict
         \ matchgroup=vi9ValidSubType
         \ start=/\<\%(list\|dict\|tuple\|object\|\u\w*\)</
