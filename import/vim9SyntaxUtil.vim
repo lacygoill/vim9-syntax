@@ -121,7 +121,7 @@ export def HighlightUserTypes() # {{{2
             endif
 
             # save position of text property
-            pos->add([lnum + 1, start, lnum + 1, end + 1])
+            pos->add([lnum + 1, start, lnum + 1, end + 2])
         endwhile
     endfor
 

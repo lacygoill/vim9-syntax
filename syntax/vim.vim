@@ -3098,6 +3098,12 @@ execute 'syntax match vi9DataType'
                # match simple types
     ..         'any\|blob\|bool\|channel\|float\|func\|job\|number\|string\|void'
     ..         '\|\w\+\.\w\+'
+    #     class Single<T>
+    #         final X: T
+    #                  ^
+    #         ...
+    #     endclass
+    ..         '\|\u\w*:\@!'
     .. '\)\>'
     # positive lookahead
     .. '\%('
@@ -3184,8 +3190,6 @@ execute 'syntax match vi9ValidSubType'
     .. '\|'
     # support triple dot in `func(...list<type>)`
     .. '\.\.\.\%(\%(list\|tuple\)<\)\@='
-    # support comma in `func(type1, type2)`
-    .. '\|' .. ','
     .. '/'
     .. ' contained'
     .. ' display'
@@ -4183,13 +4187,25 @@ syntax keyword vi9Class class endclass contained nextgroup=vi9ClassName skipwhit
 #           vvv
 #     class Foo
 #     endclass
-syntax match vi9ClassName /\u\w*/ contained nextgroup=vi9Extends,vi9Implements,vi9Specifies skipwhite
+syntax match vi9ClassName /\u\w*/ contained
+    \ nextgroup=ClassGenerics,vi9Extends,vi9Implements,vi9Specifies
+    \ skipwhite
 #                          v------v           vvv
 #     class Foo implements Bar, Baz specifies Qux
 syntax match vi9InterfaceName /\u\w*\%(,\s\+\u\w*\)\=/
     \ contained
     \ nextgroup=vi9Extends,vi9Implements,vi9Specifies,vi9StrictWhitespace
     \ skipwhite
+
+syntax region ClassGenerics
+    \ matchgroup=Delimiter
+    \ start=/</
+    \ end=/>/
+    \ contained
+    \ contains=vi9ClassGenericsDataType
+    \ nextgroup=vi9Extends,vi9Implements,vi9Specifies
+    \ skipwhite
+syntax match vi9ClassGenericsDataType /\u\w*/ contained
 
 syntax keyword vi9Extends extends contained nextgroup=vi9ClassName skipwhite
 syntax keyword vi9Implements implements contained nextgroup=vi9InterfaceName skipwhite
@@ -4305,6 +4321,7 @@ highlight default link vi9Error Error
 highlight default link vi9Abstract Special
 highlight default link vi9AutocmdEventBadCase vi9Error
 highlight default link vi9Class Keyword
+highlight default link vi9ClassGenericsDataType Type
 highlight default link vi9CollationClassErr vi9Error
 highlight default link vi9DeclareError vi9Error
 highlight default link vi9DefBangError vi9Error
