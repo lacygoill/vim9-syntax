@@ -161,7 +161,6 @@ import 'vim9Language.vim' as lang
 
 import 'vim9SyntaxUtil.vim' as util
 const Derive: func = util.Derive
-const HighlightUserTypes: func = util.HighlightUserTypes
 #}}}1
 
 # Early {{{1
@@ -4170,9 +4169,6 @@ syntax sync maxlines=60
 #}}}1
 # OOP {{{1
 
-# Let's keep this section at the very end so that `HighlightUserTypes()` works properly.
-# The latter calls `synstack()` which needs the syntax to have been fully set.
-
 syntax cluster vi9OOP contains=
     \ vi9Abstract,
     \ vi9Class,
@@ -4272,18 +4268,6 @@ syntax match vi9EnumValue /\%(^\s*\|,\s*\)\@8<=\%(enddef\)\@!\a\w*\ze\%(,\|(\|$\
 syntax keyword vi9UserType type contained nextgroup=vi9UserTypeName skipwhite
 syntax match vi9UserTypeName /\u\w*/ contained nextgroup=vi9UserTypeAssignment skipwhite
 syntax match vi9UserTypeAssignment /=/ contained nextgroup=@vi9DataTypeCluster skipwhite
-
-if get(g:, 'vim9_syntax', {})
- ->get('user_types', false)
-    HighlightUserTypes()
-    autocmd_add([{
-        cmd: 'HighlightUserTypes()',
-        event: 'BufWritePost',
-        group: 'vi9HighlightUserTypes',
-        pattern: '<buffer>',
-        replace: true,
-    }])
-endif
 # }}}1
 
 # Highlight Groups {{{1
