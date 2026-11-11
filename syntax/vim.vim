@@ -4262,7 +4262,7 @@ syntax region vi9Enum
 #     enum Month implements common.Position, common.Order, common.Text
 #                                            ^----------^  ^---------^
 syntax match vi9EnumName /\%(\<enum\s\)\@5<=\u\w*/ contained
-syntax match vi9EnumValue /\%(^\s*\|,\s*\)\@8<=\%(enddef\)\@!\a\w*\ze\%(,\|(\|$\)/ contained
+syntax match vi9EnumValue /\%(^\s*\|,\s*\)\@8<=\%(enddef\)\@!\a\w*\ze\%(,\|(\|\s*#\|$\)/ contained
 
 # :type
 syntax keyword vi9UserType type contained nextgroup=vi9UserTypeName skipwhite
