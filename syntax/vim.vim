@@ -2822,7 +2822,7 @@ syntax cluster vi9Expr contains=
 
 syntax match vi9Bool /\%(v:\)\=\<\%(false\|true\)\>:\@!/ display
 syntax match vi9Null /\%(v:\)\=\<null\>:\@!/ display
-syntax match vi9Null /\<null_\%(blob\|channel\|dict\|function\|job\|list\|partial\|string\|tuple\|object\)\>/ display
+syntax match vi9Null /\<null_\%(blob\|channel\|class\|dict\|function\|job\|list\|object\|partial\|string\|tuple\|object\)\>/ display
 
 syntax match vi9None /\<v:none\>:\@!/ display
 
@@ -4262,6 +4262,15 @@ syntax match vi9EnumName /\%(\<enum\s\)\@5<=\u\w*/ contained
 syntax match vi9EnumValue /\%(^\s*\|,\s*\)\@8<=\%(enddef\)\@!\a\w*\ze\%(,\|(\|\s*#\|$\)/ contained
 
 # :type
+#
+# TODO:
+#
+#     type Num = number
+#                ^----^
+#       not highlighted
+#                  ✘
+#
+# Only composite data types are correctly highlighted.
 syntax keyword vi9UserType type contained nextgroup=vi9UserTypeName skipwhite
 syntax match vi9UserTypeName /\u\w*/ contained nextgroup=vi9UserTypeAssignment skipwhite
 syntax match vi9UserTypeAssignment /=/ contained nextgroup=@vi9DataTypeCluster skipwhite
