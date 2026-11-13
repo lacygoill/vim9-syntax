@@ -2643,6 +2643,7 @@ syntax cluster vi9OperGroup contains=
     \ vi9BracketNotation,
     \ vi9Comment,
     \ vi9Continuation,
+    \ vi9DataTypeCastComposite,
     \ vi9Oper,
     \ vi9OperAssign,
     \ vi9OperParen,
@@ -3203,13 +3204,9 @@ execute 'syntax match vi9ValidSubType'
 execute 'syntax match vi9DataTypeCast'
     .. ' /<\%('
     ..         'any\|blob\|bool\|channel\|float\|func\|job\|number\|string\|void'
-    .. '\)>'
-    # TODO: Type casts *might* be used for script/function local variables too.
-    # If so, you might need to remove this assertion.
-    # And also allow `vi9DataTypeCastComposite` to be matched in
-    # `vi9OperParen` (and other groups?), and link it to the `Type` HG.
-    .. '\%([bgtw]:\)\@='
-    .. '/'
+    # user type
+    ..         '\|\u\w*'
+    .. '\)>/'
 
 # support `:help type-casting` for composite types
 syntax region vi9DataTypeCastComposite
